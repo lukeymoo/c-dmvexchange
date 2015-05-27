@@ -1,0 +1,109 @@
+<% c++ #include "view.h" %>
+<% skin master %>
+<% view master uses content::session %>
+
+<% template render() %>
+<!doctype html>
+<html>
+<head>
+	<title>DX &#8212; <%= TITLE %></title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel='stylesheet' type='text/css' href='/css/main.css?v=1'>
+	<link rel='stylesheet' type='text/css' href='/css/normalize.css?v=1'>
+	<link rel='stylesheet' type='text/css' href='/css/common.css?v=1'>
+	<% if (content.PAGE == "REGISTER") %>
+		<link rel='stylesheet' type='text/css' href='/css/register.css?v=1'>
+	<% end %>
+</head>
+<body>
+	<div id='wrapper'>
+		<% include header() %>
+		<div id='body-wrapper'>
+			Hello world
+		</div>
+	</div>
+	<!-- JScripts -->
+	<script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+	<script src='/js/common.js'></script>
+	<% if (content.PAGE == "HOME") %>
+		<script src='/js/market.js'></script>
+	<% end %>
+	<% if (content.PAGE == "CREATEPOST") %>
+		<script src='/js/market.js'></script>
+	<% end %>
+	<% if (content.PAGE == "REGISTER") %>
+		<script src='/js/register.js'></script>
+	<% end %>
+</body>
+</html>
+<% end template %>
+
+
+<% template header() %>
+<div id='header-bar'>
+	<span id='header-menu-button'>&#9776;</span>
+	<% if (content.LOGGED_IN == true) %>
+		<a href='/'><span id='header-logo' class='logo-with-login'> DMV EXCHANGE </span></a>
+		<span id='beta-logo' class='beta-with-login'>*BETA</span>
+	<% else %>
+		<a href='/'><span id='header-logo' class='logo-no-login'> DMV EXCHANGE </span></a>
+		<span id='beta-logo' class='beta-no-login'>*BETA</span>
+	<% end %>
+	<div id='header-menu'>
+		<a href='/'>
+			<span class='header-menu-option'>Home</span>
+		</a>
+		<span class='header-menu-option'>Submit advice</span>
+		<% if (content.LOGGED_IN == true) %>
+			<a href="/account"><span class='header-menu-option'>Account</span></a>
+			<a href="/login/logout"><span class="header-menu-option">Logout</span></a>
+		<% else %>
+			<a href='/register'>
+				<span class='header-menu-option'>Sign up</span>
+			</a>
+		<% end %>
+	</div>
+	<!-- Header controls -->
+	<% if (content.LOGGED_IN == true) %>
+		<div id='header-controls'>
+			<% if (content.PAGE == "CREATEPOST") %>
+				<span data-active='true' id='header-create-post-button' class='header-control-button'>Create Post</span>
+			<% else %>
+				<a href='/p/new'><span data-active='false' id='header-create-post-button' class='header-control-button'>Create Post</span></a>
+			<% end %>
+
+			<span data-active='false' id='header-notifications-button' class='header-control-button'>Notifications</span>
+			<span data-active='false' id='header-profile-button' class='header-control-button'><%= USERNAME %></span>
+		</div>
+	<% else %>
+	<div id='header-controls'>
+		<span id='header-login-button' data-active='false' class='header-control-button' data-state='closed'>Log in</span>
+		<a href='/register'>
+			<% if (content.PAGE == "REGISTER") %>
+				<span data-active='true' class='header-control-button'>Register</span>
+			<% else %>
+				<span data-active='false' class='header-control-button'>Register</span>
+			<% end %>
+		</a>
+	</div>
+	<% end %>
+	<!-- End header controls -->
+	<!-- Login form -->
+	<% if (content.LOGGED_IN == false) %>
+		<div id='header-login-container'>
+			<form id='header-login-form'>
+				<label>Username or email</label>
+				<input id='username-or-email' type='text' placeholder='Username or email'>
+				<input id='password' type='password' placeholder='Password'>
+				<a href="/forgot"><span id='header-login-forgot'>forgot password?</span></a>
+			</form>
+			<button id='header-login-form-button'>Log in</button>
+		</div>
+	<% end %>
+	<!-- End login form -->
+</div>
+<div id='notification-container'></div>
+<% end template %>
+
+<% end view %>
+<% end skin %>
