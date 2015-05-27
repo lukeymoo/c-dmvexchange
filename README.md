@@ -33,5 +33,5 @@ DMV Exchange ported to C++ ( NEED MOARRR POWERRR )
 	The good side is that most drone tech is still in it's infancy and even if regulation allowed, they wouldn't be safe to enter the market.
 	<br>
 	Probably the most important reason is simply to develop my abilities and understanding of tech.
-	Theres something deeply interesting in being able to bring ideas to the real world & being a part of what is deemed innovation.
+	Theres something deeply interesting in being able to bring ideas to the real world & being a part of what is deemed innovation..
 </p>
