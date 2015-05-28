@@ -1,42 +1,6 @@
 <% c++ #include "view.h" %>
-<% skin master %>
+<% skin base %>
 <% view master uses content::session %>
-
-<% template render() %>
-<!doctype html>
-<html>
-<head>
-	<title>DX &#8212; <%= TITLE %></title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel='stylesheet' type='text/css' href='/css/main.css?v=1'>
-	<link rel='stylesheet' type='text/css' href='/css/normalize.css?v=1'>
-	<link rel='stylesheet' type='text/css' href='/css/common.css?v=1'>
-	<% if (content.PAGE == "REGISTER") %>
-		<link rel='stylesheet' type='text/css' href='/css/register.css?v=1'>
-	<% end %>
-</head>
-<body>
-	<div id='wrapper'>
-		<% include header() %>
-		<div id='body-wrapper'>
-			Hello world
-		</div>
-	</div>
-	<!-- JScripts -->
-	<script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
-	<script src='/js/common.js'></script>
-	<% if (content.PAGE == "HOME") %>
-		<script src='/js/market.js'></script>
-	<% end %>
-	<% if (content.PAGE == "CREATEPOST") %>
-		<script src='/js/market.js'></script>
-	<% end %>
-	<% if (content.PAGE == "REGISTER") %>
-		<script src='/js/register.js'></script>
-	<% end %>
-</body>
-</html>
-<% end template %>
 
 
 <% template header() %>
@@ -103,6 +67,155 @@
 	<!-- End login form -->
 </div>
 <div id='notification-container'></div>
+<% end template %>
+
+
+
+<% template create_post_form() %>
+<div data-visible='true' id='post-form-container'>
+	<form action='/p/process' method='POST' enctype='multipart/form-data' name='postform' id='post-form' data-type='sale' data-valid='false'>
+		<img id='post-form-validator' src='/img/cross.png'>
+		<input type='text' name='posttype' class='hidden-input' value='sale'>
+		<label>What kind of post is this?</label>
+		<div id='post-type-container'>
+			<span data-selected='true' data-value='sale' id='post-type-left' class='post-type'>Sale</span>
+			<span data-selected='false' data-value='general' id='post-type-right' class='post-type'>General Post</span>
+		</div>
+		<label>Post description</label>
+		<textarea name='postdescription' id='post-form-description'></textarea>
+		<input type='file' data-for='#handler-container1' id='photo1' name='photo1' class='post-image hidden-input'>
+		<input type='file' data-for='#handler-container2' id='photo2' name='photo2' class='post-image hidden-input'>
+		<input type='file' data-for='#handler-container3' id='photo3' name='photo3' class='post-image hidden-input'>
+		<input type='file' data-for='#handler-container4' id='photo4' name='photo4' class='post-image hidden-input'>
+		<label id='post-image-label'>Sales <span style="color:rgb(190, 0, 0);">must</span> have at least 1 image</label>
+		<!-- Photo Handlers -->
+		<div id='preview-container'>
+			<!-- Handler 1 -->
+			<div id='handler-container1' class='handler-container' data-visible='true' data-active='false'>
+				<span data-for='#photo1' class='photo-remover'>&times;</span>
+				<img data-for='#photo1' id='photo-handler1' class='photo-handler' src='/img/cross.png'>
+			</div>
+			<!-- Handler 2 -->
+			<div id='handler-container2' class='handler-container' data-visible='false' data-active='false'>
+				<span data-for='#photo2' class='photo-remover'>&times;</span>
+				<img data-for='#photo2' id='photo-handler2' class='photo-handler' src='/img/cross.png'>
+			</div>
+			<!-- Handler 3 -->
+			<div id='handler-container3' class='handler-container' data-visible='false' data-active='false'>
+				<span data-for='#photo3' class='photo-remover'>&times;</span>
+				<img data-for='#photo3' id='photo-handler3' class='photo-handler' src='/img/cross.png'>
+			</div>
+			<!-- Handler 4 -->
+			<div id='handler-container4' class='handler-container' data-visible='false' data-active='false'>
+				<span data-for='#photo4' class='photo-remover'>&times;</span>
+				<img data-for='#photo4' id='photo-handler4' class='photo-handler' src='/img/cross.png'>
+			</div>
+		</div>
+	</form>
+	<button id='post-form-button'>Create Post</button>
+</div>
+<% end template %>
+
+
+<% template register_form() %>
+<span id='banner'>Create an account to get started</span>
+<div id='signup-why'>
+	<span id='main'>Build trust with your buyers and sellers</span>
+	<span id='main-support'>
+		With built-in review and reporting system we filter and remove scammers and people who have a history of backing-out/wasting time.
+	</span>
+	<span id='secondary'>Find buyers and sellers quickly and efficiently</span>
+	<span id='secondary-support'>
+		Efficient search algorithms ensure you can find relevant products closests to you and at a price you want.
+	</span>
+	<span id='last'>Build a brand with no overhead</span>
+	<span id='last-support'>
+		Sell your products through DMV Exchange and avoid the cost and associated overhead of a business.
+	</span>
+</div>
+<div id='signup-card'>
+	<div id='signup-container'>
+		<form id='signup-form' action='/register/process' method='post'>
+			<label>Name</label>
+			<input id='firstname' name='f' type='text' placeholder='First' class='same-line-input field'>
+			<input id='lastname' name='l' type='text' placeholder='Last' class='same-line-input field'>
+			<label>Username</label>
+			<input id='username' name='u' type='text' placeholder='Username' class='single-line-input field'>
+			<label>Password</label>
+			<input id='password' name='p' type='password' placeholder='Password' class='single-line-input field'>
+			<label>Confirm password</label>
+			<input id='password-again' name='pa' type='password' placeholder='Confirm password' class='single-line-input field'>
+			<label>Email</label>
+			<input id='email' name='e' type='text' placeholder='Email' class='single-line-input field'>
+			<label>Confirm email</label>
+			<input id='email-again' name='ea' type='text' placeholder='Confirm email' class='single-line-input field'>
+			<label>Zipcode</label>
+			<input id='zipcode' name='z' maxlength='5' type='text' placeholder='Zipcode' class='same-line-input field'>
+			<label>Gender</label>
+			<select id='gender-select' name='g' class='field'>
+				<option selected='true'>I am...</option>
+				<option value='m'>Male</option>
+				<option value='f'>Female</option>
+			</select>
+			<label>Terms and Conditions</label>
+			<div id='tos-container' class='field'>
+				<input id='tos-checkbox' type='checkbox' value='I_AGREE' name='tos'>
+				<span id='tos-disclosure'>
+					I agree to the <a target="_blank" href='/h/policy.html'>policies</a> and the <a target="_blank" href='/h/policy.html'>Terms of Service</a>
+				</span>
+			</div>
+			<button id='signup-button'>Sign up</button>
+		</form>
+	</div>
+</div>
+<% end template %>
+
+
+
+
+
+
+<% template render() %>
+<!doctype html>
+<html>
+<head>
+	<title>DX &#8212; <%= TITLE %></title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel='stylesheet' type='text/css' href='/css/main.css?v=1'>
+	<link rel='stylesheet' type='text/css' href='/css/normalize.css?v=1'>
+	<link rel='stylesheet' type='text/css' href='/css/common.css?v=1'>
+	<% if (content.PAGE == "REGISTER") %>
+		<link rel='stylesheet' type='text/css' href='/css/register.css?v=1'>
+	<% end %>
+</head>
+<body>
+	<div id='wrapper'>
+		<% include header() %>
+		<div id='body-wrapper'>
+			<% if (content.PAGE == "HOME") %>
+				<% if (content.LOGGED_IN == true) %>
+					<% include create_post_form() %>
+				<% end %>
+			<% end %>
+			<% if (content.PAGE == "REGISTER") %>
+				<% include register_form() %>
+			<% end %>
+		</div>
+	</div>
+	<!-- JScripts -->
+	<script src='/js/jquery.min.js'></script>
+	<script src='/js/common.js'></script>
+	<% if (content.PAGE == "HOME") %>
+		<script src='/js/market.js'></script>
+	<% end %>
+	<% if (content.PAGE == "CREATEPOST") %>
+		<script src='/js/market.js'></script>
+	<% end %>
+	<% if (content.PAGE == "REGISTER") %>
+		<script src='/js/register.js'></script>
+	<% end %>
+</body>
+</html>
 <% end template %>
 
 <% end view %>

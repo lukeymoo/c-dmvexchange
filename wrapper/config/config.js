@@ -1,9 +1,10 @@
 {
 	"service": {
-		"api": "http",
+		"api": "fastcgi",
 		"port": 3000
 	},
 	"http": {
-		"script_names": ["/main"]
+		"script_names": ["/"],
+		"generate_http_headers" : true
 	}
 }

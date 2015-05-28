@@ -5,14 +5,10 @@
 #include <string>
 
 namespace content {
-	struct basic : public cppcms::base_content {
+	struct session : public cppcms::base_content {
 		/** General page context variables **/
 		std::string TITLE;
 		std::string PAGE;
-	};
-
-	struct session : public basic {
-		/** Session related **/
 		bool LOGGED_IN;
 		std::string USERNAME;
 	};

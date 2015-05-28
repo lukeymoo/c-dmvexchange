@@ -19,6 +19,18 @@ class DXServer : public cppcms::application {
 		DXServer(cppcms::service(&srv)) : cppcms::application(srv) {
 
 			/** STATIC **/
+			// IMAGES
+			mapper().assign("img", "/img/{1}");
+				// img - png
+				dispatcher().assign("/img/([a-zA-Z_0-9\-\.]+\.png)", &DXServer::static_png, this, 1);
+				// img - bmp
+				dispatcher().assign("/img/([a-zA-Z_0-9\-\.]+\.bmp)", &DXServer::static_bmp, this, 1);
+				// img - jpeg
+				dispatcher().assign("/img/([a-zA-Z_0-9\-\.]+\.jpeg)", &DXServer::static_jpg, this, 1);
+				// img - jpg
+				dispatcher().assign("/img/([a-zA-Z_0-9\-\.]+\.jpg)", &DXServer::static_jpeg, this, 1);
+				// img - gif
+				dispatcher().assign("/img/([a-zA-Z_0-9\-\.]+\.gif)", &DXServer::static_gif, this, 1);
 			// FONTS
 			mapper().assign("font", "/font/{1}");
 				// font - otf
@@ -37,14 +49,16 @@ class DXServer : public cppcms::application {
 			dispatcher().assign("/", &DXServer::index_page, this);
 			mapper().assign("");
 
-			mapper().root("/");
-
 			// Register page
 			dispatcher().assign("/register", &DXServer::register_page, this);
 			mapper().assign("register", "/register");
 
+			mapper().root("/");
+
 			// Process register function
 			// Process login function
+			// Get Session state
+			dispatcher().assign("/api/session/state", &DXServer::json_session, this);
 		}
 
 		// index page
@@ -53,10 +67,26 @@ class DXServer : public cppcms::application {
 		// register page
 		void register_page();
 
-		// static files
+		// json response
+		void json_session();
+
+		// STATIC
+
+		// images
+		void static_png(std::string filename);
+		void static_bmp(std::string filename);
+		void static_jpeg(std::string filename);
+		void static_jpg(std::string filename);
+		void static_gif(std::string filename);
+
+		// fonts
 		void static_otf(std::string filename);
 		void static_ttf(std::string filename);
+
+		// css
 		void static_css(std::string filename);
+
+		// js
 		void static_js(std::string filename);
 };
 
