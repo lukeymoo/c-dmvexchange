@@ -7,6 +7,7 @@
 #include <cppcms/http_response.h>
 #include <cppcms/url_dispatcher.h>
 #include <cppcms/url_mapper.h>
+#include <cppcms/session_interface.h>
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -43,6 +44,9 @@ class DXServer : public cppcms::application {
 			// css
 			dispatcher().assign("/css/([a-zA-Z_0-9\.]+\.css)", &DXServer::static_css, this, 1);
 			mapper().assign("css", "/css/{1}");
+			// html
+			dispatcher().assign("/h/([a-zA-Z_0-9\.]+\.html)", &DXServer::static_html, this, 1);
+			mapper().assign("h", "/h/{1}");
 
 			
 			// Index page
@@ -88,6 +92,9 @@ class DXServer : public cppcms::application {
 
 		// js
 		void static_js(std::string filename);
+
+		// html
+		void static_html(std::string filename);
 };
 
 #endif

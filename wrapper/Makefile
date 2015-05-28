@@ -1,6 +1,6 @@
 CC 					= g++
 SRC_DIR 			= app
-SRC_CONTROLLER 		= $(SRC_DIR)/controller/generic/generic.cpp tmpl_build/layout.cpp
+SRC_CONTROLLER 		= $(SRC_DIR)/controller/generic/generic.cpp $(SRC_DIR)/controller/view/view.cpp tmpl_build/layout.cpp
 SRC_MODELS 			= $(SRC_DIR)/models/user/user.cpp
 SRC_TMPL			= app/tmpl_src/layout/layout.tmpl
 BUILD_TMPL_DIR 		= tmpl_build

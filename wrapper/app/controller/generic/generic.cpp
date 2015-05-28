@@ -3,9 +3,9 @@
 #include "user.h"
 
 void DXServer::index_page() {
-	content::session c;
+	dxtemplate::session c;
 	c.TITLE = "Home";
-	c.PAGE = "HOME";
+	c.set_page("HOME");
 	c.LOGGED_IN = false;
 	c.USERNAME = "";
 	render("master", c);
@@ -13,9 +13,9 @@ void DXServer::index_page() {
 }
 
 void DXServer::register_page() {
-	content::session c;
+	dxtemplate::session c;
 	c.TITLE = "Register";
-	c.PAGE = "REGISTER";
+	c.set_page("REGISTER");
 	c.LOGGED_IN = false;
 	c.USERNAME = "";
 	render("master", c);
@@ -211,6 +211,26 @@ void DXServer::static_gif(std::string filename) {
 	} else {
 		// read to client
 		response().content_type("image/gif");
+		response().out() << file.rdbuf();
+		// close file
+		file.close();
+	}
+	return;
+}
+
+void DXServer::static_html(std::string filename) {
+	// concat filename with public/h/
+	std::stringstream ss;
+	ss << "public/h/" << filename;
+	std::string final_name = ss.str();
+	// open file
+	std::ifstream file(final_name.c_str(), std::ifstream::in);
+	if(!file) {
+		std::cout << "failed to serve document .html => " << final_name << std::endl;
+		response().status(404);
+	} else {
+		// read to client
+		response().content_type("text/html");
 		response().out() << file.rdbuf();
 		// close file
 		file.close();

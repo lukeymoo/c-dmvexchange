@@ -1,12 +1,12 @@
 <% c++ #include "view.h" %>
-<% skin base %>
-<% view master uses content::session %>
+<% skin master %>
+<% view master uses dxtemplate::session %>
 
 
 <% template header() %>
 <div id='header-bar'>
 	<span id='header-menu-button'>&#9776;</span>
-	<% if (content.LOGGED_IN == true) %>
+	<% if LOGGED_IN %>
 		<a href='/'><span id='header-logo' class='logo-with-login'> DMV EXCHANGE </span></a>
 		<span id='beta-logo' class='beta-with-login'>*BETA</span>
 	<% else %>
@@ -18,7 +18,7 @@
 			<span class='header-menu-option'>Home</span>
 		</a>
 		<span class='header-menu-option'>Submit advice</span>
-		<% if (content.LOGGED_IN == true) %>
+		<% if LOGGED_IN %>
 			<a href="/account"><span class='header-menu-option'>Account</span></a>
 			<a href="/login/logout"><span class="header-menu-option">Logout</span></a>
 		<% else %>
@@ -28,9 +28,9 @@
 		<% end %>
 	</div>
 	<!-- Header controls -->
-	<% if (content.LOGGED_IN == true) %>
+	<% if LOGGED_IN %>
 		<div id='header-controls'>
-			<% if (content.PAGE == "CREATEPOST") %>
+			<% if PAGE_CREATEPOST %>
 				<span data-active='true' id='header-create-post-button' class='header-control-button'>Create Post</span>
 			<% else %>
 				<a href='/p/new'><span data-active='false' id='header-create-post-button' class='header-control-button'>Create Post</span></a>
@@ -43,7 +43,7 @@
 	<div id='header-controls'>
 		<span id='header-login-button' data-active='false' class='header-control-button' data-state='closed'>Log in</span>
 		<a href='/register'>
-			<% if (content.PAGE == "REGISTER") %>
+			<% if PAGE_REGISTER %>
 				<span data-active='true' class='header-control-button'>Register</span>
 			<% else %>
 				<span data-active='false' class='header-control-button'>Register</span>
@@ -53,7 +53,7 @@
 	<% end %>
 	<!-- End header controls -->
 	<!-- Login form -->
-	<% if (content.LOGGED_IN == false) %>
+	<% if not LOGGED_IN %>
 		<div id='header-login-container'>
 			<form id='header-login-form'>
 				<label>Username or email</label>
@@ -180,11 +180,11 @@
 <html>
 <head>
 	<title>DX &#8212; <%= TITLE %></title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" session="width=device-width, initial-scale=1">
 	<link rel='stylesheet' type='text/css' href='/css/main.css?v=1'>
 	<link rel='stylesheet' type='text/css' href='/css/normalize.css?v=1'>
 	<link rel='stylesheet' type='text/css' href='/css/common.css?v=1'>
-	<% if (content.PAGE == "REGISTER") %>
+	<% if PAGE_REGISTER %>
 		<link rel='stylesheet' type='text/css' href='/css/register.css?v=1'>
 	<% end %>
 </head>
@@ -192,12 +192,12 @@
 	<div id='wrapper'>
 		<% include header() %>
 		<div id='body-wrapper'>
-			<% if (content.PAGE == "HOME") %>
-				<% if (content.LOGGED_IN == true) %>
+			<% if PAGE_HOME %>
+				<% if LOGGED_IN %>
 					<% include create_post_form() %>
 				<% end %>
 			<% end %>
-			<% if (content.PAGE == "REGISTER") %>
+			<% if PAGE_REGISTER %>
 				<% include register_form() %>
 			<% end %>
 		</div>
@@ -205,13 +205,13 @@
 	<!-- JScripts -->
 	<script src='/js/jquery.min.js'></script>
 	<script src='/js/common.js'></script>
-	<% if (content.PAGE == "HOME") %>
+	<% if PAGE_HOME %>
 		<script src='/js/market.js'></script>
 	<% end %>
-	<% if (content.PAGE == "CREATEPOST") %>
+	<% if PAGE_CREATEPOST %>
 		<script src='/js/market.js'></script>
 	<% end %>
-	<% if (content.PAGE == "REGISTER") %>
+	<% if PAGE_REGISTER %>
 		<script src='/js/register.js'></script>
 	<% end %>
 </body>
