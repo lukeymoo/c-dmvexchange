@@ -98,6 +98,7 @@ $(function() {
 				$('#header-login-form-button').hide();
 				// Submit
 				tryLogin(function(res) {
+					console.log(res);
 					// If no errors, valid login
 					if(res.Error) {
 						isLoginSubmitted = false;
@@ -106,10 +107,14 @@ $(function() {
 						// Insert error after password field
 						evalError(res.Error, password.obj);
 					} else {
-						if(getParam('next')) {
-							window.location.href = getParam('next');
+						if(res.status == "DX-OK") {
+							if(getParam('next')) {
+								window.location.href = getParam('next');
+							} else {
+								window.location.href = '/';
+							}
 						} else {
-							window.location.href = '/';
+							createAlert("Unknown response", 'medium');
 						}
 					}
 				});
