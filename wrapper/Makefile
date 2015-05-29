@@ -16,7 +16,7 @@ all:
 	#
 	#
 	# Compile
-	$(CC) main.cpp $(SRC_CONTROLLER) $(TMPL_DEST) $(PARAMS) $(INCLUDES) -o main
+	$(CC) -std=c++11 main.cpp $(SRC_CONTROLLER) $(TMPL_DEST) $(PARAMS) $(INCLUDES) -o main
 
 run:
 	# Now running...

@@ -41,6 +41,33 @@ void DXServer::process_login() {
 			return;
 		}
 	}
+	int ID_TYPE = 0;
+	// is valid username ?
+	if(validUsername(request().post("u"))) {
+		ID_TYPE = ID_USERNAME;
+	} else {
+		// is valid email ?
+		if(validEmail(request().post("u"))) {
+			ID_TYPE = ID_EMAIL;
+		} else {
+			// bad username/email
+			cppcms::json::value jres;
+			jres["status"] = "DX-REJECTED";
+			jres["message"] = "u_invalid";
+			jres.save(response().out(), cppcms::json::compact);
+			return;
+		}
+	}
+	// is valid password
+	if(!validPassword(request().post("p"))) {
+		// bad password
+		cppcms::json::value jres;
+		jres["status"] = "DX-REJECTED";
+		jres["message"] = "P";
+		jres.save(response().out(), cppcms::json::compact);
+		return;
+	}
+	response().out() << "attempting login";
 	return;
 }
 
@@ -91,6 +118,39 @@ void DXServer::update_activity() {
 
 
 
+void DXServer::debug_page() {
+	if(!validUsername("lukeymoo@hotmail.com")) {
+		if(!validEmail("LUKEYMOO@hotmail.com")) {
+			response().out() << "Invalid username/email\n";
+			return;
+		} else {
+			// valid email
+			response().out() << "Valid email supplied\n";
+			return;
+		}
+	}
+	// valid username
+	response().out() << "Valid username supplied\n";
+	return;
+}
+
+
+
+/*
+
+function validateEmail(string) {
+	return (/^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(string)
+		&& string.length <= 64) ? true : false;
+}
+
+function validateUsername(string) {
+	return (/^[A-Za-z0-9_]+$/.test(string)
+		&& string.length >= 2
+		&& string.length <= 16) ? true : false;
+}
+
+
+*/
 
 
 
@@ -101,19 +161,109 @@ void DXServer::update_activity() {
 
 
 
+/** Helpers **/
+/*
 
+Username Allowed Characters
 
-/** Helper **/
+A-Z => 65 -> 90
+a-z => 97 -> 122
+0-9 => 48 -> 57
+_ 	=> 95 		( underscore character )
+
+*/
 bool DXServer::validUsername(std::string word) {
-	bool status = false;
-	return status;
+	int length = 0;
+	// lower case string
+	std::string lowercase = to_lowercase(word);
+	// iterate and test characters ( if i makes it through check its GOOD )
+	for(char &c : lowercase) {
+		// a-z ?
+		if(c >= 97 && c <= 122) {
+			++length;
+			continue;
+		} else {
+			// 0-9 ?
+			if(c >= 48 && c <= 57) {
+				++length;
+				continue;
+			} else {
+				// is it an underscore ?
+				if(c == 95) {
+					++length;
+					continue;
+				} else {
+					// No match == bad character
+					return false;
+				}
+			}
+		}
+	}
+	// if the length is below 2 or over 16 == bad username
+	if(length < 2 || length > 16) {
+		return false;
+	}
+	return true;
 }
 
+// fuck checking lol, just make sure no spaces and less than 65 characters
+// must only contain 1 `@` symbol & there must be at least 3 characters AFTER `@`
 bool DXServer::validEmail(std::string word) {
-	bool status = false;
-	return status;
+	int cafter = 0;
+	int numat = 0;
+	bool afterat = false;
+	// lower case string
+	std::string lowercase = to_lowercase(word);
+	// space checking
+	for(char &c : lowercase) {
+		if(afterat) {
+			++cafter;
+		}
+		if(c == '@') {
+			++numat;
+			afterat = true;
+		}
+		if(c == ' ') {
+			return false;
+		}
+	}
+	// `@` checker -> needs only 1
+	if(numat != 1) {
+		return false;
+	}
+	// ensure cafter >= 3
+	if(cafter < 3) {
+		return false;
+	}
+	// length check
+	if(lowercase.length() > 64) {
+		return false;
+	}
+	return true;
 }
 
+/**
+	Validate password
+	Must be 2-32 characters
+*/
+bool DXServer::validPassword(std::string word) {
+	if(word.length() < 2 || word.length() > 32) {
+		return false;
+	}
+	return true;
+}
+
+/**
+	Lowercase characters in string
+*/
+std::string DXServer::to_lowercase(std::string word) {
+	std::locale loc;
+	std::stringstream ss;
+	for(std::string::size_type i = 0; i < word.length(); i++) {
+		ss << std::tolower(word[i], loc);
+	}
+	return ss.str();
+}
 
 
 
@@ -130,6 +280,7 @@ void DXServer::static_otf(std::string filename) {
 	if(!file) {
 		std::cout << "Failed to server font .otf => " << final_name << std::endl;
 		response().status(404);
+		response().out() << "Server error 404 - file not found";
 	} else {
 		// prepare headers and write to client
 		response().content_type("application/font-sfnt");
@@ -151,6 +302,7 @@ void DXServer::static_ttf(std::string filename) {
 	if(!file) {
 		std::cout << "Failed to server font .ttf => " << final_name << std::endl;
 		response().status(404);
+		response().out() << "Server error 404 - file not found";
 	} else {
 		// prepare headers and write to client
 		response().content_type("application/x-font-tff");
@@ -173,6 +325,7 @@ void DXServer::static_js(std::string filename) {
 	if(!file) {
 		std::cout << "failed to server script .js => " << final_name << std::endl;
 		response().status(404);
+		response().out() << "Server error 404 - file not found";
 	} else {
 		// write to client
 		response().content_type("application/javascript");
@@ -195,7 +348,8 @@ void DXServer::static_css(std::string filename) {
 	// if failed to open file
 	if(!file) {
 		std::cout << "failed to serve stylesheet .css => " << final_name << std::endl;
-		response().status(404);		
+		response().status(404);
+		response().out() << "Server error 404 - file not found";
 	} else {
 		// read to client
 		response().content_type("text/css");
@@ -217,6 +371,7 @@ void DXServer::static_png(std::string filename) {
 	if(!file) {
 		std::cout << "failed to serve image .png => " << final_name << std::endl;
 		response().status(404);
+		response().out() << "Server error 404 - file not found";
 	} else {
 		// read to client
 		response().content_type("image/png");
@@ -236,6 +391,7 @@ void DXServer::static_bmp(std::string filename) {
 	if(!file) {
 		std::cout << "failed to serve image .bmp => " << final_name << std::endl;
 		response().status(404);
+		response().out() << "Server error 404 - file not found";
 	} else {
 		// read to client
 		response().content_type("image/bmp");
@@ -255,6 +411,7 @@ void DXServer::static_jpeg(std::string filename) {
 	if(!file) {
 		std::cout << "failed to serve image .jpeg => " << final_name << std::endl;
 		response().status(404);
+		response().out() << "Server error 404 - file not found";
 	} else {
 		// read to client
 		response().content_type("image/jpeg");
@@ -274,6 +431,7 @@ void DXServer::static_jpg(std::string filename) {
 	if(!file) {
 		std::cout << "failed to serve image .jpg => " << final_name << std::endl;
 		response().status(404);
+		response().out() << "Server error 404 - file not found";
 	} else {
 		// read to client
 		response().content_type("image/jpeg");
@@ -293,6 +451,7 @@ void DXServer::static_gif(std::string filename) {
 	if(!file) {
 		std::cout << "failed to serve image .gif => " << final_name << std::endl;
 		response().status(404);
+		response().out() << "Server error 404 - file not found";
 	} else {
 		// read to client
 		response().content_type("image/gif");
@@ -313,6 +472,7 @@ void DXServer::static_html(std::string filename) {
 	if(!file) {
 		std::cout << "failed to serve document .html => " << final_name << std::endl;
 		response().status(404);
+		response().out() << "Server error 404 - file not found";
 	} else {
 		// read to client
 		response().content_type("text/html");

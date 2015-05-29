@@ -9,11 +9,18 @@
 #include <cppcms/url_mapper.h>
 #include <cppcms/session_interface.h>
 #include <string>
+#include <locale>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <stdlib.h>
 #include "view.h"
+
+/**
+	Used to make it easier to label `u` field types for logins
+*/
+#define ID_USERNAME 	500
+#define ID_EMAIL		501
 
 class DXServer : public cppcms::application {
 	public:
@@ -44,9 +51,13 @@ class DXServer : public cppcms::application {
 			// css
 			dispatcher().assign("/css/([a-zA-Z_0-9\.]+\.css)", &DXServer::static_css, this, 1);
 			mapper().assign("css", "/css/{1}");
-			// html
-			dispatcher().assign("/h/([a-zA-Z_0-9\.]+\.html)", &DXServer::static_html, this, 1);
+
+			// ZIP | HTML
 			mapper().assign("h", "/h/{1}");
+				// html
+				dispatcher().assign("/h/([a-zA-Z_0-9\.]+\.html)", &DXServer::static_html, this, 1);
+				// zip
+				dispatcher().assign("/h/([a-zA-Z_0-9\.]+\.zip)", &DXServer::static_html, this, 1);
 
 			
 			// Index page
@@ -56,6 +67,9 @@ class DXServer : public cppcms::application {
 			// Register page
 			dispatcher().assign("/register", &DXServer::register_page, this);
 			mapper().assign("register", "/register");
+
+			// Debug page
+			dispatcher().assign("/debug", &DXServer::debug_page, this);
 
 			mapper().root("/");
 
@@ -70,6 +84,8 @@ class DXServer : public cppcms::application {
 		// Regex testers
 		bool validUsername(std::string word);
 		bool validEmail(std::string word);
+		bool validPassword(std::string word);
+		std::string to_lowercase(std::string word);
 
 		// index page
 		void index_page();
@@ -82,6 +98,9 @@ class DXServer : public cppcms::application {
 
 		// process login
 		void process_login();
+
+		// debugging
+		void debug_page();
 
 		// STATIC
 

@@ -92,7 +92,7 @@ $(function() {
 		clearLoginErrors();
 		if(!isLoginSubmitted) {
 			// If valid login form
-			if(validLoginForm()) {
+			if(!validLoginForm()) {
 				isLoginSubmitted = true;
 				// Hide submit button
 				$('#header-login-form-button').hide();
@@ -100,22 +100,18 @@ $(function() {
 				tryLogin(function(res) {
 					console.log(res);
 					// If no errors, valid login
-					if(res.Error) {
+					if(res.status == "DX-OK") {
+						if(getParam('next')) {
+							window.location.href = getParam('next');
+						} else {
+							window.location.href = '/';
+						}
+					} else {
 						isLoginSubmitted = false;
 						// Show login button
 						$('#header-login-form-button').show();
 						// Insert error after password field
-						evalError(res.Error, password.obj);
-					} else {
-						if(res.status == "DX-OK") {
-							if(getParam('next')) {
-								window.location.href = getParam('next');
-							} else {
-								window.location.href = '/';
-							}
-						} else {
-							createAlert("Unknown response", 'medium');
-						}
+						evalError(res.message, password.obj);
 					}
 				});
 			}
@@ -166,6 +162,7 @@ function getSessionState(callback) {
 			callback(res);
 		}
 	}).done(function(res) {
+		res = JSON.parse(res);
 		callback(res);
 	});
 }
@@ -206,6 +203,7 @@ function tryLogin(callback) {
 			callback(res);
 		}
 	}).done(function(res) {
+		res = JSON.parse(res);
 		callback(res);
 	});
 }
@@ -350,6 +348,10 @@ function evalError(errors, obj) {
 	for(var err in errArr) {
 		if(!stop) {
 			switch(errArr[err]) {
+				case "u_invalid": // cannot determine if username/email
+					humanReadable = "Not a valid username or email";
+					stop = true;
+					break;
 				case "U_invalid_login":
 					humanReadable = "Invalid username/password combo";
 					stop = true;
@@ -402,7 +404,7 @@ function validEmail(string) {
 
 /** Returns true/false if supplied string can be a valid password **/
 function validPassword(string) {
-	return (string.length > 2 && string.length < 32) ? true : false;
+	return (string.length >= 2 && string.length <= 32) ? true : false;
 }
 
 /** Creates a pop-up notification on users screen with specified message with notice type **/
