@@ -15,6 +15,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include "view.h"
+#include "user.h"
 
 /**
 	Used to make it easier to label `u` field types for logins
@@ -30,34 +31,34 @@ class DXServer : public cppcms::application {
 			// IMAGES
 			mapper().assign("img", "/img/{1}");
 				// img - png
-				dispatcher().assign("/img/([a-zA-Z_0-9\-\.]+\.png)", &DXServer::static_png, this, 1);
+				dispatcher().assign("/img/([a-zA-Z_0-9\\-\\.]+\\.png)", &DXServer::static_png, this, 1);
 				// img - bmp
-				dispatcher().assign("/img/([a-zA-Z_0-9\-\.]+\.bmp)", &DXServer::static_bmp, this, 1);
+				dispatcher().assign("/img/([a-zA-Z_0-9\\-\\.]+\\.bmp)", &DXServer::static_bmp, this, 1);
 				// img - jpeg
-				dispatcher().assign("/img/([a-zA-Z_0-9\-\.]+\.jpeg)", &DXServer::static_jpg, this, 1);
+				dispatcher().assign("/img/([a-zA-Z_0-9\\-\\.]+\\.jpeg)", &DXServer::static_jpg, this, 1);
 				// img - jpg
-				dispatcher().assign("/img/([a-zA-Z_0-9\-\.]+\.jpg)", &DXServer::static_jpeg, this, 1);
+				dispatcher().assign("/img/([a-zA-Z_0-9\\-\\.]+\\.jpg)", &DXServer::static_jpeg, this, 1);
 				// img - gif
-				dispatcher().assign("/img/([a-zA-Z_0-9\-\.]+\.gif)", &DXServer::static_gif, this, 1);
+				dispatcher().assign("/img/([a-zA-Z_0-9\\-\\.]+\\.gif)", &DXServer::static_gif, this, 1);
 			// FONTS
 			mapper().assign("font", "/font/{1}");
 				// font - otf
-				dispatcher().assign("/font/([a-zA-Z_0-9\-\.]+\.otf)", &DXServer::static_otf, this, 1);
+				dispatcher().assign("/font/([a-zA-Z_0-9\\-\\.]+\\.otf)", &DXServer::static_otf, this, 1);
 				// font - ttf
-				dispatcher().assign("/font/([a-zA-Z_0-9\-\.]+\.ttf)", &DXServer::static_ttf, this, 1);
+				dispatcher().assign("/font/([a-zA-Z_0-9\\-\\.]+\\.ttf)", &DXServer::static_ttf, this, 1);
 			// js
-			dispatcher().assign("/js/([a-zA-Z_0-9\.]+\.js)", &DXServer::static_js, this, 1);
+			dispatcher().assign("/js/([a-zA-Z_0-9\\.]+\\.js)", &DXServer::static_js, this, 1);
 			mapper().assign("js", "/js/{1}");
 			// css
-			dispatcher().assign("/css/([a-zA-Z_0-9\.]+\.css)", &DXServer::static_css, this, 1);
+			dispatcher().assign("/css/([a-zA-Z_0-9\\.]+\\.css)", &DXServer::static_css, this, 1);
 			mapper().assign("css", "/css/{1}");
 
 			// ZIP | HTML
 			mapper().assign("h", "/h/{1}");
 				// html
-				dispatcher().assign("/h/([a-zA-Z_0-9\.]+\.html)", &DXServer::static_html, this, 1);
+				dispatcher().assign("/h/([a-zA-Z_0-9\\.]+\\.html)", &DXServer::static_html, this, 1);
 				// zip
-				dispatcher().assign("/h/([a-zA-Z_0-9\.]+\.zip)", &DXServer::static_html, this, 1);
+				dispatcher().assign("/h/([a-zA-Z_0-9\\.]+\\.zip)", &DXServer::static_html, this, 1);
 
 			
 			// Index page
@@ -68,7 +69,10 @@ class DXServer : public cppcms::application {
 			dispatcher().assign("/register", &DXServer::register_page, this);
 			mapper().assign("register", "/register");
 
-			// Debug page
+			// DEBUGGING
+			// session debug
+			dispatcher().assign("/debug_session", &DXServer::debug_session, this);
+			// regular debug
 			dispatcher().assign("/debug", &DXServer::debug_page, this);
 
 			mapper().root("/");
@@ -76,6 +80,9 @@ class DXServer : public cppcms::application {
 			// Process register function
 			// Process login function
 			dispatcher().assign("/login/process", &DXServer::process_login, this);
+
+			// Logout
+			dispatcher().assign("/logout", &DXServer::logout, this);
 			
 			// Get Session state
 			dispatcher().assign("/api/session/state", &DXServer::json_session, this);
@@ -98,8 +105,10 @@ class DXServer : public cppcms::application {
 
 		// process login
 		void process_login();
+		void logout();
 
 		// debugging
+		void debug_session();
 		void debug_page();
 
 		// STATIC

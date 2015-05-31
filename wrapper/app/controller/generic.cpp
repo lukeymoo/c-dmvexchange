@@ -1,3 +1,23 @@
+/*
+
+
+TIP FROM QUORA USER
+---------------------
+1. Get a list of potential customers
+2. Developma message
+3. Create a catalogue
+4 Start calling, emailing
+5. Get perdonal visits
+6. Sell, sell, sell
+7. Talk to as many cuetomers as you can . Make your presentation and listen to them,mto see what they need
+8. Tweak your speaxh with the following customers until you get it right.
+
+
+*/
+
+
+
+
 #include "generic.h"
 #include "view.h"
 #include "user.h"
@@ -9,10 +29,13 @@ void DXServer::index_page() {
 		response().out() << "http GET is only method allowed on this page";
 		return;
 	}
-	dxtemplate::session c;
+	session().load();
+	dxtemplate::context c;
+
+	// make sure all context variables exist
+	c.resolve_session(session());
+
 	c.set_page("HOME");
-	c.LOGGED_IN = false;
-	c.USERNAME = "";
 	render("master", c);
 	return;
 }
@@ -24,16 +47,27 @@ void DXServer::register_page() {
 		response().out() << "http GET is only method allowed on this page";
 		return;
 	}
-	dxtemplate::session c;
-
+	session().load();
+	dxtemplate::context c;
+	c.resolve_session(session());
+	if(c.is_logged_in(session())) {
+		response().status(302);
+		response().set_header("Location", "/");
+		return;
+	}
 	c.set_page("REGISTER");
-	c.LOGGED_IN = false;
-	c.USERNAME = "";
 	render("master", c);
 	return;
 }
 
 void DXServer::process_login() {
+	// accept only POST requests
+	if(request().request_method().compare("POST") != 0) {
+		response().status(404);
+		response().out() << "http POST is only method allowed on this page";
+		return;
+	}
+	session().load();
 	// Make sure the user is not already logged in
 	if(session().is_set("LOGGED_IN")) {
 		if(session()["LOGGED_IN"].compare("true") == 0) {
@@ -42,6 +76,8 @@ void DXServer::process_login() {
 		}
 	}
 	int ID_TYPE = 0;
+	if(ID_TYPE == 0) {
+	}
 	// is valid username ?
 	if(validUsername(request().post("u"))) {
 		ID_TYPE = ID_USERNAME;
@@ -67,7 +103,11 @@ void DXServer::process_login() {
 		jres.save(response().out(), cppcms::json::compact);
 		return;
 	}
-	response().out() << "attempting login";
+	// query server to determine if user exists
+	cppcms::json::value jres;
+	jres["status"] = "DX-FAILED";
+	jres["message"] = "server backend is under construction";
+	jres.save(response().out(), cppcms::json::compact);
 	return;
 }
 
@@ -80,32 +120,27 @@ void DXServer::json_session() {
 		response().out() << "http GET is only method allowed on this page";
 		return;
 	}
+	session().load();
+	dxtemplate::context c;
+	c.resolve_session(session());
 
-	cppcms::json::value state;
+	cppcms::json::value jres;
+	jres["LOGGED_IN"] = c.LOGGED_IN;
+	jres["USERNAME"] = c.USERNAME;
+	jres.save(response().out(), cppcms::json::compact);
+	return;
+}
 
-	if(session().is_set("LOGGED_IN")) {
-		if(!session()["LOGGED_IN"].empty()) {
-			state["LOGGED_IN"] = session()["LOGGED_IN"];
-			state["USERNAME"] = session()["USERNAME"];
-			// Update last activity
-			update_activity();
-		} else {
-			clear_session();
-			state["LOGGED_IN"] = false;
-			state["USERNAME"] = "";
-		}
-	} else {
-		clear_session();
-		state["LOGGED_IN"] = false;
-		state["USERNAME"] = "";
-	}
-
-	response().out() << state;
+void DXServer::logout() {
+	clear_session();
+	response().status(302);
+	response().set_header("Location", "/");
 	return;
 }
 
 void DXServer::clear_session() {
-	session().set("LOGGED_IN", false);
+	session().load();
+	session().set("LOGGED_IN", "false");
 	session().set("USERNAME", "");
 	session().set("USER_ID", "");
 	session().set("LAST_ACTIVITY", 0);
@@ -117,20 +152,20 @@ void DXServer::update_activity() {
 }
 
 
+void DXServer::debug_session() {
+	session().load();
+	dxtemplate::context c;
+	c.resolve_session(session());
+	cppcms::json::value jres;
+	jres["LOGGED_IN"] = c.LOGGED_IN;
+	jres["USERNAME"] = c.USERNAME;
+	jres.save(std::cout, cppcms::json::readable);
+	response().out() << "check console";
+	return;
+}
 
 void DXServer::debug_page() {
-	if(!validUsername("lukeymoo@hotmail.com")) {
-		if(!validEmail("LUKEYMOO@hotmail.com")) {
-			response().out() << "Invalid username/email\n";
-			return;
-		} else {
-			// valid email
-			response().out() << "Valid email supplied\n";
-			return;
-		}
-	}
-	// valid username
-	response().out() << "Valid username supplied\n";
+	response().out() << "Nothing to debug!";
 	return;
 }
 

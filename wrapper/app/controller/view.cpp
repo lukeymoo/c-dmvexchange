@@ -2,60 +2,70 @@
 
 
 // constuctor -> Sets default values for a session
-dxtemplate::session::session() {
+dxtemplate::context::context() {
 	TITLE = "Home";
 	
 	PAGE = "HOME";
-	PAGE_HOME = true;
-	PAGE_REGISTER = false;
-	PAGE_CREATEPOST = false;
 
-	LOGGED_IN = false;
+	LOGGED_IN = "false";
 	LAST_ACTIVITY = 0;
 	USERNAME = "";
 	return;
 }
 
-dxtemplate::session::~session() {
+dxtemplate::context::~context() {
 	return;
 }
 
-void dxtemplate::session::set_page(std::string type) {
-	reset_page();
-	if(type.compare("HOME") == 0) {
+void dxtemplate::context::set_page(std::string page_id) {
+	PAGE = page_id;
+	if(PAGE.compare("HOME") == 0) {
 		TITLE = "Home";
-		PAGE = "HOME";
-		PAGE_HOME = true;
 	}
-	if(type.compare("REGISTER") == 0) {
+	if(PAGE.compare("REGISTER") == 0) {
 		TITLE = "Register";
-		PAGE = "REGISTER";
-		PAGE_REGISTER = true;
 	}
-	if(type.compare("CREATEPOST") == 0) {
+	if(PAGE.compare("CREATEPOST") == 0) {
 		TITLE = "Create Post";
-		PAGE = "CREATEPOST";
-		PAGE_CREATEPOST = true;
 	}
 	return;
 }
 
-void dxtemplate::session::reset_page() {
-	PAGE = "HOME";
-	PAGE_HOME = true;
-	PAGE_REGISTER = false;
-	PAGE_CREATEPOST = false;
-	return;
-}
-
-std::string dxtemplate::session::get_title() {
+std::string dxtemplate::context::get_title() {
 	return TITLE;
 }
 
-bool dxtemplate::session::is_logged_in() {
-	return LOGGED_IN;
+bool dxtemplate::context::is_logged_in(cppcms::session_interface &interface) {
+	// check if session is set
+	if(!interface.is_set("LOGGED_IN")) {
+		interface.set("LOGGED_IN", "false");
+		interface.set("USERNAME", "");
+		interface.save();
+		return false;
+	}
+
+	// check if true/false
+	if(interface.get("LOGGED_IN").compare("true") == 0) {
+		return true;
+	} else {
+		return false;
+	}
+	return false;
 }
 
-bool dxtemplate::session::eval_logged_in() {
+bool dxtemplate::context::eval_logged_in() {
 	return false;
+}
+
+void dxtemplate::context::resolve_session(cppcms::session_interface &interface) {
+	// if logged in
+	if(is_logged_in(interface)) {
+		// check if timeout
+		LOGGED_IN = "true";
+		USERNAME = interface.get("USERNAME");
+	} else { // not logged set empty context variables
+		LOGGED_IN = "false";
+		USERNAME = "";
+	}
+	return;
 }

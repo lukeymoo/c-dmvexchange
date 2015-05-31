@@ -11,12 +11,29 @@ OBJ					= objects/main.o objects/generic.o objects/view.o objects/static.o objec
 
 
 all:
-	# Generate template source
+	# TIP FROM QUORA USER
+	# ---------------------
+	# 1. Get a list of potential customers
+	# 2. Develop a message
+	# 3. Create a catalogue
+	# 4. Start calling, emailing
+	# 5. Get personal visits
+	# 6. Sell, sell, sell
+	# 7. Talk to as many customers as you can . Make your presentation and listen to them to see what they need
+	# 8. Tweak your speech with the following customers until you get it right.
+	# 
+	@echo
+	# Generating template source
+	@echo
 	cppcms_tmpl_cc $(PRE_SRC_TMPL) -o $(TMPL_DEST)
-	#
-	#
-	# Compile
-	$(CC) -std=c++11 main.cpp $(SRC_CONTROLLER) $(TMPL_DEST) $(PARAMS) $(INCLUDES) -o main
+	@echo
+	# Compiling...
+	@echo
+	$(CC) -std=c++11 main.cpp $(SRC_CONTROLLER) $(TMPL_DEST) \
+		$(PARAMS) $(INCLUDES) -o main
+	@echo
+	 
+	 
 
 run:
 	# Now running...

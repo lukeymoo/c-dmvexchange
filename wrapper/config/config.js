@@ -6,7 +6,7 @@
 	"session": {
 		"location": "client",
 		"expire": "renew",
-		"timeout": 5,
+		"timeout": 3600,
 		"client": {
 			"hmac": "sha1",
 			"hmac_key": "8e5e93c4f1e5ff719a0ef3a35af3cd55"

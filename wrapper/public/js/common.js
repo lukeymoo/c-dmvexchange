@@ -92,7 +92,7 @@ $(function() {
 		clearLoginErrors();
 		if(!isLoginSubmitted) {
 			// If valid login form
-			if(!validLoginForm()) {
+			if(validLoginForm()) {
 				isLoginSubmitted = true;
 				// Hide submit button
 				$('#header-login-form-button').hide();

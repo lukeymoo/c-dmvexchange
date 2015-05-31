@@ -7,9 +7,9 @@ namespace master {
 	#line 3 "app/tmpl_src/layout/layout.tmpl"
 	{
 	#line 3 "app/tmpl_src/layout/layout.tmpl"
-		dxtemplate::session &content;
+		dxtemplate::context &content;
 	#line 3 "app/tmpl_src/layout/layout.tmpl"
-		master(std::ostream &_s,dxtemplate::session &_content): cppcms::base_view(_s),content(_content)
+		master(std::ostream &_s,dxtemplate::context &_content): cppcms::base_view(_s),content(_content)
 	#line 3 "app/tmpl_src/layout/layout.tmpl"
 		{
 	#line 3 "app/tmpl_src/layout/layout.tmpl"
@@ -22,7 +22,7 @@ namespace master {
 				"\t<span id='header-menu-button'>&#9776;</span>\n"
 				"\t";
 			#line 9 "app/tmpl_src/layout/layout.tmpl"
-			if(content.LOGGED_IN) {
+			if(content.LOGGED_IN == "true") {
 				#line 12 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<a href='/'><span id='header-logo' class='logo-with-login'> DMV EXCHANGE </span></a>\n"
@@ -46,11 +46,11 @@ namespace master {
 				"\t\t<span class='header-menu-option'>Submit advice</span>\n"
 				"\t\t";
 			#line 21 "app/tmpl_src/layout/layout.tmpl"
-			if(content.LOGGED_IN) {
+			if(content.LOGGED_IN == "true") {
 				#line 24 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t<a href=\"/account\"><span class='header-menu-option'>Account</span></a>\n"
-					"\t\t\t<a href=\"/login/logout\"><span class=\"header-menu-option\">Logout</span></a>\n"
+					"\t\t\t<a href=\"/logout\"><span class=\"header-menu-option\">Logout</span></a>\n"
 					"\t\t";
 			#line 24 "app/tmpl_src/layout/layout.tmpl"
 			}else{
@@ -68,13 +68,13 @@ namespace master {
 				"\t<!-- Header controls -->\n"
 				"\t";
 			#line 31 "app/tmpl_src/layout/layout.tmpl"
-			if(content.LOGGED_IN) {
+			if(content.LOGGED_IN == "true") {
 				#line 33 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<div id='header-controls'>\n"
 					"\t\t\t";
 				#line 33 "app/tmpl_src/layout/layout.tmpl"
-				if(content.PAGE_CREATEPOST) {
+				if(content.PAGE == "CREATEPOST") {
 					#line 35 "app/tmpl_src/layout/layout.tmpl"
 					out()<<"\n"
 						"\t\t\t\t<span data-active='true' id='header-create-post-button' class='header-control-button'>Create Post</span>\n"
@@ -107,7 +107,7 @@ namespace master {
 					"\t\t<a href='/register'>\n"
 					"\t\t\t";
 				#line 46 "app/tmpl_src/layout/layout.tmpl"
-				if(content.PAGE_REGISTER) {
+				if(content.PAGE == "REGISTER") {
 					#line 48 "app/tmpl_src/layout/layout.tmpl"
 					out()<<"\n"
 						"\t\t\t\t<span data-active='true' class='header-control-button'>Register</span>\n"
@@ -133,7 +133,7 @@ namespace master {
 				"\t<!-- Login form -->\n"
 				"\t";
 			#line 56 "app/tmpl_src/layout/layout.tmpl"
-			if(!(content.LOGGED_IN)) {
+			if(content.LOGGED_IN == "false") {
 				#line 66 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<div id='header-login-container'>\n"
@@ -280,7 +280,7 @@ namespace master {
 				"\t<link rel='stylesheet' type='text/css' href='/css/common.css?v=1'>\n"
 				"\t";
 			#line 187 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE_REGISTER) {
+			if(content.PAGE == "REGISTER") {
 				#line 189 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<link rel='stylesheet' type='text/css' href='/css/register.css?v=1'>\n"
@@ -300,12 +300,12 @@ namespace master {
 				"\t\t<div id='body-wrapper'>\n"
 				"\t\t\t";
 			#line 195 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE_HOME) {
+			if(content.PAGE == "HOME") {
 				#line 196 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t";
 				#line 196 "app/tmpl_src/layout/layout.tmpl"
-				if(content.LOGGED_IN) {
+				if(content.LOGGED_IN == "true") {
 					#line 197 "app/tmpl_src/layout/layout.tmpl"
 					out()<<"\n"
 						"\t\t\t\t\t";
@@ -325,7 +325,7 @@ namespace master {
 			out()<<"\n"
 				"\t\t\t";
 			#line 200 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE_REGISTER) {
+			if(content.PAGE == "REGISTER") {
 				#line 201 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t";
@@ -345,7 +345,7 @@ namespace master {
 				"\t<script src='/js/common.js'></script>\n"
 				"\t";
 			#line 208 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE_HOME) {
+			if(content.PAGE == "HOME") {
 				#line 210 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<script src='/js/market.js'></script>\n"
@@ -356,7 +356,7 @@ namespace master {
 			out()<<"\n"
 				"\t";
 			#line 211 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE_CREATEPOST) {
+			if(content.PAGE == "CREATEPOST") {
 				#line 213 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<script src='/js/market.js'></script>\n"
@@ -367,7 +367,7 @@ namespace master {
 			out()<<"\n"
 				"\t";
 			#line 214 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE_REGISTER) {
+			if(content.PAGE == "REGISTER") {
 				#line 216 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<script src='/js/register.js'></script>\n"
@@ -396,7 +396,7 @@ namespace {
 #line 222 "app/tmpl_src/layout/layout.tmpl"
    my_generator.name("master");
 #line 222 "app/tmpl_src/layout/layout.tmpl"
-   my_generator.add_view<master::master,dxtemplate::session>("master",true);
+   my_generator.add_view<master::master,dxtemplate::context>("master",true);
 #line 222 "app/tmpl_src/layout/layout.tmpl"
     cppcms::views::pool::instance().add(my_generator);
 #line 222 "app/tmpl_src/layout/layout.tmpl"
