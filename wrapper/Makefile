@@ -1,11 +1,11 @@
 CC 					= g++
 SRC_DIR 			= app/controller
-SRC_CONTROLLER 		= $(SRC_DIR)/generic.cpp $(SRC_DIR)/view.cpp
+SRC_CONTROLLER 		= $(SRC_DIR)/generic.cpp $(SRC_DIR)/view.cpp $(SRC_DIR)/database.cpp
 SRC_MODELS 			= $(SRC_DIR)/models/user/user.cpp
 PRE_SRC_TMPL		= app/tmpl_src/layout/layout.tmpl
 TMPL_DEST 			= tmpl_build/layout.cpp
 BUILD_TMPL_DIR 		= tmpl_build
-PARAMS 				= -Wall -lcppcms -lbooster
+PARAMS 				= -Wall -lcppcms -lbooster -lpqxx -lpq
 INCLUDES 			= -Iapp/controller/headers -Iapp/models/headers
 OBJ					= objects/main.o objects/generic.o objects/view.o objects/static.o objects/layout.o  
 

@@ -1,4 +1,4 @@
-#include "generic.h" // contains core files
+#include "generic.hpp" // contains core files
 
 int main(int argc, char **argv) {
 	/**

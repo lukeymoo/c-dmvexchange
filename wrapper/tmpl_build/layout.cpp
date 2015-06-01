@@ -1,5 +1,5 @@
 #line 1 "app/tmpl_src/layout/layout.tmpl"
-#include "view.h" 
+#include "view.hpp" 
 #line 2 "app/tmpl_src/layout/layout.tmpl"
 namespace master {
 	#line 3 "app/tmpl_src/layout/layout.tmpl"

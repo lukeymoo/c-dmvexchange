@@ -110,8 +110,13 @@ $(function() {
 						isLoginSubmitted = false;
 						// Show login button
 						$('#header-login-form-button').show();
-						// Insert error after password field
-						evalError(res.message, password.obj);
+						// DX-REJECTED ?
+						if(res.status == 'DX-REJECTED') {
+							// Insert error after password field
+							evalError(res.message, password.obj);
+						} else if(res.status == 'DX-FAILED') {
+							createAlert(res.message, 'medium');
+						}
 					}
 				});
 			}

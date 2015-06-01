@@ -1,4 +1,4 @@
-#include "view.h"
+#include "view.hpp"
 
 
 // constuctor -> Sets default values for a session
@@ -10,6 +10,8 @@ dxtemplate::context::context() {
 	LOGGED_IN = "false";
 	LAST_ACTIVITY = 0;
 	USERNAME = "";
+	EMAIL = "";
+	USER_ID = "";
 	return;
 }
 
@@ -40,12 +42,15 @@ bool dxtemplate::context::is_logged_in(cppcms::session_interface &interface) {
 	if(!interface.is_set("LOGGED_IN")) {
 		interface.set("LOGGED_IN", "false");
 		interface.set("USERNAME", "");
+		interface.set("EMAIL", "");
+		interface.set("USER_ID", "");
+		interface.set("LAST_ACTIVITY", 0);
 		interface.save();
 		return false;
 	}
 
 	// check if true/false
-	if(interface.get("LOGGED_IN").compare("true") == 0) {
+	if(interface.get("LOGGED_IN") == "true") {
 		return true;
 	} else {
 		return false;
@@ -53,6 +58,7 @@ bool dxtemplate::context::is_logged_in(cppcms::session_interface &interface) {
 	return false;
 }
 
+// check if last_activity is > 3600
 bool dxtemplate::context::eval_logged_in() {
 	return false;
 }
@@ -63,9 +69,15 @@ void dxtemplate::context::resolve_session(cppcms::session_interface &interface) 
 		// check if timeout
 		LOGGED_IN = "true";
 		USERNAME = interface.get("USERNAME");
+		EMAIL = interface.get("EMAIL");
+		USER_ID = interface.get("USER_ID");
+		LAST_ACTIVITY = interface.get<int>("LAST_ACTIVITY");
 	} else { // not logged set empty context variables
 		LOGGED_IN = "false";
 		USERNAME = "";
+		EMAIL = "";
+		USER_ID = "";
+		LAST_ACTIVITY = 0;
 	}
 	return;
 }
