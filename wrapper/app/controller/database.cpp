@@ -1,7 +1,7 @@
 #include "database.hpp"
 
 Database::~Database() {
-	std::cout << std::endl << "Disconnecting from server" << std::endl;
+	std::cout << std::endl << "[+] Disconnecting from database" << std::endl;
 	conn.disconnect();
 	return;
 }
@@ -57,6 +57,14 @@ bool Database::email_exist(pqxx::connection *c, std::string email) {
 	return false;
 }
 
+// is username + password a valid login
+static bool username_login(pqxx::connection *c, std::string username, std::string password) {
+}
+
+// is email + password a valid login
+static bool email_login(pqxx::connection *c, std::string email, std::string password) {
+}
+
 /*
 	Field Name 		DATA TYPE 		Other Specs
 	~~~~~~~~~~ 	 	~~~~~~~~~ 		~~~~~~~~~~~
@@ -73,12 +81,13 @@ bool Database::email_exist(pqxx::connection *c, std::string email) {
 bool Database::create_user_table(pqxx::connection *c) {
 	pqxx::work worker(*c);
 	// prepare query
-	std::string query = "CREATE TABLE dmv_users_t (id INT, firstname VARCHAR(32), lastname VARCHAR(32), username VARCHAR(16), email VARCHAR(64), password VARCHAR(32), token VARCHAR(32), zipcode VARCHAR(5), timestamp INT, PRIMARY KEY(id, username, email))";
+	std::string query = "CREATE TABLE dmv_users_t (id INT, firstname VARCHAR(32) NOT NULL, lastname VARCHAR(32) NOT NULL, username VARCHAR(16) UNIQUE NOT NULL, email VARCHAR(64) UNIQUE NOT NULL, password VARCHAR(32) NOT NULL, token VARCHAR(32) NOT NULL, zipcode INT NOT NULL, timestamp INT NOT NULL, PRIMARY KEY(id))";
 	try {
 		// execute query
-		pqxx:result result = worker.exec(query.c_str());
+		pqxx::result result = worker.exec(query.c_str());
+		worker.commit();
 	} catch(std::exception &e) {
 		throw; // bubble exception up
 	}
-	return false;
+	return true;
 }

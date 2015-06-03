@@ -191,7 +191,7 @@ void DXServer::debug_session() {
 }
 
 void DXServer::debug_page() {
-	response().out() << "Timestamp => " << std::time(0);
+	response().out() << "UNIX Epoch => " << std::time(0);
 	return;
 }
 

@@ -1,11 +1,14 @@
 SRC_C = app/controller
+CTRL_CPP = $(SRC_C)/generic.cpp $(SRC_C)/view.cpp $(SRC_C)/database.cpp
+CTRL_HPP = $(C_H)/generic.hpp $(C_H)/view.hpp $(C_H)/database.hpp
 SRC_M = app/models
 SRC_T = tmpl_build
 C_H = $(SRC_C)/headers
 M_H = $(SRC_M)/headers
 INC = -I$(C_H) -I$(M_H)
 OBJ_DIR = objects
-FLAGS = -std=c++11 -Wall -lcppcms -lbooster -lpqxx -lpq
+OBJ = $(OBJ_DIR)/main.o $(OBJ_DIR)/generic.o $(OBJ_DIR)/view.o $(OBJ_DIR)/database.o
+FLAGS = -std=c++11 -O3 -Wall -lcppcms -lbooster -lpqxx -lpq
 
 all: main run
 
@@ -16,35 +19,35 @@ main: $(OBJ_DIR)/main.o $(OBJ_DIR)/generic.o $(OBJ_DIR)/view.o $(OBJ_DIR)/databa
 	g++ $(INC) $(FLAGS) \
 		objects/main.o objects/generic.o objects/view.o objects/database.o objects/user.o objects/layout.o -o main
 
-$(OBJ_DIR)/main.o: main.cpp $(C_H)/generic.hpp
+$(OBJ_DIR)/main.o: main.cpp $(SRC_C)/generic.cpp $(C_H)/generic.hpp
 	@echo
 	# main.cpp
 	@echo
 	g++ $(INC) $(FLAGS) \
 		-c main.cpp -o objects/main.o
 
-$(OBJ_DIR)/generic.o: $(SRC_C)/generic.cpp $(C_H)/view.hpp $(M_H)/user.hpp $(C_H)/database.hpp
+$(OBJ_DIR)/generic.o: $(SRC_C)/database.cpp $(C_H)/database.hpp $(SRC_M)/user.cpp $(M_H)/user.hpp $(SRC_C)/view.cpp $(C_H)/view.hpp $(SRC_C)/generic.cpp $(C_H)/generic.hpp
 	@echo
 	# Generic.cpp
 	@echo
 	g++ $(INC) $(FLAGS) \
 		-c $(SRC_C)/generic.cpp -o objects/generic.o
 
-$(OBJ_DIR)/view.o: $(SRC_C)/view.cpp
+$(OBJ_DIR)/view.o: $(SRC_C)/view.cpp $(C_H)/view.hpp
 	@echo
 	# View.cpp
 	@echo
 	g++ $(INC) $(FLAGS) \
 		-c $(SRC_C)/view.cpp -o objects/view.o
 
-$(OBJ_DIR)/database.o: $(SRC_C)/database.cpp
+$(OBJ_DIR)/database.o: $(SRC_C)/database.cpp $(C_H)/database.hpp
 	@echo
 	# Database.cpp
 	@echo
 	g++ $(INC) $(FLAGS) \
 		-c $(SRC_C)/database.cpp -o objects/database.o
 
-$(OBJ_DIR)/user.o: $(SRC_M)/user.cpp
+$(OBJ_DIR)/user.o: $(SRC_M)/user.cpp $(M_H)/user.hpp
 	@echo
 	# User.cpp
 	@echo
