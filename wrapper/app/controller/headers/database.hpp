@@ -2,6 +2,7 @@
 #define __DATABASE_H__
 
 #include <iostream>
+#include <cstdlib>
 #include <pqxx/pqxx>
 
 class Database {
@@ -23,7 +24,17 @@ class Database {
 		}
 		~Database();
 
-		static bool doesTableExist(const char *table_name);
+		// does table exist
+		static bool table_exist(pqxx::connection *c, std::string table_name);
+
+		// does username exist
+		static bool username_exist(pqxx::connection *c, std::string username);
+
+		// does email exist
+		static bool email_exist(pqxx::connection *c, std::string email);
+
+		// create user table
+		static bool create_user_table(pqxx::connection *c);
 
 		pqxx::connection conn;
 };

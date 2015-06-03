@@ -11,10 +11,11 @@
 #include <string>
 #include <locale>
 #include <stdlib.h>
+#include <ctime>
 #include "view.hpp"
-//#include "static.h" . - Not used
 #include "user.hpp"
 #include "database.hpp"
+//#include "static.h" . - Not used
 
 /**
 	Used to make it easier to label `u` field types for logins

@@ -191,7 +191,7 @@ void DXServer::debug_session() {
 }
 
 void DXServer::debug_page() {
-	response().out() << "Nothing to debug!";
+	response().out() << "Timestamp => " << std::time(0);
 	return;
 }
 

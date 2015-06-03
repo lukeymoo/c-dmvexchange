@@ -30,9 +30,6 @@ class UserModel {
 		// Not used currently <- will be collected at later date
 		int age;
 
-		// Save user
-		static int save(UserModel model);
-
 };
 
 #endif
