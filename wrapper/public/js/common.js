@@ -353,6 +353,10 @@ function evalError(errors, obj) {
 	for(var err in errArr) {
 		if(!stop) {
 			switch(errArr[err]) {
+				case "logged_in":
+					humanReadable = "Already logged in";
+					stop = true;
+					break;
 				case "u_invalid": // cannot determine if username/email
 					humanReadable = "Not a valid username or email";
 					stop = true;

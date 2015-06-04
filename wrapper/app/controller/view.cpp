@@ -1,7 +1,8 @@
 #include "view.hpp"
 
-
-// constuctor -> Sets default values for a session
+/*
+	Sets default values for a session -> Non-authenticated user on Home page
+*/
 dxtemplate::context::context() {
 	TITLE = "Home";
 	
@@ -15,10 +16,16 @@ dxtemplate::context::context() {
 	return;
 }
 
+/*
+	@FUNCTION - Destructor, does nothing
+*/
 dxtemplate::context::~context() {
 	return;
 }
 
+/*
+	@FUNCTION - Sets context to match specified page
+*/
 void dxtemplate::context::set_page(std::string page_id) {
 	PAGE = page_id;
 	if(PAGE.compare("HOME") == 0) {
@@ -33,10 +40,16 @@ void dxtemplate::context::set_page(std::string page_id) {
 	return;
 }
 
+/*
+	@FUNCTION - Retreives and returns title of current page
+*/
 std::string dxtemplate::context::get_title() {
 	return TITLE;
 }
 
+/*
+	@FUNCTION - Checks if the user is currently logged in
+*/
 bool dxtemplate::context::is_logged_in(cppcms::session_interface &interface) {
 	// check if session is set
 	if(!interface.is_set("LOGGED_IN")) {
@@ -58,11 +71,17 @@ bool dxtemplate::context::is_logged_in(cppcms::session_interface &interface) {
 	return false;
 }
 
-// check if last_activity is > 3600
+/*
+	@FUNCTION -
+		Determine if session LAST_ACTIVITY has exceeded max timeout limit ( 3600 seconds | 1 hour )
+*/
 bool dxtemplate::context::eval_logged_in() {
 	return false;
 }
 
+/*
+	@FUNCTION - Retrieves session values and places them in context for page rendering
+*/
 void dxtemplate::context::resolve_session(cppcms::session_interface &interface) {
 	// if logged in
 	if(is_logged_in(interface)) {

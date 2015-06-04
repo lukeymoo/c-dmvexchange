@@ -8,102 +8,71 @@ UserModel::~UserModel() {
   return;
 }
 
-/** Helpers **/
 /*
-
-Username Allowed Characters
-
-A-Z => 65 -> 90
-a-z => 97 -> 122
-0-9 => 48 -> 57
-_ 	=> 95 		( underscore character )
-
+	@FUNCTION - Determines if specified string can be a valid name
+	@SPECS - Regex, 2-32 characters
+	@RETURNS - TRUE/FALSE
 */
-bool UserModel::validUsername(std::string word) {
-	int length = 0;
-	// lower case string
-	std::string lowercase = to_lowercase(word);
-	// iterate and test characters ( if i makes it through check its GOOD )
-	for(char &c : lowercase) {
-		// a-z ?
-		if(c >= 97 && c <= 122) {
-			++length;
-			continue;
-		} else {
-			// 0-9 ?
-			if(c >= 48 && c <= 57) {
-				++length;
-				continue;
-			} else {
-				// is it an underscore ?
-				if(c == 95) {
-					++length;
-					continue;
-				} else {
-					// No match == bad character
-					return false;
-				}
-			}
-		}
+bool UserModel::validName(std::string name) {
+	boost::regex regex("^[A-Za-z]+(([\'-])?[A-Za-z]+$)");
+	if(!boost::regex_match(name, regex)) {
+		return false;
 	}
-	// if the length is below 2 or over 16 == bad username
-	if(length < 2 || length > 16) {
+	if(name.length() < 2 || name.length() > 32) {
 		return false;
 	}
 	return true;
 }
 
-// fuck checking lol, just make sure no spaces and less than 65 characters
-// must only contain 1 `@` symbol & there must be at least 3 characters AFTER `@`
-bool UserModel::validEmail(std::string word) {
-	int cafter = 0;
-	int numat = 0;
-	bool afterat = false;
-	// lower case string
-	std::string lowercase = to_lowercase(word);
-	// space checking
-	for(char &c : lowercase) {
-		if(afterat) {
-			++cafter;
-		}
-		if(c == '@') {
-			++numat;
-			afterat = true;
-		}
-		if(c == ' ') {
-			return false;
-		}
-	}
-	// `@` checker -> needs only 1
-	if(numat != 1) {
+/*
+	@FUNCTION - Determines if a specified string can be a valid username
+	@SPECS - Regex, 2-16 characters length
+	@RETURNS - TRUE/FALSE
+*/
+bool UserModel::validUsername(std::string username) {
+	boost::regex regex("^[A-Za-z0-9_]+$");
+	if(!boost::regex_match(username, regex)) {
 		return false;
 	}
-	// ensure cafter >= 3
-	if(cafter < 3) {
-		return false;
-	}
-	// length check
-	if(lowercase.length() > 64) {
+	if(username.length() < 2 || username.length() > 16) {
 		return false;
 	}
 	return true;
 }
 
-/**
-	Validate password
-	Must be 2-32 characters
+/*
+	@FUNCTION - Determines if a specified string can be a valid email
+	@SPECS 	- Regex, 5-64 characters
+	@RETURNS - TRUE/FALSE
 */
-bool UserModel::validPassword(std::string word) {
-	if(word.length() < 2 || word.length() > 32) {
+bool UserModel::validEmail(std::string email) {
+	boost::regex regex("^([a-zA-Z0-9_.+-])+\\@(([a-zA-Z0-9-])+\\.)+([a-zA-Z0-9]{2,4})+$");
+	if(!boost::regex_match(email, regex)) {
+		return false;
+	}
+	if(email.length() < 5 || email.length() > 64) {
 		return false;
 	}
 	return true;
 }
 
-/**
-	Lowercase characters in string
+/*
+	@FUNCTION - Determines if a specified string can be a valid password
+	@SPECS - String length must be 2-32 characters
+	@RETURNS - TRUE/FALSE
 */
-std::string UserModel::to_lowercase(std::string word) {
+bool UserModel::validPassword(std::string password) {
+	if(password.length() < 2 || password.length() > 32) {
+		return false;
+	}
+	return true;
+}
+
+
+/*
+	@FUNCTION - Return specified string in lowercase format
+*/
+std::string to_lowercase(std::string word) {
 	std::locale loc;
 	std::stringstream ss;
 	for(std::string::size_type i = 0; i < word.length(); i++) {
@@ -111,5 +80,3 @@ std::string UserModel::to_lowercase(std::string word) {
 	}
 	return ss.str();
 }
-
-

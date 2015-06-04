@@ -145,3 +145,4 @@ bool Database::create_user_table(pqxx::connection *c) {
 	}
 	return true;
 }
+

@@ -16,14 +16,17 @@ namespace dxtemplate {
 
 			// get title
 			std::string get_title();
+			
 			// return LOGGED_IN
-			bool is_logged_in(cppcms::session_interface &interface);
+			static bool is_logged_in(cppcms::session_interface &interface);
+
 			// validates session checking last_activity
 			bool eval_logged_in();
 
+			// get session values into context for rendering
 			void resolve_session(cppcms::session_interface &interface);
 
-
+			// set page id
 			void set_page(std::string page_id);
 
 			std::string TITLE; // Page title

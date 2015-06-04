@@ -43,7 +43,6 @@ void DXServer::index_page() {
 	session().load();
 	dxtemplate::context c;
 	c.resolve_session(session());
-
 	c.set_page("HOME");
 	render("master", c);
 	return;
@@ -66,7 +65,7 @@ void DXServer::register_page() {
 	session().load();
 	dxtemplate::context c;
 	c.resolve_session(session());
-	if(c.is_logged_in(session())) {
+	if(c.LOGGED_IN == "true") {
 		response().status(302);
 		response().set_header("Location", "/");
 		return;
@@ -112,12 +111,27 @@ void DXServer::process_login() {
 
 	// Make sure the user is not already logged in
 	session().load();
-	if(session().is_set("LOGGED_IN")) {
-		if(session()["LOGGED_IN"].compare("true") == 0) {
-			json_response("DX-OK", "Already logged in");
+	if(dxtemplate::context::is_logged_in(session())) {
+		json_response("DX-REJECTED", "logged_in");
+		return;
+	}
+
+	// Determine if the user supplied a valid username or email
+	int ID_TYPE = 0;
+	if(UserModel::validUsername(request().post("u"))) { // is valid username ?
+		ID_TYPE = ID_USERNAME;
+	} else {
+		if(UserModel::validEmail(request().post("u"))) { // is valid email ?
+			ID_TYPE = ID_EMAIL;
+		} else { // invalid `u` field
+			json_response("DX-REJECTED", "u_invalid");
 			return;
 		}
 	}
+
+	// query database for id + password combination
+
+	json_response("DX-FAILED", "Still under-construction");
 	return;
 }
 
@@ -236,6 +250,65 @@ void DXServer::debug_session() {
 
 void DXServer::debug_page() {
 	response().set_header("Content-Type", "text/html");
-	response().out() << "<span style='font-family:\"Consolas\";'>[+] Nothing to debug</span>";
+	response().out() << "<span style='font-family:\"Consolas\";'>";
+
+	// valid name
+	if(UserModel::validName("luke")) {
+		response().out() << "valid name\t=>\tluke<br>";
+	} else {
+		response().out() << "invalid name\t=>\tluke<br>";
+	}
+
+	// invalid name
+	if(UserModel::validName("luke morrison")) {
+		response().out() << "valid name\t=>\tluke morrison<br>";
+	} else {
+		response().out() << "invalid name\t=>\tluke morrison<br>";
+	}
+
+	// valid username
+	if(UserModel::validUsername("lukeymoo__")) {
+		response().out() << "valid username\t=>\tlukeymoo__<br>";
+	} else {
+		response().out() << "invalid username\t=>\tlukeymoo__<br>";
+	}
+
+	// invalid username
+	if(UserModel::validUsername("lukeymoo!")) {
+		response().out() << "valid username\t=>\tlukeymoo!<br>";
+	} else {
+		response().out() << "invalid username\t=>\tlukeymoo!<br>";
+	}
+
+	// valid email
+	if(UserModel::validEmail("lukeymoo@hotmail.com")) {
+		response().out() << "valid email\t=>\tlukeymoo@hotmail.com<br>";
+	} else {
+		response().out() << "invalid email\t=>\tlukeymoo@hotmail.com<br>";
+	}
+
+	// invalid email
+	if(UserModel::validEmail("lukeymoo@@hotmail.com")) {
+		response().out() << "valid email\t=>\tlukeymoo@@hotmail.com<br>";
+	} else {
+		response().out() << "invalid email\t=>\tlukeymoo@@hotmail.com<br>";
+	}
+
+	// valid password
+	if(UserModel::validPassword("password")) {
+		response().out() << "valid password\t=>\tpassword<br>";
+	} else {
+		response().out() << "invalid password\t=>\tpassword<br>";
+	}
+
+	// invalid password
+	if(UserModel::validPassword("a")) {
+		response().out() << "valid password\t=>\ta<br>";
+	} else {
+		response().out() << "invalid password\t=>\ta<br>";
+	}
+	
+
+	response().out() << "</span>";
 	return;
 }

@@ -8,7 +8,7 @@ M_H = $(SRC_M)/headers
 INC = -I$(C_H) -I$(M_H)
 OBJ_DIR = objects
 OBJ = $(OBJ_DIR)/main.o $(OBJ_DIR)/generic.o $(OBJ_DIR)/view.o $(OBJ_DIR)/database.o
-FLAGS = -std=c++11 -O3 -Wall -lcppcms -lbooster -lpqxx -lpq
+FLAGS = -std=c++11 -O3 -Wall -lcppcms -lbooster -lboost_regex -lpqxx -lpq
 
 all: main run
 
