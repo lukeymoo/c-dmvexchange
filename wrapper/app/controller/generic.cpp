@@ -269,6 +269,34 @@ void DXServer::debug_page() {
 	response().set_header("Content-Type", "text/html");
 	response().out() << "<span style='font-family:\"Consolas\";'>";
 
+	// username exists
+	if(Database::username_exist(&db.conn, "lukeymoo")) {
+		response().out() << "Normal call - Username\t=>\tlukeymoo exists<br>";
+	} else {
+		response().out() << "Normal call - Username\t=>\tlukeymoo does not exists<br>";
+	}
+
+	// username does not exist
+	if(Database::username_exist(&db.conn, "lukeymoo2")) {
+		response().out() << "Normal call - Username\t=>\tlukeymoo2 exists<br>";
+	} else {
+		response().out() << "Normal call - Username\t=>\tlukeymoo2 does not exists<br>";
+	}
+
+	// email exists
+	if(Database::email_exist(&db.conn, "lukeymoo@hotmail.com")) {
+		response().out() << "Email\t=>\tlukeymoo@hotmail.com exists<br>";
+	} else {
+		response().out() << "Email\t=>\tlukeymoo@hotmail.com does not exists<br>";
+	}
+
+	// email does not exist
+	if(Database::email_exist(&db.conn, "lukeymoo2@hotmail.com")) {
+		response().out() << "Email\t=>\tlukeymoo2@hotmail.com exists<br>";
+	} else {
+		response().out() << "Email\t=>\tlukeymoo2@hotmail.com does not exists<br>";
+	}
+
 	// valid name
 	if(UserModel::validName("luke")) {
 		response().out() << "valid name\t=>\tluke<br>";

@@ -15,9 +15,9 @@ bool Database::table_exist(pqxx::connection *c, std::string table_name) {
 	// lowercase table name
 	std::string table_name_f = to_lowercase(table_name);
 	// format query
-	std::string query =	"SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name=" + c->quote(table_name_f) + " AND table_schema='public')";
-	// execute
+	std::string query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name=" + c->quote(table_name_f) + " AND table_schema='public')";
 	try {
+		// execute query
 		pqxx::result result = worker.exec(query.c_str());
 		pqxx::result::tuple row = result[0];
 		pqxx::result::field field = row[0];
@@ -40,11 +40,18 @@ bool Database::username_exist(pqxx::connection *c, std::string username) {
 	pqxx::work worker(*c); // create worker
 	// lowercase username
 	std::string username_f = to_lowercase(username);
+	// format query
 	std::string query = "SELECT COUNT(*) FROM dmv_users_t WHERE username=" + c->quote(username_f);
-	// execute query
 	try {
+		// execute query
 		pqxx::result count = worker.exec(query.c_str());
-		std::cout << count[0][0] << std::endl;
+		pqxx::result::tuple row = count[0];
+		pqxx::result::field field = row[0];
+		if(field.as<int>() == 0) {
+			return false;
+		} else if(field.as<int>() > 0) {
+			return true;
+		}
 	} catch(std::exception &e) {
 		throw; // bubble exception up
 	}
@@ -59,11 +66,18 @@ bool Database::email_exist(pqxx::connection *c, std::string email) {
 	pqxx::work worker(*c); // create worker
 	// lowercase email
 	std::string email_f = to_lowercase(email);
+	// format query
 	std::string query = "SELECT COUNT(*) FROM dmv_users_t WHERE email=" + c->quote(email_f);
-	// execute query
 	try {
+		// execute query
 		pqxx::result count = worker.exec(query.c_str());
-		std::cout << count[0][0] << std::endl;
+		pqxx::result::tuple row = count[0];
+		pqxx::result::field field = row[0];
+		if(field.as<int>() == 0) {
+			return false;
+		} else if(field.as<int>() > 0) {
+			return true;
+		}
 	} catch(std::exception &e) {
 		throw; // bubble exception up
 	}
