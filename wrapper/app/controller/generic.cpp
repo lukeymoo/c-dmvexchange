@@ -117,7 +117,7 @@ void DXServer::process_login() {
 	}
 
 	// Determine if the user supplied a valid username or email
-	int ID_TYPE = 0;
+	int ID_TYPE;
 	if(UserModel::validUsername(request().post("u"))) { // is valid username ?
 		ID_TYPE = ID_USERNAME;
 	} else {
@@ -130,8 +130,25 @@ void DXServer::process_login() {
 	}
 
 	// query database for id + password combination
-
-	json_response("DX-FAILED", "Still under-construction");
+	if(ID_TYPE == ID_USERNAME) {
+		// valid username login
+		if(Database::username_login(&db.conn, request().post("u"), request().post("p"))) {
+			json_response("DX-FAILED", "Valid username login");
+			return;
+		} else { // invalid username login
+			json_response("DX-FAILED", "invalid username login");
+			return;
+		}
+	} else if(ID_TYPE == ID_EMAIL) {
+		// valid email login
+		if(Database::email_login(&db.conn, request().post("u"), request().post("p"))) {
+			json_response("DX-FAILED", "valid email login");
+			return;
+		} else { // invalid email login
+			json_response("DX-FAILED", "invalid email login");
+			return;
+		}
+	}
 	return;
 }
 

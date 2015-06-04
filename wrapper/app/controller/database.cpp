@@ -12,8 +12,10 @@ Database::~Database() {
 */
 bool Database::table_exist(pqxx::connection *c, std::string table_name) {
 	pqxx::work worker(*c); // create worker
+	// lowercase table name
+	std::string table_name_f = to_lowercase(table_name);
 	// format query
-	std::string query =	"SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name=" + c->quote(table_name) + " AND table_schema='public')";
+	std::string query =	"SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name=" + c->quote(table_name_f) + " AND table_schema='public')";
 	// execute
 	try {
 		pqxx::result result = worker.exec(query.c_str());
@@ -36,8 +38,9 @@ bool Database::table_exist(pqxx::connection *c, std::string table_name) {
 */
 bool Database::username_exist(pqxx::connection *c, std::string username) {
 	pqxx::work worker(*c); // create worker
-	std::string query = "SELECT COUNT(*) FROM dmv_users_t WHERE username=" 
-		+ c->quote(username);
+	// lowercase username
+	std::string username_f = to_lowercase(username);
+	std::string query = "SELECT COUNT(*) FROM dmv_users_t WHERE username=" + c->quote(username_f);
 	// execute query
 	try {
 		pqxx::result count = worker.exec(query.c_str());
@@ -54,7 +57,9 @@ bool Database::username_exist(pqxx::connection *c, std::string username) {
 */
 bool Database::email_exist(pqxx::connection *c, std::string email) {
 	pqxx::work worker(*c); // create worker
-	std::string query = "SELECT COUNT(*) FROM dmv_users_t WHERE email=" + c->quote(email) + "";
+	// lowercase email
+	std::string email_f = to_lowercase(email);
+	std::string query = "SELECT COUNT(*) FROM dmv_users_t WHERE email=" + c->quote(email_f);
 	// execute query
 	try {
 		pqxx::result count = worker.exec(query.c_str());
@@ -95,8 +100,12 @@ bool Database::username_login(pqxx::connection *c, std::string username, std::st
 */
 bool Database::email_login(pqxx::connection *c, std::string email, std::string password) {
 	pqxx::work worker(*c); // create worker
+	// lowercase email
+	std::string email_f = to_lowercase(email);
+	// hash password
+
 	// prepare query
-	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE email=" + c->quote(email) + " AND password=" + c->quote(password) + ")";
+	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE email=" + c->quote(email_f) + " AND password=" + c->quote(password) + ")";
 	// execute query
 	try {
 		pqxx::result result = worker.exec(query.c_str());
@@ -145,4 +154,3 @@ bool Database::create_user_table(pqxx::connection *c) {
 	}
 	return true;
 }
-

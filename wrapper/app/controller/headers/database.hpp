@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <pqxx/pqxx>
+#include "user.hpp"
 
 class Database {
 	public:

@@ -9,7 +9,6 @@
 #include <cppcms/url_mapper.h>
 #include <cppcms/session_interface.h>
 #include "view.hpp"
-#include "user.hpp"
 #include "database.hpp"
 
 //#include "static.h" . - Not used
