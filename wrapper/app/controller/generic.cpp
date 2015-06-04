@@ -131,21 +131,20 @@ void DXServer::process_login() {
 
 	// query database for id + password combination
 	if(ID_TYPE == ID_USERNAME) {
-		// valid username login
+		// valid username login - set session & redirect
 		if(Database::username_login(&db.conn, request().post("u"), request().post("p"))) {
-			json_response("DX-FAILED", "Valid username login");
+			// grab user info from database for session
 			return;
 		} else { // invalid username login
-			json_response("DX-FAILED", "invalid username login");
+			json_response("DX-REJECTED", "U_invalid_login");
 			return;
 		}
 	} else if(ID_TYPE == ID_EMAIL) {
 		// valid email login
 		if(Database::email_login(&db.conn, request().post("u"), request().post("p"))) {
-			json_response("DX-FAILED", "valid email login");
 			return;
 		} else { // invalid email login
-			json_response("DX-FAILED", "invalid email login");
+			json_response("DX-REJECTED", "E_invalid_login");
 			return;
 		}
 	}
@@ -351,6 +350,13 @@ void DXServer::debug_page() {
 		response().out() << "valid password\t=>\ta<br>";
 	} else {
 		response().out() << "invalid password\t=>\ta<br>";
+	}
+
+	// grab user info
+	try {
+		std::map<std::string, std::string> test = Database::getUser(&db.conn, 1);
+	} catch(std::exception &e) {
+		response().out() << "exception => " << e.what();
 	}
 	
 

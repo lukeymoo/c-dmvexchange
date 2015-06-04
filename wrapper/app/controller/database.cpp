@@ -116,7 +116,7 @@ bool Database::email_login(pqxx::connection *c, std::string email, std::string p
 	pqxx::work worker(*c); // create worker
 	// lowercase email
 	std::string email_f = to_lowercase(email);
-	// hash password
+	/* Add password hashing here */
 
 	// prepare query
 	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE email=" + c->quote(email_f) + " AND password=" + c->quote(password) + ")";
@@ -156,7 +156,7 @@ bool Database::email_login(pqxx::connection *c, std::string email, std::string p
 		timestamp 		INT 		 	Created in program std::time(0)
 */
 bool Database::create_user_table(pqxx::connection *c) {
-	pqxx::work worker(*c);
+	pqxx::work worker(*c); // create worker
 	// prepare query
 	std::string query = "CREATE TABLE dmv_users_t (id SERIAL PRIMARY KEY, firstname VARCHAR(32) NOT NULL, lastname VARCHAR(32) NOT NULL, username VARCHAR(16) UNIQUE NOT NULL, email VARCHAR(64) UNIQUE NOT NULL, password VARCHAR(32) NOT NULL, token VARCHAR(32) NOT NULL, zipcode INT NOT NULL, timestamp INT NOT NULL)";
 	try {
@@ -168,3 +168,36 @@ bool Database::create_user_table(pqxx::connection *c) {
 	}
 	return true;
 }
+
+/*
+	@FUNCTION -
+		Grabs user info from database, user found by id, username or email
+		info is returned into std::map
+	@RETURNS - TRUE/FALSE
+*/
+std::map<std::string, std::string> Database::getUser(pqxx::connection *c, int id) {
+	std::map<std::string, std::string> info; // will contain the user info
+	pqxx::work worker(*c); // create worker
+	// prepare query
+	std::string query = "SELECT * FROM dmv_users_t WHERE id=" + c->quote(id);
+	try {
+		// execute query
+		pqxx::result result = worker.exec(query.c_str());
+		std::cout << result << std::endl;
+	} catch(std::exception &e) {
+		throw; // bubble exception up
+	}
+	return info;
+}
+
+/*
+std::map<std::string, std::string> Database::getUser(pqxx::connection *c, std::string username) {
+	std::map<std::string, std::string> info;
+	return info;
+}
+
+std::map<std::string, std::string> Database::getUser(pqxx::connection *c, std::string email) {
+	std::map<std::string, std::string> info;
+	return info;
+}
+*/

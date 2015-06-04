@@ -41,6 +41,11 @@ class Database {
 		// create user table
 		static bool create_user_table(pqxx::connection *c);
 
+		// get user info from database returns a std::map of data, users found by id, username, email
+		static std::map<std::string, std::string> getUser(pqxx::connection *c, int id);
+		//static std::map<std::string, std::string> getUser(pqxx::connection *c, std::string username);
+		//static std::map<std::string, std::string> getUser(pqxx::connection *c, std::string email);
+
 		pqxx::connection conn;
 };
 
