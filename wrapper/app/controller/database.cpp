@@ -41,16 +41,16 @@ bool Database::username_exist(pqxx::connection *c, std::string username) {
 	// lowercase username
 	std::string username_f = to_lowercase(username);
 	// format query
-	std::string query = "SELECT COUNT(*) FROM dmv_users_t WHERE username=" + c->quote(username_f);
+	std::string query = "SELECT EXISTS (SELECT 1 FROM dmv_users_t WHERE username=" + c->quote(username_f) + " )";
 	try {
 		// execute query
 		pqxx::result count = worker.exec(query.c_str());
 		pqxx::result::tuple row = count[0];
 		pqxx::result::field field = row[0];
-		if(field.as<int>() == 0) {
-			return false;
-		} else if(field.as<int>() > 0) {
+		if(field.as<std::string>() == "t") {
 			return true;
+		} else {
+			return false;
 		}
 	} catch(std::exception &e) {
 		throw; // bubble exception up
@@ -67,16 +67,16 @@ bool Database::email_exist(pqxx::connection *c, std::string email) {
 	// lowercase email
 	std::string email_f = to_lowercase(email);
 	// format query
-	std::string query = "SELECT COUNT(*) FROM dmv_users_t WHERE email=" + c->quote(email_f);
+	std::string query = "SELECT EXISTS (SELECT 1 FROM dmv_users_t WHERE email=" + c->quote(email_f) + ")";
 	try {
 		// execute query
 		pqxx::result count = worker.exec(query.c_str());
 		pqxx::result::tuple row = count[0];
 		pqxx::result::field field = row[0];
-		if(field.as<int>() == 0) {
-			return false;
-		} else if(field.as<int>() > 0) {
+		if(field.as<std::string>() == "t") {
 			return true;
+		} else {
+			return false;
 		}
 	} catch(std::exception &e) {
 		throw; // bubble exception up
