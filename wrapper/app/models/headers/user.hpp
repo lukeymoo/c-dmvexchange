@@ -11,7 +11,13 @@ or to insert data about users
 #define MALE 500
 #define FEMALE 501
 
+#include <iostream>
+#include <sstream>
 #include <string>
+#include <locale>
+
+#define ID_USERNAME 	500
+#define ID_EMAIL		501
 
 class UserModel {
 	public:
@@ -30,6 +36,14 @@ class UserModel {
 		// Not used currently <- will be collected at later date
 		int age;
 
+		// Validate username
+		bool validUsername(std::string word);
+		// Validate email
+		bool validEmail(std::string word);
+		// Validate password
+		bool validPassword(std::string word);
+		// Lowercase a string
+		std::string to_lowercase(std::string word);
 };
 
 #endif

@@ -1,3 +1,10 @@
+/*
+
+This file is unused, Nginx provides static file
+serving functions as it is far more efficient
+
+*/
+
 #include "static.hpp"
 
 
