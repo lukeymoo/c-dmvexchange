@@ -5,6 +5,13 @@
 #include <cstdlib>
 #include <pqxx/pqxx>
 #include "user.hpp"
+#include "base64.hpp"
+#include <openssl/sha.h>
+
+namespace crypto {
+	std::string sha512_enc(std::string input);
+	std::string sha512_noenc(std::string input);
+};
 
 // get user info from database returns a std::map of data, users found by id, username, email
 namespace db {
@@ -31,6 +38,7 @@ namespace db {
 	};
 
 };
+
 
 
 #endif

@@ -84,8 +84,12 @@ bool db::check_exist::email(pqxx::connection *c, std::string email) {
 */
 bool db::try_login::with_username(pqxx::connection *c, std::string username, std::string password) {
 	pqxx::work worker(*c); // create worker
+	// lowercase username
+	std::string username_f = to_lowercase(username);
+	// crypto password
+	std::string password_f = crypto::sha512_enc(password);
 	// prepare query
-	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE username=" + c->quote(username) + " AND password=" + c->quote(password) + ")";
+	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE username=" + c->quote(username_f) + " AND password=" + c->quote(password_f) + ")";
 	// execute query
 	try {
 		pqxx::result result = worker.exec(query.c_str());
@@ -152,7 +156,7 @@ bool db::try_login::with_email(pqxx::connection *c, std::string email, std::stri
 bool db::create_table::user(pqxx::connection *c) {
 	pqxx::work worker(*c); // create worker
 	// prepare query
-	std::string query = "CREATE TABLE dmv_users_t (id SERIAL PRIMARY KEY, firstname VARCHAR(32) NOT NULL, lastname VARCHAR(32) NOT NULL, username VARCHAR(16) UNIQUE NOT NULL, email VARCHAR(64) UNIQUE NOT NULL, password VARCHAR(32) NOT NULL, token VARCHAR(32) NOT NULL, zipcode INT NOT NULL, timestamp INT NOT NULL)";
+	std::string query = "CREATE TABLE dmv_users_t (id SERIAL PRIMARY KEY, firstname VARCHAR(32) NOT NULL, lastname VARCHAR(32) NOT NULL, username VARCHAR(16) UNIQUE NOT NULL, email VARCHAR(64) UNIQUE NOT NULL, password VARCHAR(256) NOT NULL, token VARCHAR(32) NOT NULL, zipcode INT NOT NULL, timestamp INT NOT NULL)";
 	try {
 		// execute query
 		pqxx::result result = worker.exec(query.c_str());
@@ -184,13 +188,42 @@ std::map<std::string, std::string> db::get_user::by_id(pqxx::connection *c, int 
 
 		pqxx::result::const_iterator row_i = result.begin();
 
-		pqxx::result::tuple field = row_i;
-		field["id"] >> info["id"];
-		field["firstname"] >> info["firstname"];
-		field["lastname"] >> info["lastname"];
-		field["username"] >> info["username"];
-		field["email"] >> info["email"];
-		field["zipcode"] >> info["zipcode"];
+		pqxx::result::tuple row = row_i;
+		if(row["id"].is_null()) {
+			info["id"] = "";
+		} else {
+			row["id"] >> info["id"];
+		}
+		if(row["firstname"].is_null()) {
+			info["firstname"] = "";
+		} else {
+			row["firstname"] >> info["firstname"];
+		}
+		if(row["lastname"].is_null()) {
+			info["lastname"] = "";
+		} else {
+			row["lastname"] >> info["lastname"];
+		}
+		if(row["username"].is_null()) {
+			info["username"] = "";
+		} else {
+			row["username"] >> info["username"];
+		}
+		if(row["password"].is_null()) {
+			info["password"] = "";
+		} else {
+			row["password"] >> info["password"];
+		}
+		if(row["email"].is_null()) {
+			info["email"] = "";
+		} else {
+			row["email"] >> info["email"];
+		}
+		if(row["zipcode"].is_null()) {
+			info["zipcode"] = "";
+		} else {
+			row["zipcode"] >> info["zipcode"];
+		}
 	} catch(std::exception &e) {
 		throw; // bubble exception up
 	}
@@ -216,13 +249,42 @@ std::map<std::string, std::string> db::get_user::by_username(pqxx::connection *c
 
 		pqxx::result::const_iterator row_i = result.begin();
 
-		pqxx::result::tuple field = row_i;
-		field["id"] >> info["id"];
-		field["firstname"] >> info["firstname"];
-		field["lastname"] >> info["lastname"];
-		field["username"] >> info["username"];
-		field["email"] >> info["email"];
-		field["zipcode"] >> info["zipcode"];
+		pqxx::result::tuple row = row_i;
+		if(row["id"].is_null()) {
+			info["id"] = "";
+		} else {
+			row["id"] >> info["id"];
+		}
+		if(row["firstname"].is_null()) {
+			info["firstname"] = "";
+		} else {
+			row["firstname"] >> info["firstname"];
+		}
+		if(row["lastname"].is_null()) {
+			info["lastname"] = "";
+		} else {
+			row["lastname"] >> info["lastname"];
+		}
+		if(row["username"].is_null()) {
+			info["username"] = "";
+		} else {
+			row["username"] >> info["username"];
+		}
+		if(row["password"].is_null()) {
+			info["password"] = "";
+		} else {
+			row["password"] >> info["password"];
+		}
+		if(row["email"].is_null()) {
+			info["email"] = "";
+		} else {
+			row["email"] >> info["email"];
+		}
+		if(row["zipcode"].is_null()) {
+			info["zipcode"] = "";
+		} else {
+			row["zipcode"] >> info["zipcode"];
+		}
 	} catch(std::exception &e) {
 		throw; // bubble exception up
 	}
@@ -268,6 +330,11 @@ std::map<std::string, std::string> db::get_user::by_email(pqxx::connection *c, s
 		} else {
 			row["username"] >> info["username"];
 		}
+		if(row["password"].is_null()) {
+			info["password"] = "";
+		} else {
+			row["password"] >> info["password"];
+		}
 		if(row["email"].is_null()) {
 			info["email"] = "";
 		} else {
@@ -282,4 +349,21 @@ std::map<std::string, std::string> db::get_user::by_email(pqxx::connection *c, s
 		throw; // bubble exception up
 	}
 	return info;
+}
+
+
+
+// returns base64 encoded sha512 hash
+std::string crypto::sha512_enc(std::string input_s) {
+	unsigned char obuf[64];
+	SHA512(reinterpret_cast<const unsigned char*>(input_s.c_str()), input_s.length(), obuf); // encrypt
+	std::string encoded = base64_encode(obuf, 64); // encode
+	return encoded;
+}
+
+std::string crypto::sha512_noenc(std::string input_s) {
+	unsigned char obuf[64];
+	SHA512(reinterpret_cast<const unsigned char*>(input_s.c_str()), input_s.length(), obuf); // encrypt
+	std::string hash_s = reinterpret_cast<const char *>(obuf);
+	return hash_s;
 }

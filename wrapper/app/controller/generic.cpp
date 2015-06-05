@@ -281,7 +281,7 @@ void DXServer::debug_session() {
 
 void DXServer::debug_page() {
 	response().set_header("Content-Type", "text/html");
-	response().out() << "<span style='font-family:\"Consolas\";'>";
+	response().out() << "<span style='font-family:\"Ubuntu Mono\";'>";
 
 	// username exists
 	if(db::check_exist::username(&dbconn, "lukeymoo")) {
@@ -373,7 +373,11 @@ void DXServer::debug_page() {
 		if(test.empty()) {
 			response().out() << "No user with id => `1`<br>";
 		} else {
-			response().out() << "get user returned :: email => " << test["email"] << "<br>";
+			std::string result = crypto::sha512_enc("hello");
+			response().out() << "usr pwd => " << test["password"] << "<br>";
+			response().out() << "encoded => " << result << "<br>";
+			result = crypto::sha512_noenc("hello");
+			response().out() << "not-enc => " << result << "<br>";
 		}
 	} catch(std::exception &e) {
 		response().out() << "exception => " << e.what();
