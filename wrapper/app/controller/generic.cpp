@@ -131,35 +131,45 @@ void DXServer::process_login() {
 
 	// query database for id + password combination
 	if(ID_TYPE == ID_USERNAME) {
-		// valid username login - set session & redirect
-		if(db::try_login::with_username(&dbconn, request().post("u"), request().post("p"))) {
-			// grab user info from database for session
-			std::map<std::string, std::string> info = db::get_user::by_username(&dbconn, request().post("u"));
-			// set session then redirect
-			session().set("LOGGED_IN", "true");
-			session().set("USERNAME", info["username"]);
-			session().set("EMAIL", info["email"]);
-			session().set("USER_ID", info["id"]);
-			json_response("DX-OK", "Logged in");
-			return;
-		} else { // invalid username login
-			json_response("DX-REJECTED", "U_invalid_login");
+		try {
+			// valid username login - set session & redirect
+			if(db::try_login::with_username(&dbconn, request().post("u"), request().post("p"))) {
+				// grab user info from database for session
+				std::map<std::string, std::string> info = db::get_user::by_username(&dbconn, request().post("u"));
+				// set session then redirect
+				session().set("LOGGED_IN", "true");
+				session().set("USERNAME", info["username"]);
+				session().set("EMAIL", info["email"]);
+				session().set("USER_ID", info["id"]);
+				json_response("DX-OK", "Logged in");
+				return;
+			} else { // invalid username login
+				json_response("DX-REJECTED", "U_invalid_login");
+				return;
+			}
+		} catch(std::exception &e) {
+			json_response("DX-FAILED", "Server error");
 			return;
 		}
 	} else if(ID_TYPE == ID_EMAIL) {
 		// valid email login
-		if(db::try_login::with_email(&dbconn, request().post("u"), request().post("p"))) {
-			// grab user info from database for session
-			std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, request().post("u"));
-			// set session then redirect
-			session().set("LOGGED_IN", "true");
-			session().set("USERNAME", info["username"]);
-			session().set("EMAIL", info["email"]);
-			session().set("USER_ID", info["id"]);
-			json_response("DX-OK", "Logged in");
-			return;
-		} else { // invalid email login
-			json_response("DX-REJECTED", "E_invalid_login");
+		try {
+			if(db::try_login::with_email(&dbconn, request().post("u"), request().post("p"))) {
+				// grab user info from database for session
+				std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, request().post("u"));
+				// set session then redirect
+				session().set("LOGGED_IN", "true");
+				session().set("USERNAME", info["username"]);
+				session().set("EMAIL", info["email"]);
+				session().set("USER_ID", info["id"]);
+				json_response("DX-OK", "Logged in");
+				return;
+			} else { // invalid email login
+				json_response("DX-REJECTED", "E_invalid_login");
+				return;
+			}
+		} catch(std::exception &e) {
+			json_response("DX-FAILED", "Server error");
 			return;
 		}
 	}
