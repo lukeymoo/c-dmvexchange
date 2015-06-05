@@ -16,7 +16,7 @@
 
 class DXServer : public cppcms::application {
 	public:
-		DXServer(cppcms::service &srv) : cppcms::application(srv), db("dbname=dmvexchange user=db password=f9a548add9f0007ca4071e06f04e3f81 hostaddr=127.0.0.1 port=5432") {
+		DXServer(cppcms::service &srv) : cppcms::application(srv), dbconn("dbname=dmvexchange user=db password=f9a548add9f0007ca4071e06f04e3f81 hostaddr=127.0.0.1 port=5432") {
 			
 			/*
 				@METHOD - GET
@@ -78,7 +78,7 @@ class DXServer : public cppcms::application {
 
 		~DXServer();
 
-		Database db;
+		pqxx::connection dbconn;
 
 		// index page
 		void index_page();

@@ -9,12 +9,12 @@ int main(int argc, char **argv) {
 		std::cout << std::endl << "[+] Setting up database" << std::endl;
 
 		// if the user table doesn't exist create it
-		if(!db::table_exist(&c, "dmv_users_t")) {
+		if(!db::check_exist::table(&c, "dmv_users_t")) {
 			std::cout << "[-] Table dmv_users_t does not exist" << std::endl;
 			std::cout << "\t=> Creating table..." << std::endl;
 			// Create user table
 			try {
-				db::create_user_table(&c);
+				db::create_table::user(&c);
 			} catch(std::exception &e) {
 				std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
 				exit(1);

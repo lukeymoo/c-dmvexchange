@@ -1,16 +1,10 @@
 #include "database.hpp"
 
-Database::~Database() {
-	std::cout << std::endl << "[+] Disconnecting from database" << std::endl;
-	conn.disconnect();
-	return;
-}
-
 /*
 	@FUNCTION - Checks if specified table exists in database
 	@RETURNS - TRUE/FALSE
 */
-bool db::table_exist(pqxx::connection *c, std::string table_name) {
+bool db::check_exist::table(pqxx::connection *c, std::string table_name) {
 	pqxx::work worker(*c); // create worker
 	// lowercase table name
 	std::string table_name_f = to_lowercase(table_name);
@@ -36,7 +30,7 @@ bool db::table_exist(pqxx::connection *c, std::string table_name) {
 	@FUNCTION - Determines if specified username exists in database
 	@RETURNS - TRUE/FALSE
 */
-bool db::username_exist(pqxx::connection *c, std::string username) {
+bool db::check_exist::username(pqxx::connection *c, std::string username) {
 	pqxx::work worker(*c); // create worker
 	// lowercase username
 	std::string username_f = to_lowercase(username);
@@ -62,7 +56,7 @@ bool db::username_exist(pqxx::connection *c, std::string username) {
 	@FUNCTION - Determines if email exists in database
 	@RETURNS - TRUE/FALSE
 */
-bool db::email_exist(pqxx::connection *c, std::string email) {
+bool db::check_exist::email(pqxx::connection *c, std::string email) {
 	pqxx::work worker(*c); // create worker
 	// lowercase email
 	std::string email_f = to_lowercase(email);
@@ -88,7 +82,7 @@ bool db::email_exist(pqxx::connection *c, std::string email) {
 	@FUNCTION - Determines if specified username & password is a valid combination in database
 	@RETURNS - TRUE/FALSE
 */
-bool db::username_login(pqxx::connection *c, std::string username, std::string password) {
+bool db::try_login::username(pqxx::connection *c, std::string username, std::string password) {
 	pqxx::work worker(*c); // create worker
 	// prepare query
 	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE username=" + c->quote(username) + " AND password=" + c->quote(password) + ")";
@@ -112,7 +106,7 @@ bool db::username_login(pqxx::connection *c, std::string username, std::string p
 	@FUNCTION - Determines if specified email & password is a valid combination in database
 	@RETURNS - TRUE/FALSE
 */
-bool db::email_login(pqxx::connection *c, std::string email, std::string password) {
+bool db::try_login::email(pqxx::connection *c, std::string email, std::string password) {
 	pqxx::work worker(*c); // create worker
 	// lowercase email
 	std::string email_f = to_lowercase(email);
@@ -155,7 +149,7 @@ bool db::email_login(pqxx::connection *c, std::string email, std::string passwor
 		zipcode 		VARCHAR(5) 		5 Characters Length
 		timestamp 		INT 		 	Created in program std::time(0)
 */
-bool db::create_user_table(pqxx::connection *c) {
+bool db::create_table::user(pqxx::connection *c) {
 	pqxx::work worker(*c); // create worker
 	// prepare query
 	std::string query = "CREATE TABLE dmv_users_t (id SERIAL PRIMARY KEY, firstname VARCHAR(32) NOT NULL, lastname VARCHAR(32) NOT NULL, username VARCHAR(16) UNIQUE NOT NULL, email VARCHAR(64) UNIQUE NOT NULL, password VARCHAR(32) NOT NULL, token VARCHAR(32) NOT NULL, zipcode INT NOT NULL, timestamp INT NOT NULL)";

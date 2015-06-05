@@ -132,9 +132,9 @@ void DXServer::process_login() {
 	// query database for id + password combination
 	if(ID_TYPE == ID_USERNAME) {
 		// valid username login - set session & redirect
-		if(db::username_login(&db.conn, request().post("u"), request().post("p"))) {
+		if(db::try_login::username(&dbconn, request().post("u"), request().post("p"))) {
 			// grab user info from database for session
-			std::map<std::string, std::string> info = db::get_user::by_username(&db.conn, request().post("u"));
+			std::map<std::string, std::string> info = db::get_user::by_username(&dbconn, request().post("u"));
 			// set session then redirect
 			session().set("LOGGED_IN", "true");
 			session().set("USERNAME", info["username"]);
@@ -148,9 +148,9 @@ void DXServer::process_login() {
 		}
 	} else if(ID_TYPE == ID_EMAIL) {
 		// valid email login
-		if(db::email_login(&db.conn, request().post("u"), request().post("p"))) {
+		if(db::try_login::email(&dbconn, request().post("u"), request().post("p"))) {
 			// grab user info from database for session
-			std::map<std::string, std::string> info = db::get_user::by_email(&db.conn, request().post("u"));
+			std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, request().post("u"));
 			// set session then redirect
 			session().set("LOGGED_IN", "true");
 			session().set("USERNAME", info["username"]);
@@ -284,28 +284,28 @@ void DXServer::debug_page() {
 	response().out() << "<span style='font-family:\"Consolas\";'>";
 
 	// username exists
-	if(db::username_exist(&db.conn, "lukeymoo")) {
+	if(db::check_exist::username(&dbconn, "lukeymoo")) {
 		response().out() << "Normal call - Username\t=>\tlukeymoo exists<br>";
 	} else {
 		response().out() << "Normal call - Username\t=>\tlukeymoo does not exists<br>";
 	}
 
 	// username does not exist
-	if(db::username_exist(&db.conn, "lukeymoo2")) {
+	if(db::check_exist::username(&dbconn, "lukeymoo2")) {
 		response().out() << "Normal call - Username\t=>\tlukeymoo2 exists<br>";
 	} else {
 		response().out() << "Normal call - Username\t=>\tlukeymoo2 does not exists<br>";
 	}
 
 	// email exists
-	if(db::email_exist(&db.conn, "lukeymoo@hotmail.com")) {
+	if(db::check_exist::email(&dbconn, "lukeymoo@hotmail.com")) {
 		response().out() << "Email\t=>\tlukeymoo@hotmail.com exists<br>";
 	} else {
 		response().out() << "Email\t=>\tlukeymoo@hotmail.com does not exists<br>";
 	}
 
 	// email does not exist
-	if(db::email_exist(&db.conn, "lukeymoo2@hotmail.com")) {
+	if(db::check_exist::email(&dbconn, "lukeymoo2@hotmail.com")) {
 		response().out() << "Email\t=>\tlukeymoo2@hotmail.com exists<br>";
 	} else {
 		response().out() << "Email\t=>\tlukeymoo2@hotmail.com does not exists<br>";
@@ -369,7 +369,7 @@ void DXServer::debug_page() {
 
 	// grab user info
 	try {
-		std::map<std::string, std::string> test = db::get_user::by_id(&db.conn, 1);
+		std::map<std::string, std::string> test = db::get_user::by_id(&dbconn, 1);
 		if(test.empty()) {
 			response().out() << "No user with id => `1`<br>";
 		} else {
