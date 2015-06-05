@@ -22,8 +22,8 @@ namespace db {
 	};
 
 	namespace try_login {
-		bool username(pqxx::connection *c, std::string username, std::string password);
-		bool email(pqxx::connection *c, std::string email, std::string password);
+		bool with_username(pqxx::connection *c, std::string username, std::string password);
+		bool with_email(pqxx::connection *c, std::string email, std::string password);
 	};
 
 	namespace create_table {

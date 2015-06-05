@@ -132,7 +132,7 @@ void DXServer::process_login() {
 	// query database for id + password combination
 	if(ID_TYPE == ID_USERNAME) {
 		// valid username login - set session & redirect
-		if(db::try_login::username(&dbconn, request().post("u"), request().post("p"))) {
+		if(db::try_login::with_username(&dbconn, request().post("u"), request().post("p"))) {
 			// grab user info from database for session
 			std::map<std::string, std::string> info = db::get_user::by_username(&dbconn, request().post("u"));
 			// set session then redirect
@@ -148,7 +148,7 @@ void DXServer::process_login() {
 		}
 	} else if(ID_TYPE == ID_EMAIL) {
 		// valid email login
-		if(db::try_login::email(&dbconn, request().post("u"), request().post("p"))) {
+		if(db::try_login::with_email(&dbconn, request().post("u"), request().post("p"))) {
 			// grab user info from database for session
 			std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, request().post("u"));
 			// set session then redirect
