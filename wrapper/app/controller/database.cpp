@@ -91,7 +91,6 @@ bool db::try_login::with_username(pqxx::connection *c, std::string username, std
 	std::string password_enc = crypto::sha512_enc(password);
 	std::string both_enc = username_enc + password_enc;
 	std::string password_f = crypto::sha512_enc(both_enc);
-	std::cout << password_f << std::endl;
 	// prepare query
 	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE username=" + c->quote(username_f) + " AND password=" + c->quote(password_f) + ")";
 	// execute query
@@ -118,8 +117,11 @@ bool db::try_login::with_email(pqxx::connection *c, std::string email, std::stri
 	pqxx::work worker(*c); // create worker
 	// lowercase email
 	std::string email_f = to_lowercase(email);
-	// crypto password
-	std::string password_f = crypto::sha512_enc(password);
+	// hash username, pwd -> concat & hash again
+	std::string email_enc = crypto::sha512_enc(email_f);
+	std::string password_enc = crypto::sha512_enc(password);
+	std::string both_enc = email_enc + password_enc;
+	std::string password_f = crypto::sha512_enc(both_enc);
 	// prepare query
 	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE email=" + c->quote(email_f) + " AND password=" + c->quote(password_f) + ")";
 	// execute query
