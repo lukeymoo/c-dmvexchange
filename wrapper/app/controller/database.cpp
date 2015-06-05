@@ -114,13 +114,18 @@ bool db::try_login::with_username(pqxx::connection *c, std::string username, std
 	@RETURNS - TRUE/FALSE
 */
 bool db::try_login::with_email(pqxx::connection *c, std::string email, std::string password) {
-	pqxx::work worker(*c); // create worker
 	// lowercase email
 	std::string email_f = to_lowercase(email);
+	// get user account
+	std::map<std::string, std::string> user_account = db::get_user::by_email(c, email_f);
+	pqxx::work worker(*c); // create worker
+	if(user_account.empty()) {
+		return false;
+	}
 	// hash username, pwd -> concat & hash again
-	std::string email_enc = crypto::sha512_enc(email_f);
+	std::string username_enc = crypto::sha512_enc(user_account["username"]);
 	std::string password_enc = crypto::sha512_enc(password);
-	std::string both_enc = email_enc + password_enc;
+	std::string both_enc = username_enc + password_enc;
 	std::string password_f = crypto::sha512_enc(both_enc);
 	// prepare query
 	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE email=" + c->quote(email_f) + " AND password=" + c->quote(password_f) + ")";
