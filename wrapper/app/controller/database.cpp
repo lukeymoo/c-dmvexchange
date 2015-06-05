@@ -82,7 +82,7 @@ bool db::check_exist::email(pqxx::connection *c, std::string email) {
 	@FUNCTION - Determines if specified username & password is a valid combination in database
 	@RETURNS - TRUE/FALSE
 */
-bool db::try_login::username(pqxx::connection *c, std::string username, std::string password) {
+bool db::try_login::with_username(pqxx::connection *c, std::string username, std::string password) {
 	pqxx::work worker(*c); // create worker
 	// prepare query
 	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE username=" + c->quote(username) + " AND password=" + c->quote(password) + ")";
@@ -106,7 +106,7 @@ bool db::try_login::username(pqxx::connection *c, std::string username, std::str
 	@FUNCTION - Determines if specified email & password is a valid combination in database
 	@RETURNS - TRUE/FALSE
 */
-bool db::try_login::email(pqxx::connection *c, std::string email, std::string password) {
+bool db::try_login::with_email(pqxx::connection *c, std::string email, std::string password) {
 	pqxx::work worker(*c); // create worker
 	// lowercase email
 	std::string email_f = to_lowercase(email);
