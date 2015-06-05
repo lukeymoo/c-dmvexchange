@@ -89,8 +89,8 @@ bool db::try_login::with_username(pqxx::connection *c, std::string username, std
 	// hash username, pwd -> concat & hash again
 	std::string username_enc = crypto::sha512_enc(username_f);
 	std::string password_enc = crypto::sha512_enc(password);
-	std::string password_enc_c = username_enc + password_enc;
-	std::string password_f = crypto::sha512_enc(password_enc_c);
+	std::string both_enc = username_enc + password_enc;
+	std::string password_f = crypto::sha512_enc(both_enc);
 	std::cout << password_f << std::endl;
 	// prepare query
 	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE username=" + c->quote(username_f) + " AND password=" + c->quote(password_f) + ")";
