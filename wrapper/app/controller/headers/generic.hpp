@@ -34,7 +34,7 @@ class DXServer : public cppcms::application {
 					Displays register page where user can register
 					for DMV Exchange
 			*/
-			dispatcher().assign("/register", &DXServer::register_page, this);
+			dispatcher().assign("/register(/)?", &DXServer::register_page, this);
 			mapper().assign("register", "/register");
 
 			/*
@@ -45,7 +45,16 @@ class DXServer : public cppcms::application {
 					
 					Authentication layer for login
 			*/
-			dispatcher().assign("/login/process", &DXServer::process_login, this);
+			dispatcher().assign("/login/process(/)?", &DXServer::process_login, this);
+
+			/*
+				@METHOD - POST
+
+				@FUNCTION -
+					Path that is requested when user submits registration form
+					validates form & creates database entry for account
+			*/
+			dispatcher().assign("/register/process(/)?", &DXServer::process_register, this);
 
 			/*
 				@METHOD - ANY
@@ -53,7 +62,7 @@ class DXServer : public cppcms::application {
 				@FUNCTION -
 					Clears session values and redirects user to home page
 			*/
-			dispatcher().assign("/logout", &DXServer::logout, this);
+			dispatcher().assign("/logout(/)?", &DXServer::logout, this);
 			
 			/*
 				@METHOD - GET
@@ -91,6 +100,7 @@ class DXServer : public cppcms::application {
 
 		// process login
 		void process_login();
+		void process_register();
 		void logout();
 
 		// send standard status, message json response

@@ -11,6 +11,7 @@
 namespace crypto {
 	std::string sha512_enc(std::string input);
 	std::string sha512_noenc(std::string input);
+	std::string generate(std::string username, std::string password);
 };
 
 // get user info from database returns a std::map of data, users found by id, username, email

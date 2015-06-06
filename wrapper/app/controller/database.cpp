@@ -86,11 +86,25 @@ bool db::try_login::with_username(pqxx::connection *c, std::string username, std
 	pqxx::work worker(*c); // create worker
 	// lowercase username
 	std::string username_f = to_lowercase(username);
-	// hash username, pwd -> concat & hash again
-	std::string username_enc = crypto::sha512_enc(username_f);
-	std::string password_enc = crypto::sha512_enc(password);
-	std::string both_enc = username_enc + password_enc;
-	std::string password_f = crypto::sha512_enc(both_enc);
+	// generate inital hash
+	std::string init = crypto::generate(username_f, password);
+	std::string init_username;
+	std::string init_password;
+	// hash iteratively 2500 times with username
+	for(int i = 0; i < 2500; i++) {
+		init_username = crypto::generate(init, username_f);
+	}
+	// hash iteratively 2500 times with password
+	for(int i = 0; i < 3000; i++) {
+		init_password = crypto::generate(init, password);
+	}
+	// put them together with generate
+	std::string init_final = crypto::generate(init_username, init_password);
+	std::string password_f;
+	// hash iteratively 2500 times with init_final
+	for(int i = 0; i < 2500; i++) {
+		password_f = crypto::generate(init, init_final);
+	}
 	// prepare query
 	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE username=" + c->quote(username_f) + " AND password=" + c->quote(password_f) + ")";
 	// execute query
@@ -122,11 +136,26 @@ bool db::try_login::with_email(pqxx::connection *c, std::string email, std::stri
 	if(user_account.empty()) {
 		return false;
 	}
-	// hash username, pwd -> concat & hash again
-	std::string username_enc = crypto::sha512_enc(user_account["username"]);
-	std::string password_enc = crypto::sha512_enc(password);
-	std::string both_enc = username_enc + password_enc;
-	std::string password_f = crypto::sha512_enc(both_enc);
+	// generate inital hash
+	std::string init = crypto::generate(user_account["username"], password);
+	std::string init_username;
+	std::string init_password;
+	// hash iteratively 2500 times with username
+	for(int i = 0; i < 2500; i++) {
+		init_username = crypto::generate(init, user_account["username"]);
+	}
+	// hash iteratively 3000 times with password
+	for(int i = 0; i < 3000; i++) {
+		init_password = crypto::generate(init, password);
+	}
+	// put them together with generate
+	std::string init_final = crypto::generate(init_username, init_password);
+	std::string password_f;
+	// hash iteratively 2500 times with init_final
+	for(int i = 0; i < 2500; i++) {
+		password_f = crypto::generate(init, init_final);
+	}
+	
 	// prepare query
 	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE email=" + c->quote(email_f) + " AND password=" + c->quote(password_f) + ")";
 	// execute query
@@ -367,6 +396,7 @@ std::map<std::string, std::string> db::get_user::by_email(pqxx::connection *c, s
 // returns base64 encoded sha512 hash
 std::string crypto::sha512_enc(std::string input_s) {
 	unsigned char obuf[64];
+	memset(obuf, 0, 64);
 	SHA512(reinterpret_cast<const unsigned char*>(input_s.c_str()), input_s.length(), obuf); // encrypt
 	std::string encoded = base64_encode(obuf, 64); // encode
 	return encoded;
@@ -374,7 +404,19 @@ std::string crypto::sha512_enc(std::string input_s) {
 
 std::string crypto::sha512_noenc(std::string input_s) {
 	unsigned char obuf[64];
+	memset(obuf, 0, 64);
 	SHA512(reinterpret_cast<const unsigned char*>(input_s.c_str()), input_s.length(), obuf); // encrypt
 	std::string hash_s = reinterpret_cast<const char *>(obuf);
 	return hash_s;
+}
+
+std::string crypto::generate(std::string username, std::string password) {
+	std::string username_enc = crypto::sha512_enc(username);
+	std::string password_enc = crypto::sha512_enc(password);
+	std::string first = crypto::sha512_enc(username_enc + password_enc); // hu + hp
+	std::string second = crypto::sha512_enc(first + username); // hfirst + username
+	std::string third = crypto::sha512_enc(first + password); // hfirst + password
+	std::string fourth = crypto::sha512_enc(second + third); // hsecond + hthird
+	std::string final = crypto::sha512_enc(first + fourth); // hfirst + hfourth
+	return final;
 }

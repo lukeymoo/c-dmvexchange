@@ -177,6 +177,25 @@ void DXServer::process_login() {
 }
 
 /*
+	@METHOD - Only POST method is allowed
+
+	@FUNCTION - 
+		Ensure all fields are filled
+		Ensure all fields have validated inputs
+		Ensure username & email are not already in use
+		Create database entry for account
+		Send activation token to user's email address
+		Redirect to home page
+*/
+void DXServer::process_register() {
+	// check firstname
+	std::map<std::string, std::string> form;
+	response().out() << "Processing registration...";
+	return;
+}
+
+
+/*
 	@METHOD - Only GET method is allowed
 	
 	@FUNCTION -
