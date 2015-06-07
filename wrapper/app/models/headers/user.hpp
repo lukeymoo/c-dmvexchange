@@ -15,7 +15,6 @@ or to insert data about users
 #include <sstream>
 #include <string>
 #include <locale>
-#include <boost/regex.hpp>
 
 #define ID_USERNAME 	500
 #define ID_EMAIL		501
@@ -39,15 +38,6 @@ class UserModel {
 
 		// Not used currently <- will be collected at later date
 		int age;
-
-		// Validate name
-		static bool validName(std::string name);
-		// Validate username
-		static bool validUsername(std::string username);
-		// Validate email
-		static bool validEmail(std::string email);
-		// Validate password
-		static bool validPassword(std::string password);
 };
 
 #endif

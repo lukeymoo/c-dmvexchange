@@ -66,6 +66,11 @@ $(function() {
 				case 'logged_in':
 					createAlert("Must log out before creating a new account", "high");
 					break;
+				case 'tos':
+					badStyle(tos.obj);
+					generateSignupError("You must agree to terms of service", tos.obj);
+					createAlert('Must agree to terms of service', 'medium');
+					break;
 				case 'F':
 					badStyle(fname.obj);
 					generateSignupError('Invalid name', lname.obj);

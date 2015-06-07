@@ -98,7 +98,6 @@ $(function() {
 				$('#header-login-form-button').hide();
 				// Submit
 				tryLogin(function(res) {
-					console.log(res);
 					// If no errors, valid login
 					if(res.status == "DX-OK") {
 						if(getParam('next')) {
@@ -278,7 +277,7 @@ function getParam(sParam) {
 	for(var i = 0; i < sURLVariables.length; i++) {
 		var sParameterName = sURLVariables[i].split('=');
 		if (sParameterName[0] == sParam) {
-			return sParameterName[1];
+			return decodeURI(sParameterName[1]);
 		}
 	}
 }

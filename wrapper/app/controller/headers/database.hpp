@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <pqxx/pqxx>
+#include <boost/regex.hpp>
 #include "user.hpp"
 #include "base64.hpp"
 #include <openssl/sha.h>
@@ -14,7 +15,20 @@ namespace crypto {
 	std::string generate(std::string username, std::string password);
 };
 
-// get user info from database returns a std::map of data, users found by id, username, email
+// form related methods ** CANT FIGURE OUT HOW TO INTEGRATE YET **
+namespace form {
+	std::map<std::string, std::string> get_register_form();
+	std::map<std::string, std::string> get_login_form();
+	std::string generate_query(std::map<std::string, std::string> form);
+	bool validName(std::string name);
+	bool validUsername(std::string username);
+	bool validPassword(std::string password);
+	bool validEmail(std::string email);
+	bool validZipcode(std::string zipcode);
+};
+
+
+// database related methods
 namespace db {
 
 	namespace get_user {

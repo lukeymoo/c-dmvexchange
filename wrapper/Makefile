@@ -68,6 +68,12 @@ $(OBJ_DIR)/layout.o: $(SRC_T)/layout.cpp
 	g++ $(INC) $(FLAGS) \
 		-c $(SRC_T)/layout.cpp -o objects/layout.o
 
+$(SRC_T)/layout.cpp: app/tmpl_src/layout/layout.tmpl
+	@echo
+	# Generating html from .tmpl
+	@echo
+	cppcms_tmpl_cc app/tmpl_src/layout/layout.tmpl -o tmpl_build/layout.cpp
+
 run:
 	./main -c config/config.js
 

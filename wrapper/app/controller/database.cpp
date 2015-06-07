@@ -420,3 +420,97 @@ std::string crypto::generate(std::string username, std::string password) {
 	std::string final = crypto::sha512_enc(first + fourth); // hfirst + hfourth
 	return final;
 }
+
+std::map<std::string, std::string> form::get_register_form() {
+	std::map<std::string, std::string> form;
+	return form;
+}
+
+std::map<std::string, std::string> form::get_login_form() {
+	std::map<std::string, std::string> form;
+	return form;
+}
+
+std::string form::generate_query(std::map<std::string, std::string> form) {
+	std::string query = "";
+	// iterate through ignoring p, pa, ea
+	for(auto &kv : form) {
+		if(kv.first != "p" && kv.first != "pa" && kv.first != "ea" && kv.first != "tos") {
+			query += "&" + kv.first + "=" + kv.second;
+		}
+	}
+	return query;
+}
+
+/*
+	@FUNCTION - Determines if specified string can be a valid name
+	@SPECS - Regex, 2-32 characters
+	@RETURNS - TRUE/FALSE
+*/
+bool form::validName(std::string name) {
+	boost::regex regex("^[A-Za-z]+(([\'-])?[A-Za-z]+$)");
+	if(!boost::regex_match(name, regex)) {
+		return false;
+	}
+	if(name.length() < 2 || name.length() > 32) {
+		return false;
+	}
+	return true;
+}
+
+/*
+	@FUNCTION - Determines if a specified string can be a valid username
+	@SPECS - Regex, 2-16 characters length
+	@RETURNS - TRUE/FALSE
+*/
+bool form::validUsername(std::string username) {
+	boost::regex regex("^[A-Za-z0-9_]+$");
+	if(!boost::regex_match(username, regex)) {
+		return false;
+	}
+	if(username.length() < 2 || username.length() > 16) {
+		return false;
+	}
+	return true;
+}
+
+/*
+	@FUNCTION - Determines if a specified string can be a valid email
+	@SPECS 	- Regex, 5-64 characters
+	@RETURNS - TRUE/FALSE
+*/
+bool form::validEmail(std::string email) {
+	boost::regex regex("^([a-zA-Z0-9_.+-])+\\@(([a-zA-Z0-9-])+\\.)+([a-zA-Z0-9]{2,4})+$");
+	if(!boost::regex_match(email, regex)) {
+		return false;
+	}
+	if(email.length() < 5 || email.length() > 64) {
+		return false;
+	}
+	return true;
+}
+
+/*
+	@FUNCTION - Determines if a specified string can be a valid password
+	@SPECS - String length must be 2-32 characters
+	@RETURNS - TRUE/FALSE
+*/
+bool form::validPassword(std::string password) {
+	if(password.length() < 2 || password.length() > 32) {
+		return false;
+	}
+	return true;
+}
+
+/*
+	@FUNCTION - Determines if specified string can be a valid zipcode
+	@SPECS - String must be 5 numbers
+	@RETURNS - TRUE/FALSE
+*/
+bool form::validZipcode(std::string zipcode) {
+	boost::regex regex("^[0-9]{5}$");
+	if(!boost::regex_match(zipcode, regex)) {
+		return false;
+	}
+	return true;
+}

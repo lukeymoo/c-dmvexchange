@@ -118,10 +118,10 @@ void DXServer::process_login() {
 
 	// Determine if the user supplied a valid username or email
 	int ID_TYPE;
-	if(UserModel::validUsername(request().post("u"))) { // is valid username ?
+	if(form::validUsername(request().post("u"))) { // is valid username ?
 		ID_TYPE = ID_USERNAME;
 	} else {
-		if(UserModel::validEmail(request().post("u"))) { // is valid email ?
+		if(form::validEmail(request().post("u"))) { // is valid email ?
 			ID_TYPE = ID_EMAIL;
 		} else { // invalid `u` field
 			json_response("DX-REJECTED", "u_invalid");
@@ -180,17 +180,113 @@ void DXServer::process_login() {
 	@METHOD - Only POST method is allowed
 
 	@FUNCTION - 
-		Ensure all fields are filled
-		Ensure all fields have validated inputs
+		Ensure all fields are not empty
+		Ensure all fields have validated values
 		Ensure username & email are not already in use
 		Create database entry for account
 		Send activation token to user's email address
 		Redirect to home page
 */
 void DXServer::process_register() {
-	// check firstname
+	// only allow post
+	if(request().request_method() != "POST") {
+		response().status(404);
+		response().out() << "http POST is only method allowed on this page";
+		return;
+	}
 	std::map<std::string, std::string> form;
-	response().out() << "Processing registration...";
+	// get form data into std::map `form`
+	form["f"] 	= to_lowercase(request().post("f"));
+	form["l"] 	= to_lowercase(request().post("l"));
+	form["u"] 	= to_lowercase(request().post("u"));
+	form["p"] 	= request().post("p");
+	form["pa"] 	= request().post("pa");
+	form["e"] 	= to_lowercase(request().post("e"));
+	form["ea"] 	= to_lowercase(request().post("ea"));
+	form["z"] 	= request().post("z");
+	form["g"] 	= to_lowercase(request().post("g"));
+	form["tos"] = request().post("tos");
+	if(form["tos"] == "") {
+		std::string loc = "/register?err=tos" + form::generate_query(form);
+		response().status(302);
+		response().set_header("Location", loc.c_str());
+		return;
+	}
+
+
+	// if any empty fields return with error
+	for(auto &kv : form) {
+		if(kv.first == "g") {
+			if(kv.second != "m" && kv.second != "f") { // male or female (m || f)
+				// generate query and return
+				std::string loc = "/register?err=invalid_form" + form::generate_query(form);
+				response().status(302);
+				response().set_header("Location", loc.c_str());
+				return;
+			}
+		} else {
+			if(kv.second == "") {
+				// generate query and return
+				std::string loc = "/register?err=invalid_form" + form::generate_query(form);
+				response().status(302);
+				response().set_header("Location", loc.c_str());
+				return;
+			}
+		}
+	}
+
+	// save validation results
+	std::map<std::string, int> errors;
+	errors["F"] 	= form::validName(form["f"]);
+	errors["L"] 	= form::validName(form["l"]);
+	errors["U"] 	= form::validUsername(form["u"]);
+	errors["P"] 	= form::validPassword(form["p"]);
+	errors["PM"] 	= (form["p"] == form["pa"]) ? 1 : 0;
+	errors["E"] 	= form::validEmail(form["e"]);
+	errors["EM"] 	= (form["e"] == form["ea"]) ? 1 : 0;
+	errors["Z"] 	= form::validZipcode(form["z"]);
+
+	// check validation results
+	std::string err = "";
+	for(auto &kv : errors) {
+		if(kv.second == 0) { // false
+			err += kv.first + "|";
+		}
+	}
+
+	if(err != "") {
+		err.pop_back();
+		std::string loc = "/register?err=" + err + form::generate_query(form);
+		response().status(302);
+		response().set_header("Location", loc.c_str());
+		return;
+	}
+
+	// check if username or email address is in use
+	try {
+		if(db::check_exist::username(&dbconn, form["u"])) {
+			err += "UIN|";
+		}
+		if(db::check_exist::email(&dbconn, form["e"])) {
+			err += "EIN|";
+		}
+		if(err != "") {
+			err.pop_back();
+			std::string loc = "/register?err=" + err + form::generate_query(form);
+			response().status(302);
+			response().set_header("Location", loc.c_str());
+			return;
+		}
+	} catch(std::exception &e) {
+		// do not fail silently, blow up so i can figure out the cause
+		response().status(500);
+		response().out() << "Server error occurred";
+		return;
+	}
+
+	// no errors
+	response().out() << "Valid registration, creating account";
+
 	return;
 }
 
@@ -341,56 +437,56 @@ void DXServer::debug_page() {
 	}
 
 	// valid name
-	if(UserModel::validName("luke")) {
+	if(form::validName("luke")) {
 		response().out() << "valid name\t=>\tluke<br>";
 	} else {
 		response().out() << "invalid name\t=>\tluke<br>";
 	}
 
 	// invalid name
-	if(UserModel::validName("luke morrison")) {
+	if(form::validName("luke morrison")) {
 		response().out() << "valid name\t=>\tluke morrison<br>";
 	} else {
 		response().out() << "invalid name\t=>\tluke morrison<br>";
 	}
 
 	// valid username
-	if(UserModel::validUsername("lukeymoo__")) {
+	if(form::validUsername("lukeymoo__")) {
 		response().out() << "valid username\t=>\tlukeymoo__<br>";
 	} else {
 		response().out() << "invalid username\t=>\tlukeymoo__<br>";
 	}
 
 	// invalid username
-	if(UserModel::validUsername("lukeymoo!")) {
+	if(form::validUsername("lukeymoo!")) {
 		response().out() << "valid username\t=>\tlukeymoo!<br>";
 	} else {
 		response().out() << "invalid username\t=>\tlukeymoo!<br>";
 	}
 
 	// valid email
-	if(UserModel::validEmail("lukeymoo@hotmail.com")) {
+	if(form::validEmail("lukeymoo@hotmail.com")) {
 		response().out() << "valid email\t=>\tlukeymoo@hotmail.com<br>";
 	} else {
 		response().out() << "invalid email\t=>\tlukeymoo@hotmail.com<br>";
 	}
 
 	// invalid email
-	if(UserModel::validEmail("lukeymoo@@hotmail.com")) {
+	if(form::validEmail("lukeymoo@@hotmail.com")) {
 		response().out() << "valid email\t=>\tlukeymoo@@hotmail.com<br>";
 	} else {
 		response().out() << "invalid email\t=>\tlukeymoo@@hotmail.com<br>";
 	}
 
 	// valid password
-	if(UserModel::validPassword("password")) {
+	if(form::validPassword("password")) {
 		response().out() << "valid password\t=>\tpassword<br>";
 	} else {
 		response().out() << "invalid password\t=>\tpassword<br>";
 	}
 
 	// invalid password
-	if(UserModel::validPassword("a")) {
+	if(form::validPassword("a")) {
 		response().out() << "valid password\t=>\ta<br>";
 	} else {
 		response().out() << "invalid password\t=>\ta<br>";
