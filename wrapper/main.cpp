@@ -1,4 +1,4 @@
-#include "generic.hpp" // contains core files
+#include "controller.hpp" // contains core files
 
 int main(int argc, char **argv) {
 	// Connect to database
