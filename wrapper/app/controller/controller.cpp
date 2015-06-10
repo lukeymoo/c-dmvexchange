@@ -194,6 +194,15 @@ void DXServer::process_register() {
 		response().out() << "http POST is only method allowed on this page";
 		return;
 	}
+
+	// if logged in redirect to home
+	session().load();
+	if(dxtemplate::context::is_logged_in(session())) {
+		response().status(302);
+		response().set_header("Location", "/");
+		return;
+	}
+
 	std::map<std::string, std::string> form;
 	// get form data into std::map `form`
 	form["f"] 	= to_lowercase(request().post("f"));
@@ -284,12 +293,220 @@ void DXServer::process_register() {
 		return;
 	}
 
-	// no errors
-	response().out() << "Valid registration, creating account";
+
+	// Create UserModel
+	// these values must be specified...
+	// firstname, lastname, username, email, password, token(for activation), zipcode
+	// the timestamp is generated when UserModel.save() is called
+	int zipcode_i;
+	std::istringstream ss(form["z"]);
+	ss >> zipcode_i;
+
+	std::string token = mail::generate_token(form["e"]);
+
+	// save the user into database
+	UserModel user(form["f"], form["l"], form["u"], form["e"], form["p"], token, zipcode_i, form["g"]);
+	try {
+		user.save(&dbconn);
+	} catch(std::exception &e) {
+		// report error
+		response().set_header("Content-Type", "text/html");
+		response().out() << "Error creating account<br>";
+		response().out() << "<a href='/'>Click here to return to home page</a>";
+		return;
+	}
+
+	// email user the activation token
+	mail::external::send_registration(form["e"], token);
+
+	// grab the user from database to get the generated id
+	try {
+		std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, form["e"]);
+		if(info.empty()) {
+			info = db::get_user::by_username(&dbconn, form["u"]);
+			if(info.empty()) {
+				// redirect to home page with session values
+				response().status(302);
+				response().set_header("Location", "/");
+				return;
+			}
+		}
+		// set session
+		session().set("LOGGED_IN", "true");
+		session().set("USERNAME", info["username"]);
+		session().set("EMAIL", info["email"]);
+		session().set("USER_ID", info["id"]);
+	} catch(std::exception &e) {
+		// capture get user error
+		response().out() << "Server error => " << e.what() << "<br>";
+		return;
+	}
+
+
+	// redirect to home page with session values
+	response().status(302);
+	response().set_header("Location", "/");
 
 	return;
 }
 
+// Display forgot page offering options
+// to select what data they wish to recover
+void DXServer::forgot() {
+	// only allow GET
+	if(request().request_method() != "GET") {
+		response().status(404);
+		response().out() << "http GET is only method allowed on this page";
+		return;
+	}
+	session().load();
+	dxtemplate::context c;
+	c.resolve_session(session());
+	c.set_page("FORGOT_INITIAL");
+	render("master", c);
+	return;
+}
+
+// Process the previous forgot page data
+// validating input & determining what data to
+// send to the user
+void DXServer::process_forgot() {
+	// Only allow POST method
+	if(request().request_method() != "POST") {
+		response().status(404);
+		response().out() << "http POST is only method allowed on this page";
+		return;
+	}
+
+	// validate forgot request
+	std::string need = request().post("type");
+	if(need != "username" && need != "password") {
+		response().status(302);
+		response().set_header("Location", "/forgot?err=invalid_type");
+		return;
+	}
+
+	if(need == "username") {
+		// ensure valid email
+		if(!form::validEmail(request().post("id"))) {
+			response().status(302);
+			response().set_header("Location", "/forgot?err=invalid_email");
+			return;
+		}
+		// if email exists
+		if(db::check_exist::email(&dbconn, request().post("id"))) {
+			// grab username
+			std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, request().post("id"));
+			if(info.empty()) {
+				response().set_header("Content-Type", "text/html");
+				response().status(500);
+				response().out() << "An error occurred retrieving requested information please try again<br><a href='/forgot'>Click here to return to forgot page</a>";
+				return;
+			}
+			// send username
+			mail::external::send_username(request().post("id"), info["username"]);
+			// continue to success page
+		} else { // if the email doesn't exist
+			// continue to success page
+		}
+	} else if(need == "password") {
+		// ensure valid username or email
+		if(!form::validUsername(request().post("id"))) {
+			if(!form::validEmail(request().post("id"))) {
+				// bad id
+				response().status(302);
+				response().set_header("Location", "/forgot?err=invalid_id");
+				return;
+			} else { // valid email
+				// if email exists
+				if(db::check_exist::email(&dbconn, request().post("id"))) {
+					// grab username
+					std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, request().post("id"));
+					if(info.empty()) {
+						response().set_header("Content-Type", "text/html");
+						response().status(500);
+						response().out() << "An error occurred retrieving requested information please try again<br><a href='/forgot'>Click here to return to forgot page</a>";
+						return;
+					}
+					// generate password reset token
+					std::string token = mail::generate_token(info["email"]);
+					// save token to database
+					std::pair<std::string, std::string> data1("forgot_token", token);
+					std::pair<std::string, std::string> data2("forgot_timestamp", get_time());
+					db::update::user::by_email(&dbconn, info["email"], data1, data2);
+					// send username
+					mail::external::send_pwd_reset(info["email"], token);
+					// continue to success page
+				} else { // if email doesn't exist
+					// continue to success page
+				}
+			}
+		} else { // valid username
+			// ensure username exists in database
+			if(db::check_exist::username(&dbconn, request().post("id"))) {
+				// get the email from database
+				std::map<std::string, std::string> info = db::get_user::by_username(&dbconn, request().post("id"));
+				if(info.empty()) {
+					response().set_header("Content-Type", "text/html");
+					response().status(500);
+					response().out() << "An error occurred retrieving requested information please try again<br><a href='/forgot'>Click here to return to forgot page</a>";
+					return;
+				}
+				// generate password reset token
+				std::string token = mail::generate_token(info["email"]);
+				// save token to database
+				std::pair<std::string, std::string> data1("forgot_token", token);
+				std::pair<std::string, std::string> data2("forgot_timestamp", get_time());
+				db::update::user::by_email(&dbconn, info["email"], data1, data2);
+				// send password reset token to user
+				mail::external::send_pwd_reset(info["email"], token);
+			} else { // username does not exist
+				// continue to success page
+			}
+		}
+	}
+
+	// redirect to success page
+	response().status(302);
+	response().set_header("Location", "/forgot/success");
+	return;
+}
+
+void DXServer::forgot_landing() {
+	// only allow GET request
+	if(request().request_method() != "GET") {
+		response().status(404);
+		response().out() << "http GET is only method allowed on this page";
+		return;
+	}
+	session().load();
+	dxtemplate::context c;
+	c.resolve_session(session());
+	c.set_page("FORGOT_LANDING");
+	render("master", c);
+	return;
+}
+
+void DXServer::reset() {
+	// only allow GET method
+	if(request().request_method() != "GET") {
+		response().status(404);
+		response().out() << "http GET is only method allowed on this page";
+		return;
+	}
+	// if valid token, render page
+	if(db::check_exist::forgot_token(&dbconn, request().get("token"))) {
+		session().load();
+		dxtemplate::context c;
+		c.resolve_session(session());
+		c.set_page("PASSWORD_RESET");
+		render("master", c);
+	} else { // invalid token, redirect to error page
+		response().status(302);
+		response().set_header("Location", "/forgot/badtoken");
+	}
+	return;
+}
 
 /*
 	@METHOD - Only GET method is allowed
@@ -405,9 +622,12 @@ void DXServer::debug_session() {
 }
 
 void DXServer::debug_page() {
-	response().set_header("Content-Type", "text/html");
-	response().out() << "<span style='font-family:\"Ubuntu Mono\";'>";
-
-	response().out() << "</span>";
+	std::string token = "OT8zlIGca3HqUzX0Ma6QbhdiBCN+yFIzFbY6QWOsf4idCTItfOptnnGAKFd32YRZya5YiCzN28+Kp+3mcqn7fA==";
+	response().out() << token << "<br>";
+	if(db::check_exist::forgot_token(&dbconn, token)) {
+		response().out() << "exists";
+	} else {
+		response().out() << "doesnt exist";
+	}
 	return;
 }

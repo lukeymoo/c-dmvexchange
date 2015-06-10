@@ -1,5 +1,5 @@
 <% c++ #include "view.hpp" %>
-<% skin master %>
+<% skin layout %>
 <% view master uses dxtemplate::context %>
 
 
@@ -57,7 +57,7 @@
 		<div id='header-login-container'>
 			<form id='header-login-form'>
 				<label>Username or email</label>
-				<input id='username-or-email' type='text' placeholder='Username or email'>
+				<input id='username-or-email' type='text' spellcheck='false' placeholder='Username or email'>
 				<input id='password' type='password' placeholder='Password'>
 				<a href="/forgot"><span id='header-login-forgot'>forgot password?</span></a>
 			</form>
@@ -137,20 +137,20 @@
 	<div id='signup-container'>
 		<form id='signup-form' action='/register/process' method='post'>
 			<label>Name</label>
-			<input id='firstname' name='f' type='text' placeholder='First' class='same-line-input field'>
-			<input id='lastname' name='l' type='text' placeholder='Last' class='same-line-input field'>
+			<input id='firstname' name='f' type='text' placeholder='First' class='same-line-input field' spellcheck='false'>
+			<input id='lastname' name='l' type='text' placeholder='Last' class='same-line-input field' spellcheck='false'>
 			<label>Username</label>
-			<input id='username' name='u' type='text' placeholder='Username' class='single-line-input field'>
+			<input id='username' name='u' type='text' placeholder='Username' class='single-line-input field' spellcheck='false'>
 			<label>Password</label>
 			<input id='password' name='p' type='password' placeholder='Password' class='single-line-input field'>
 			<label>Confirm password</label>
 			<input id='password-again' name='pa' type='password' placeholder='Confirm password' class='single-line-input field'>
 			<label>Email</label>
-			<input id='email' name='e' type='text' placeholder='Email' class='single-line-input field'>
+			<input id='email' name='e' type='text' placeholder='Email' class='single-line-input field' spellcheck='false'>
 			<label>Confirm email</label>
-			<input id='email-again' name='ea' type='text' placeholder='Confirm email' class='single-line-input field'>
+			<input id='email-again' name='ea' type='text' placeholder='Confirm email' class='single-line-input field' spellcheck='false'>
 			<label>Zipcode</label>
-			<input id='zipcode' name='z' maxlength='5' type='text' placeholder='Zipcode' class='same-line-input field'>
+			<input id='zipcode' name='z' maxlength='5' type='text' placeholder='Zipcode' class='same-line-input field' spellcheck='false'>
 			<label>Gender</label>
 			<select id='gender-select' name='g' class='field'>
 				<option selected='true'>I am...</option>
@@ -172,8 +172,36 @@
 
 
 
+<% template forgot_initial() %>
+<span id='forgot-header'>Select what you've forgotten...</span><br>
+<div id='forgot-container'>
+	<form id='forgot-form' method='post' action='/forgot/process'>
+		<div id='forgot-type-container'>
+			<label>Forgot username</label><input class='radio-button' name='type' type='radio' value='username'>
+			<br>
+			<label>Forgot password</label><input class='radio-button' name='type' type='radio' value='password'>
+		</div>
+		<input id='id' type='text' name='id' placeholder='Username or email...' spellcheck='false'>
+	</form>
+	<button id='forgot-button'>Submit Request</button>
+</div>
+<% end template %>
 
+<% template forgot_landing() %>
+<span id='forgot-landing-header'>An email has been sent with further information</span>
+<a id='forgot-return' href='/'>Click here to return home</a>
+<% end template %>
 
+<% template reset_password() %>
+<span id='password-reset-header'>Password reset form</span>
+<form id='password-reset-form' method='post' action='/reset/process'>
+	<label>Enter a new password</label>
+	<input type='password' name='p' placeholder='Enter a new password...'><br>
+	<label>Confirm new password</label>
+	<input type='password' name='pa' placeholder='Confirm new password...'><br>
+</form>
+<button id='reset-button'>Set new password</button>
+<% end template %>
 
 <% template render() %>
 <!doctype html>
@@ -200,6 +228,15 @@
 			<% if (content.PAGE == "REGISTER") %>
 				<% include register_form() %>
 			<% end %>
+			<% if (content.PAGE == "FORGOT_INITIAL") %>
+				<% include forgot_initial() %>
+			<% end %>
+			<% if (content.PAGE == "FORGOT_LANDING") %>
+				<% include forgot_landing() %>
+			<% end %>
+			<% if (content.PAGE == "PASSWORD_RESET") %>
+				<% include reset_password() %>
+			<% end %>
 		</div>
 	</div>
 	<!-- JScripts -->
@@ -213,6 +250,9 @@
 	<% end %>
 	<% if (content.PAGE == "REGISTER") %>
 		<script src='/js/register.js'></script>
+	<% end %>
+	<% if (content.PAGE == "FORGOT_INITIAL") %>
+		<script src='/js/forgot.js'></script>
 	<% end %>
 </body>
 </html>

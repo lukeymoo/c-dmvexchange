@@ -1,13 +1,18 @@
 SRC_C = app/controller
-CTRL_CPP = $(SRC_C)/controller.cpp $(SRC_C)/view.cpp $(SRC_C)/methods.cpp $(SRC_C)/base64.cpp
-CTRL_HPP = $(C_H)/controller.hpp $(C_H)/view.hpp $(C_H)/methods.hpp $(C_H)/base64.hpp
 SRC_M = app/models
 SRC_T = tmpl_build
+
 C_H = $(SRC_C)/headers
 M_H = $(SRC_M)/headers
-INC = -I$(C_H) -I$(M_H)
+
 OBJ_DIR = objects
-OBJ = $(OBJ_DIR)/main.o $(OBJ_DIR)/controller.o $(OBJ_DIR)/view.o $(OBJ_DIR)/methods.o
+
+CTRL_CPP = $(SRC_C)/controller.cpp $(SRC_C)/view.cpp $(SRC_C)/methods.cpp $(SRC_C)/base64.cpp
+CTRL_HPP = $(C_H)/controller.hpp $(C_H)/view.hpp $(C_H)/methods.hpp $(C_H)/base64.hpp
+MDL_CPP = $(SRC_M)/user.cpp
+MDL_HPP = $(M_H)/user.hpp
+INC = -I$(C_H) -I$(M_H)
+OBJ = $(OBJ_DIR)/main.o $(OBJ_DIR)/controller.o $(OBJ_DIR)/view.o $(OBJ_DIR)/methods.o $(OBJ_DIR)/user.o
 FLAGS = -std=c++11 -Wall -lcppcms -lbooster -lboost_regex -lpqxx -lpq
 
 all: main

@@ -11,6 +11,7 @@ or to insert data about users
 #define MALE 500
 #define FEMALE 501
 
+#include "methods.hpp"
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -21,10 +22,14 @@ or to insert data about users
 
 // Lowercase a string
 std::string to_lowercase(std::string word);
+std::string generate_token(std::string email);
 
 class UserModel {
 	public:
-		UserModel();
+		UserModel(
+			std::string firstname, std::string lastname, std::string username, std::string email,
+			std::string password, std::string token, int zipcode, std::string gender
+		);
 		~UserModel();
 
 		// Data to store about a user
@@ -32,12 +37,12 @@ class UserModel {
 		std::string lastname;
 		std::string username;
 		std::string email;
-
-		int gender; // MALE | FEMALE ( 'm' | 'f' )
+		std::string password;
+		std::string token;
 		int zipcode;
+		std::string gender;
 
-		// Not used currently <- will be collected at later date
-		int age;
+		void save(pqxx::connection *c);
 };
 
 #endif

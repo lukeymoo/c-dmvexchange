@@ -21,6 +21,10 @@ bool db::check_exist::table(pqxx::connection *c, std::string table_name) {
 			return false;
 		}
 	} catch(std::exception &e) {
+		// report error to email
+		std::ostringstream ss;
+		ss << "Checking if table exists :: " << e.what();
+		error::send(ss.str());
 		throw;
 	}
 	return false;
@@ -47,6 +51,10 @@ bool db::check_exist::username(pqxx::connection *c, std::string username) {
 			return false;
 		}
 	} catch(std::exception &e) {
+		// report error to email
+		std::ostringstream ss;
+		ss << "Checking if username exists :: " << e.what();
+		error::send(ss.str());
 		throw; // bubble exception up
 	}
 	return false;
@@ -73,6 +81,39 @@ bool db::check_exist::email(pqxx::connection *c, std::string email) {
 			return false;
 		}
 	} catch(std::exception &e) {
+		// report error to email
+		std::ostringstream ss;
+		ss << "Checking if email exists :: " << e.what();
+		error::send(ss.str());
+		throw; // bubble exception up
+	}
+	return false;
+}
+
+/*
+	@FUNCTION - Determines if a specified forgot_token exists in database
+	@RETURNS - TRUE/FALSE
+*/
+bool db::check_exist::forgot_token(pqxx::connection *c, std::string token) {
+	// create worker
+	pqxx::work worker(*c);
+	// prepare query
+	std::string query = "SELECT EXISTS ( SELECT 1 FROM dmv_users_t WHERE forgot_token=" + c->quote(token) + ")";
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		pqxx::result::tuple row = result[0];
+		pqxx::result::field field = row[0];
+		if(field.as<std::string>() == "t") {
+			return true;
+		} else {
+			return false;
+		}
+	} catch(std::exception &e) {
+		// report error to email
+		std::ostringstream ss;
+		ss << "Checking if forgot_token exists :: " << e.what();
+		error::send(ss.str());
 		throw; // bubble exception up
 	}
 	return false;
@@ -118,6 +159,10 @@ bool db::try_login::with_username(pqxx::connection *c, std::string username, std
 			return false;
 		}
 	} catch(std::exception &e) {
+		// report error to email
+		std::ostringstream ss;
+		ss << "Logging in with username :: " << e.what();
+		error::send(ss.str());
 		throw; // bubble exception up
 	}
 	return false;
@@ -169,6 +214,10 @@ bool db::try_login::with_email(pqxx::connection *c, std::string email, std::stri
 			return false;
 		}
 	} catch(std::exception &e) {
+		// report error to email
+		std::ostringstream ss;
+		ss << "Logging in with email :: " << e.what();
+		error::send(ss.str());
 		throw; // bubble exception up
 	}
 	return false;
@@ -196,12 +245,16 @@ bool db::try_login::with_email(pqxx::connection *c, std::string email, std::stri
 bool db::create_table::user(pqxx::connection *c) {
 	pqxx::work worker(*c); // create worker
 	// prepare query
-	std::string query = "CREATE TABLE dmv_users_t (id SERIAL PRIMARY KEY, firstname VARCHAR(32) NOT NULL, lastname VARCHAR(32) NOT NULL, username VARCHAR(16) UNIQUE NOT NULL, email VARCHAR(64) UNIQUE NOT NULL, password VARCHAR(256) NOT NULL, token VARCHAR(32) NOT NULL, zipcode INT NOT NULL, timestamp INT NOT NULL)";
+	std::string query = "CREATE TABLE dmv_users_t (id SERIAL PRIMARY KEY, firstname VARCHAR(32) NOT NULL, lastname VARCHAR(32) NOT NULL, username VARCHAR(16) UNIQUE NOT NULL, email VARCHAR(64) UNIQUE NOT NULL, password VARCHAR(256) NOT NULL, token VARCHAR(256) NOT NULL, zipcode INT NOT NULL, gender CHAR(1) NOT NULL, forgot_token VARCHAR(256) NOT NULL DEFAULT '', forgot_timestamp INT NOT NULL, timestamp INT NOT NULL)";
 	try {
 		// execute query
 		pqxx::result result = worker.exec(query.c_str());
 		worker.commit();
 	} catch(std::exception &e) {
+		// report error to email
+		std::ostringstream ss;
+		ss << "Creating user table :: " << e.what();
+		error::send(ss.str());
 		throw; // bubble exception up
 	}
 	return true;
@@ -265,6 +318,10 @@ std::map<std::string, std::string> db::get_user::by_id(pqxx::connection *c, int 
 			row["zipcode"] >> info["zipcode"];
 		}
 	} catch(std::exception &e) {
+		// report error to email
+		std::ostringstream ss;
+		ss << "Finding user by ID :: " << e.what();
+		error::send(ss.str());
 		throw; // bubble exception up
 	}
 	return info;
@@ -330,6 +387,10 @@ std::map<std::string, std::string> db::get_user::by_username(pqxx::connection *c
 			row["zipcode"] >> info["zipcode"];
 		}
 	} catch(std::exception &e) {
+		// report error to email
+		std::ostringstream ss;
+		ss << "Finding user by username :: " << e.what();
+		error::send(ss.str());
 		throw; // bubble exception up
 	}
 	return info;
@@ -395,6 +456,10 @@ std::map<std::string, std::string> db::get_user::by_email(pqxx::connection *c, s
 			row["zipcode"] >> info["zipcode"];
 		}
 	} catch(std::exception &e) {
+		// report error to email
+		std::ostringstream ss;
+		ss << "Finding user by email :: " << e.what();
+		error::send(ss.str());
 		throw; // bubble exception up
 	}
 	return info;
@@ -530,6 +595,199 @@ bool form::validZipcode(std::string zipcode) {
 		return false;
 	}
 	return true;
+}
+
+// Send registration token to specified email address
+// token is generated before calling this function because it
+// uses timestamps and is inserted into database before being sent
+// to the user, this ensures consistency between token sent & token
+// in the database.
+// Email address is already formatted to lowercase
+void mail::external::send_registration(std::string email_f, std::string token) {
+	std::string subject = "DMV Exchange :: Registration";
+	std::string token_f = cppcms::util::urlencode(token);
+	std::string message = "Thank you for registering at DMV Exchange click \\<a href='http://dmv-exchange.com/activate?token=" + token_f + "'\\>here\\</a\\> to activate your account\\<br\\>\\<br\\>If the link does not work copy and paste this link into the address bar\\<br\\>http://dmv-exchange.com/activate?token=" + token_f;
+	std::string command = "echo '" + message + "' | mail -aContent-Type:text/html -aFrom:'DMV Exchange'\\<no-reply@dmv-exchange.com\\> -s \'" + subject + "\' " + email_f;
+	FILE *pHandle = popen(command.c_str(), "w");
+	if(!pHandle) {
+		std::string err = "Failed to send email to " + email_f + " with token " + token;
+		// report error to email
+		error::send(err);
+		std::cerr << err << std::endl;
+		return;
+	}
+	pclose(pHandle);
+	return;
+}
+
+void mail::external::send_username(std::string email, std::string username) {
+	std::string username_f = to_lowercase(username);
+	std::string email_f = to_lowercase(email);
+	std::string subject = "Username reminder";
+	std::string message = "You have requested a reminder of your username<br>Your username is => " + username_f;
+	std::string command = "echo '" + message + "' | mail -aContent-Type:text/html -aFrom:'DMV Exchange'\\<no-reply@dmv-exchange.com\\> -s '" + subject + "' " + email_f;
+	FILE *pHandle = popen(command.c_str(), "w");
+	if(!pHandle) {
+		std::string err = "Failed to send username to " + email_f + " username was " + username_f;
+		// report error to email
+		error::send(err);
+		std::cerr << err << std::endl;
+		return;
+	}
+	pclose(pHandle);
+	return;
+}
+
+void mail::external::send_pwd_reset(std::string email, std::string token) {
+	std::string email_f = to_lowercase(email);
+	std::string token_f = cppcms::util::urlencode(token);
+	std::string subject = "Password Reset";
+	std::string message = "You have requested to reset your password click <a href=\"http://dmv-exchange.com/reset?token=" + token_f + "\">here</a> to reset your password<br>If the link does not work copy and paste this link into the address bar<br>http://dmv-exchange.com/reset?token=" + token_f;
+	std::string command = "echo '" + message + "' | mail -aContent-Type:text/html -aFrom:'DMV Exchange'\\<no-reply@dmv-exchange.com\\> -s '" + subject + "' " + email_f;
+	FILE *pHandle = popen(command.c_str(), "w");
+	if(!pHandle) {
+		std::string err = "Failed to send password reset to " + email_f + " with token " + token;
+		// report error to email
+		error::send(err);
+		std::cerr << err << std::endl;
+		return;
+	}
+	pclose(pHandle);
+	return;
+}
+
+void error::send(std::string err_msg) {
+	std::string subject = "DMV Exchange :: Error";
+	std::string message = "<span style=\"color:#fa6400;\">A server error has occurred..</span><br>" + err_msg;
+	std::string command = "echo '" + message + "' | mail -aContent-Type:text/html -aFrom:'DMV Exchange - Bot'\\<bot@dmv-exchange.com\\> -s '" + subject + "' termiosx@gmail.com";
+	FILE *pHandle = popen(command.c_str(), "w");
+	if(!pHandle) {
+		std::string err = "Failed to send error message";
+		std::cerr << err << std::endl;
+		return;
+	}
+	pclose(pHandle);
+	return;
+}
+
+// find user by id & update it's contents based on specified std::pair
+// std::pair data contains key,value pair specifying column name & new value
+// returns true/false on success/fail
+void db::update::user::by_id(pqxx::connection *c, int id, std::pair<std::string, std::string> data) {
+	// create worker
+	pqxx::work worker(*c);
+	// prepare query
+	std::string query = "UPDATE dmv_users_t SET " + c->esc(data.first) + "=" + c->quote(data.second) + " WHERE id=" + c->quote(id);
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		worker.commit();
+	} catch(std::exception &e) {
+		throw; // bubble exception up
+	}
+	return;
+}
+
+// find user by email & update it's contents based on specified std::pair
+// std::pair data contains key,value pair specifying column name & new value
+// returns true/false on success/fail
+void db::update::user::by_email(pqxx::connection *c, std::string email, std::pair<std::string, std::string> data) {
+	// create worker
+	pqxx::work worker(*c);
+	// prepare query
+	std::string query = "UPDATE dmv_users_t SET " + c->esc(data.first) + "=" + c->quote(data.second) + " WHERE email=" + c->quote(email);
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		worker.commit();
+	} catch(std::exception &e) {
+		throw; // bubble exception up
+	}
+	return;
+}
+
+// find user by username & update it's contents based on specified std::pair
+// std::pair data contains key,value pair specifying column name & new value
+// returns true/false on success/fail
+void db::update::user::by_username(pqxx::connection *c, std::string username, std::pair<std::string, std::string> data) {
+	// create worker
+	pqxx::work worker(*c);
+	// prepare query
+	std::string query = "UPDATE dmv_users_t SET " + c->esc(data.first) + "=" + c->quote(data.second) + " WHERE username=" + c->quote(username);
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		worker.commit();
+	} catch(std::exception &e) {
+		throw; // bubble exception up
+	}
+	return;
+}
+
+
+void db::update::user::by_id(pqxx::connection *c, int id, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2) {
+	// create worker
+	pqxx::work worker(*c);
+	// prepare query
+	std::string query = "UPDATE dmv_users_t SET " + c->esc(data1.first) + "=" + c->quote(data1.second) + ", " + c->esc(data2.first) + "=" + c->quote(data2.second) + " WHERE id=" + c->quote(id);
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		worker.commit();
+	} catch(std::exception &e) {
+		throw; // bubble exception up
+	}
+	return;
+}
+
+
+void db::update::user::by_username(pqxx::connection *c, std::string username, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2) {
+	// create worker
+	pqxx::work worker(*c);
+	// prepare query
+	std::string query = "UPDATE dmv_users_t SET " + c->esc(data1.first) + "=" + c->quote(data1.second) + ", " + c->esc(data2.first) + "=" + c->quote(data2.second) + " WHERE username=" + c->quote(username);
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		worker.commit();
+	} catch(std::exception &e) {
+		throw; // bubble exception up
+	}
+	return;
+}
+
+
+void db::update::user::by_email(pqxx::connection *c, std::string email, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2) {
+	// create worker
+	pqxx::work worker(*c);
+	// prepare query
+	std::string query = "UPDATE dmv_users_t SET " + c->esc(data1.first) + "=" + c->quote(data1.second) + ", " + c->esc(data2.first) + "=" + c->quote(data2.second) + " WHERE email=" + c->quote(email);
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		worker.commit();
+	} catch(std::exception &e) {
+		throw; // bubble exception up
+	}
+	return;
+}
+
+// Generates a token with a formatted email & timestamp
+// should be used for activating newly registered account
+std::string mail::generate_token(std::string email) {
+	std::string email_f = to_lowercase(email);
+	std::time_t timestamp = std::time(0);
+	std::ostringstream ss;
+	ss << timestamp;
+	std::string token = crypto::sha512_enc(email_f + ss.str());
+	return token;
+}
+
+std::string get_time() {
+	std::time_t timestamp = std::time(0);
+	std::ostringstream ss;
+	ss << timestamp;
+	return ss.str();
 }
 
 // Get register and login form cannot figure

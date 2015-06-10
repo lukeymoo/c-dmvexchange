@@ -1,7 +1,7 @@
 #line 1 "app/tmpl_src/layout/layout.tmpl"
 #include "view.hpp" 
 #line 2 "app/tmpl_src/layout/layout.tmpl"
-namespace master {
+namespace layout {
 	#line 3 "app/tmpl_src/layout/layout.tmpl"
 	struct master :public cppcms::base_view
 	#line 3 "app/tmpl_src/layout/layout.tmpl"
@@ -139,7 +139,7 @@ namespace master {
 					"\t\t<div id='header-login-container'>\n"
 					"\t\t\t<form id='header-login-form'>\n"
 					"\t\t\t\t<label>Username or email</label>\n"
-					"\t\t\t\t<input id='username-or-email' type='text' placeholder='Username or email'>\n"
+					"\t\t\t\t<input id='username-or-email' type='text' spellcheck='false' placeholder='Username or email'>\n"
 					"\t\t\t\t<input id='password' type='password' placeholder='Password'>\n"
 					"\t\t\t\t<a href=\"/forgot\"><span id='header-login-forgot'>forgot password?</span></a>\n"
 					"\t\t\t</form>\n"
@@ -228,20 +228,20 @@ namespace master {
 				"\t<div id='signup-container'>\n"
 				"\t\t<form id='signup-form' action='/register/process' method='post'>\n"
 				"\t\t\t<label>Name</label>\n"
-				"\t\t\t<input id='firstname' name='f' type='text' placeholder='First' class='same-line-input field'>\n"
-				"\t\t\t<input id='lastname' name='l' type='text' placeholder='Last' class='same-line-input field'>\n"
+				"\t\t\t<input id='firstname' name='f' type='text' placeholder='First' class='same-line-input field' spellcheck='false'>\n"
+				"\t\t\t<input id='lastname' name='l' type='text' placeholder='Last' class='same-line-input field' spellcheck='false'>\n"
 				"\t\t\t<label>Username</label>\n"
-				"\t\t\t<input id='username' name='u' type='text' placeholder='Username' class='single-line-input field'>\n"
+				"\t\t\t<input id='username' name='u' type='text' placeholder='Username' class='single-line-input field' spellcheck='false'>\n"
 				"\t\t\t<label>Password</label>\n"
 				"\t\t\t<input id='password' name='p' type='password' placeholder='Password' class='single-line-input field'>\n"
 				"\t\t\t<label>Confirm password</label>\n"
 				"\t\t\t<input id='password-again' name='pa' type='password' placeholder='Confirm password' class='single-line-input field'>\n"
 				"\t\t\t<label>Email</label>\n"
-				"\t\t\t<input id='email' name='e' type='text' placeholder='Email' class='single-line-input field'>\n"
+				"\t\t\t<input id='email' name='e' type='text' placeholder='Email' class='single-line-input field' spellcheck='false'>\n"
 				"\t\t\t<label>Confirm email</label>\n"
-				"\t\t\t<input id='email-again' name='ea' type='text' placeholder='Confirm email' class='single-line-input field'>\n"
+				"\t\t\t<input id='email-again' name='ea' type='text' placeholder='Confirm email' class='single-line-input field' spellcheck='false'>\n"
 				"\t\t\t<label>Zipcode</label>\n"
-				"\t\t\t<input id='zipcode' name='z' maxlength='5' type='text' placeholder='Zipcode' class='same-line-input field'>\n"
+				"\t\t\t<input id='zipcode' name='z' maxlength='5' type='text' placeholder='Zipcode' class='same-line-input field' spellcheck='false'>\n"
 				"\t\t\t<label>Gender</label>\n"
 				"\t\t\t<select id='gender-select' name='g' class='field'>\n"
 				"\t\t\t\t<option selected='true'>I am...</option>\n"
@@ -262,81 +262,169 @@ namespace master {
 				"";
 		#line 171 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template register_form
-		#line 178 "app/tmpl_src/layout/layout.tmpl"
+		#line 175 "app/tmpl_src/layout/layout.tmpl"
+		virtual void forgot_initial() {
+			#line 188 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"<span id='forgot-header'>Select what you've forgotten...</span><br>\n"
+				"<div id='forgot-container'>\n"
+				"\t<form id='forgot-form' method='post' action='/forgot/process'>\n"
+				"\t\t<div id='forgot-type-container'>\n"
+				"\t\t\t<label>Forgot username</label><input class='radio-button' name='type' type='radio' value='username'>\n"
+				"\t\t\t<br>\n"
+				"\t\t\t<label>Forgot password</label><input class='radio-button' name='type' type='radio' value='password'>\n"
+				"\t\t</div>\n"
+				"\t\t<input id='id' type='text' name='id' placeholder='Username or email...' spellcheck='false'>\n"
+				"\t</form>\n"
+				"\t<button id='forgot-button'>Submit Request</button>\n"
+				"</div>\n"
+				"";
+		#line 188 "app/tmpl_src/layout/layout.tmpl"
+		} // end of template forgot_initial
+		#line 190 "app/tmpl_src/layout/layout.tmpl"
+		virtual void forgot_landing() {
+			#line 193 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"<span id='forgot-landing-header'>An email has been sent with further information</span>\n"
+				"<a id='forgot-return' href='/'>Click here to return home</a>\n"
+				"";
+		#line 193 "app/tmpl_src/layout/layout.tmpl"
+		} // end of template forgot_landing
+		#line 195 "app/tmpl_src/layout/layout.tmpl"
+		virtual void reset_password() {
+			#line 204 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"<span id='password-reset-header'>Password reset form</span>\n"
+				"<form id='password-reset-form' method='post' action='/reset/process'>\n"
+				"\t<label>Enter a new password</label>\n"
+				"\t<input type='password' name='p' placeholder='Enter a new password...'><br>\n"
+				"\t<label>Confirm new password</label>\n"
+				"\t<input type='password' name='pa' placeholder='Confirm new password...'><br>\n"
+				"</form>\n"
+				"<button id='reset-button'>Set new password</button>\n"
+				"";
+		#line 204 "app/tmpl_src/layout/layout.tmpl"
+		} // end of template reset_password
+		#line 206 "app/tmpl_src/layout/layout.tmpl"
 		virtual void render() {
-			#line 182 "app/tmpl_src/layout/layout.tmpl"
+			#line 210 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"<!doctype html>\n"
 				"<html>\n"
 				"<head>\n"
 				"\t<title>DX &#8212; ";
-			#line 182 "app/tmpl_src/layout/layout.tmpl"
+			#line 210 "app/tmpl_src/layout/layout.tmpl"
 			out()<<cppcms::filters::escape(content.TITLE);
-			#line 187 "app/tmpl_src/layout/layout.tmpl"
+			#line 215 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"</title>\n"
 				"\t<meta name=\"viewport\" session=\"width=device-width, initial-scale=1\">\n"
 				"\t<link rel='stylesheet' type='text/css' href='/css/main.css?v=1'>\n"
 				"\t<link rel='stylesheet' type='text/css' href='/css/normalize.css?v=1'>\n"
 				"\t<link rel='stylesheet' type='text/css' href='/css/common.css?v=1'>\n"
 				"\t";
-			#line 187 "app/tmpl_src/layout/layout.tmpl"
+			#line 215 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "REGISTER") {
-				#line 189 "app/tmpl_src/layout/layout.tmpl"
+				#line 217 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<link rel='stylesheet' type='text/css' href='/css/register.css?v=1'>\n"
 					"\t";
-			#line 189 "app/tmpl_src/layout/layout.tmpl"
+			#line 217 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 193 "app/tmpl_src/layout/layout.tmpl"
+			#line 221 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"</head>\n"
 				"<body>\n"
 				"\t<div id='wrapper'>\n"
 				"\t\t";
-			#line 193 "app/tmpl_src/layout/layout.tmpl"
+			#line 221 "app/tmpl_src/layout/layout.tmpl"
 			header();
-			#line 195 "app/tmpl_src/layout/layout.tmpl"
+			#line 223 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t\t<div id='body-wrapper'>\n"
 				"\t\t\t";
-			#line 195 "app/tmpl_src/layout/layout.tmpl"
+			#line 223 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "HOME") {
-				#line 196 "app/tmpl_src/layout/layout.tmpl"
+				#line 224 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t";
-				#line 196 "app/tmpl_src/layout/layout.tmpl"
+				#line 224 "app/tmpl_src/layout/layout.tmpl"
 				if(content.LOGGED_IN == "true") {
-					#line 197 "app/tmpl_src/layout/layout.tmpl"
+					#line 225 "app/tmpl_src/layout/layout.tmpl"
 					out()<<"\n"
 						"\t\t\t\t\t";
-					#line 197 "app/tmpl_src/layout/layout.tmpl"
+					#line 225 "app/tmpl_src/layout/layout.tmpl"
 					create_post_form();
-					#line 198 "app/tmpl_src/layout/layout.tmpl"
+					#line 226 "app/tmpl_src/layout/layout.tmpl"
 					out()<<"\n"
 						"\t\t\t\t";
-				#line 198 "app/tmpl_src/layout/layout.tmpl"
+				#line 226 "app/tmpl_src/layout/layout.tmpl"
 				} // endif
-				#line 199 "app/tmpl_src/layout/layout.tmpl"
+				#line 227 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t";
-			#line 199 "app/tmpl_src/layout/layout.tmpl"
+			#line 227 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 200 "app/tmpl_src/layout/layout.tmpl"
+			#line 228 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t\t\t";
-			#line 200 "app/tmpl_src/layout/layout.tmpl"
+			#line 228 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "REGISTER") {
-				#line 201 "app/tmpl_src/layout/layout.tmpl"
+				#line 229 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t";
-				#line 201 "app/tmpl_src/layout/layout.tmpl"
+				#line 229 "app/tmpl_src/layout/layout.tmpl"
 				register_form();
-				#line 202 "app/tmpl_src/layout/layout.tmpl"
+				#line 230 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t";
-			#line 202 "app/tmpl_src/layout/layout.tmpl"
+			#line 230 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 208 "app/tmpl_src/layout/layout.tmpl"
+			#line 231 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"\t\t\t";
+			#line 231 "app/tmpl_src/layout/layout.tmpl"
+			if(content.PAGE == "FORGOT_INITIAL") {
+				#line 232 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t\t";
+				#line 232 "app/tmpl_src/layout/layout.tmpl"
+				forgot_initial();
+				#line 233 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t";
+			#line 233 "app/tmpl_src/layout/layout.tmpl"
+			} // endif
+			#line 234 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"\t\t\t";
+			#line 234 "app/tmpl_src/layout/layout.tmpl"
+			if(content.PAGE == "FORGOT_LANDING") {
+				#line 235 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t\t";
+				#line 235 "app/tmpl_src/layout/layout.tmpl"
+				forgot_landing();
+				#line 236 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t";
+			#line 236 "app/tmpl_src/layout/layout.tmpl"
+			} // endif
+			#line 237 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"\t\t\t";
+			#line 237 "app/tmpl_src/layout/layout.tmpl"
+			if(content.PAGE == "PASSWORD_RESET") {
+				#line 238 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t\t";
+				#line 238 "app/tmpl_src/layout/layout.tmpl"
+				reset_password();
+				#line 239 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t";
+			#line 239 "app/tmpl_src/layout/layout.tmpl"
+			} // endif
+			#line 245 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t\t</div>\n"
 				"\t</div>\n"
@@ -344,66 +432,77 @@ namespace master {
 				"\t<script src='/js/jquery.min.js'></script>\n"
 				"\t<script src='/js/common.js'></script>\n"
 				"\t";
-			#line 208 "app/tmpl_src/layout/layout.tmpl"
+			#line 245 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "HOME") {
-				#line 210 "app/tmpl_src/layout/layout.tmpl"
+				#line 247 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<script src='/js/market.js'></script>\n"
 					"\t";
-			#line 210 "app/tmpl_src/layout/layout.tmpl"
+			#line 247 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 211 "app/tmpl_src/layout/layout.tmpl"
+			#line 248 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t";
-			#line 211 "app/tmpl_src/layout/layout.tmpl"
+			#line 248 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "CREATEPOST") {
-				#line 213 "app/tmpl_src/layout/layout.tmpl"
+				#line 250 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<script src='/js/market.js'></script>\n"
 					"\t";
-			#line 213 "app/tmpl_src/layout/layout.tmpl"
+			#line 250 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 214 "app/tmpl_src/layout/layout.tmpl"
+			#line 251 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t";
-			#line 214 "app/tmpl_src/layout/layout.tmpl"
+			#line 251 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "REGISTER") {
-				#line 216 "app/tmpl_src/layout/layout.tmpl"
+				#line 253 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<script src='/js/register.js'></script>\n"
 					"\t";
-			#line 216 "app/tmpl_src/layout/layout.tmpl"
+			#line 253 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 219 "app/tmpl_src/layout/layout.tmpl"
+			#line 254 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"\t";
+			#line 254 "app/tmpl_src/layout/layout.tmpl"
+			if(content.PAGE == "FORGOT_INITIAL") {
+				#line 256 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t<script src='/js/forgot.js'></script>\n"
+					"\t";
+			#line 256 "app/tmpl_src/layout/layout.tmpl"
+			} // endif
+			#line 259 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"</body>\n"
 				"</html>\n"
 				"";
-		#line 219 "app/tmpl_src/layout/layout.tmpl"
+		#line 259 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template render
-	#line 221 "app/tmpl_src/layout/layout.tmpl"
+	#line 261 "app/tmpl_src/layout/layout.tmpl"
 	}; // end of class master
-#line 222 "app/tmpl_src/layout/layout.tmpl"
-} // end of namespace master
-#line 222 "app/tmpl_src/layout/layout.tmpl"
+#line 262 "app/tmpl_src/layout/layout.tmpl"
+} // end of namespace layout
+#line 262 "app/tmpl_src/layout/layout.tmpl"
 namespace {
-#line 222 "app/tmpl_src/layout/layout.tmpl"
+#line 262 "app/tmpl_src/layout/layout.tmpl"
  cppcms::views::generator my_generator; 
-#line 222 "app/tmpl_src/layout/layout.tmpl"
+#line 262 "app/tmpl_src/layout/layout.tmpl"
  struct loader { 
-#line 222 "app/tmpl_src/layout/layout.tmpl"
+#line 262 "app/tmpl_src/layout/layout.tmpl"
   loader() { 
-#line 222 "app/tmpl_src/layout/layout.tmpl"
-   my_generator.name("master");
-#line 222 "app/tmpl_src/layout/layout.tmpl"
-   my_generator.add_view<master::master,dxtemplate::context>("master",true);
-#line 222 "app/tmpl_src/layout/layout.tmpl"
+#line 262 "app/tmpl_src/layout/layout.tmpl"
+   my_generator.name("layout");
+#line 262 "app/tmpl_src/layout/layout.tmpl"
+   my_generator.add_view<layout::master,dxtemplate::context>("master",true);
+#line 262 "app/tmpl_src/layout/layout.tmpl"
     cppcms::views::pool::instance().add(my_generator);
-#line 222 "app/tmpl_src/layout/layout.tmpl"
+#line 262 "app/tmpl_src/layout/layout.tmpl"
  }
-#line 222 "app/tmpl_src/layout/layout.tmpl"
+#line 262 "app/tmpl_src/layout/layout.tmpl"
  ~loader() {  cppcms::views::pool::instance().remove(my_generator); }
-#line 222 "app/tmpl_src/layout/layout.tmpl"
+#line 262 "app/tmpl_src/layout/layout.tmpl"
 } a_loader;
-#line 222 "app/tmpl_src/layout/layout.tmpl"
+#line 262 "app/tmpl_src/layout/layout.tmpl"
 } // anon 

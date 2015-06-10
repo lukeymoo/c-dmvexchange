@@ -7,9 +7,9 @@
 #include <cppcms/http_response.h>
 #include <cppcms/url_dispatcher.h>
 #include <cppcms/url_mapper.h>
-#include <cppcms/session_interface.h>
+#include <sstream>
 #include "view.hpp"
-#include "methods.hpp"
+#include "user.hpp"
 
 //#include "static.h" . - Not used, nginx serves static files
 
@@ -57,6 +57,40 @@ class DXServer : public cppcms::application {
 			dispatcher().assign("/register/process(/)?", &DXServer::process_register, this);
 
 			/*
+				@METHOD - GET
+
+				@FUNCTION -
+					Generate password reset token & send to specified email
+			*/
+			dispatcher().assign("/forgot(/)?", &DXServer::forgot, this);
+
+			/*
+				@METHOD - POST
+
+				@FUNCTION -
+					Process forgot page request determine what data to send to
+					the user based on selected option
+			*/
+			dispatcher().assign("/forgot/process(/)?", &DXServer::process_forgot, this);
+
+			/*
+				@METHOD - POST
+
+				@FUNCTION -
+					Success page, just notifies user that message has been sent
+			*/
+			dispatcher().assign("/forgot/success(/)?", &DXServer::forgot_landing, this);
+
+			/*
+				@METHOD - GET
+
+				@FUNCTION -
+					When valid token is specified, presents form that user completes
+					to set a new password for themselves
+			*/
+			dispatcher().assign("/reset(/)?", &DXServer::reset, this);
+
+			/*
 				@METHOD - ANY
 
 				@FUNCTION -
@@ -89,22 +123,19 @@ class DXServer : public cppcms::application {
 
 		pqxx::connection dbconn; // connection to primary database
 
-		// index page
 		void index_page();
-
-		// register page
 		void register_page();
-
-		// json response
-		void json_session();
-
-		// process login
 		void process_login();
 		void process_register();
+		void forgot();
+		void process_forgot();
+		void forgot_landing();
+		void reset();
 		void logout();
 
 		// send standard status, message json response
 		void json_response(std::string status, std::string message);
+		void json_session();
 
 		// debugging
 		void debug_session();

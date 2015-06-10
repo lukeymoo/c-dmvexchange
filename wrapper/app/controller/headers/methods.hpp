@@ -1,6 +1,7 @@
 #ifndef __METHODS_H__
 #define __METHODS_H__
 
+#include <cppcms/util.h>
 #include <iostream>
 #include <cstdlib>
 #include <pqxx/pqxx>
@@ -8,6 +9,8 @@
 #include "user.hpp"
 #include "base64.hpp"
 #include <openssl/sha.h>
+
+std::string get_time(); // gets current unix epoch in ms
 
 namespace crypto {
 	std::string sha512_enc(std::string input);
@@ -31,9 +34,35 @@ namespace form {
 	bool validZipcode(std::string zipcode);
 };
 
+// contains methods for email & internal mailing/chat system
+namespace mail {
+	std::string generate_token(std::string email);
+	namespace external {
+		void send_registration(std::string email, std::string token); // activate account
+		void send_pwd_reset(std::string email, std::string token); // forgot password
+		void send_username(std::string email, std::string username); // forgot username
+	};
+};
+
+namespace error {
+	void send(std::string err_msg);
+};
 
 // database related methods
 namespace db {
+
+	namespace update {
+		namespace user {
+			// Single key,value pairs
+			void by_id(pqxx::connection *c, int id, std::pair<std::string, std::string> data);
+			void by_username(pqxx::connection *c, std::string username, std::pair<std::string, std::string> data);
+			void by_email(pqxx::connection *c, std::string email, std::pair<std::string, std::string> data);
+			// double key,value pairs
+			void by_id(pqxx::connection *c, int id, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2);
+			void by_username(pqxx::connection *c, std::string username, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2);
+			void by_email(pqxx::connection *c, std::string email, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2);
+		};
+	};
 
 	namespace get_user {
 		std::map<std::string, std::string> by_id(pqxx::connection *c, int id);
@@ -45,6 +74,7 @@ namespace db {
 		bool table(pqxx::connection *c, std::string table_name);
 		bool username(pqxx::connection *c, std::string username);
 		bool email(pqxx::connection *c, std::string email);
+		bool forgot_token(pqxx::connection *c, std::string token);
 	};
 
 	namespace try_login {

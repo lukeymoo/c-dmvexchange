@@ -28,14 +28,23 @@ dxtemplate::context::~context() {
 */
 void dxtemplate::context::set_page(std::string page_id) {
 	PAGE = page_id;
-	if(PAGE.compare("HOME") == 0) {
+	if(PAGE == "HOME") {
 		TITLE = "Home";
 	}
-	if(PAGE.compare("REGISTER") == 0) {
+	if(PAGE == "REGISTER") {
 		TITLE = "Register";
 	}
-	if(PAGE.compare("CREATEPOST") == 0) {
+	if(PAGE == "CREATEPOST") {
 		TITLE = "Create Post";
+	}
+	if(PAGE == "FORGOT_INITIAL") {
+		TITLE = "Forgot Something";
+	}
+	if(PAGE == "FORGOT_LANDING") {
+		TITLE = "Request Sent";
+	}
+	if(PAGE == "PASSWORD_RESET") {
+		TITLE = "Password Reset";
 	}
 	return;
 }
