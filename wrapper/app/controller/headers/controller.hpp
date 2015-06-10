@@ -91,6 +91,14 @@ class DXServer : public cppcms::application {
 			dispatcher().assign("/reset(/)?", &DXServer::reset, this);
 
 			/*
+				@METHOD - POST
+
+				@FUNCTION -
+					Process reset form
+			*/
+			dispatcher().assign("/reset/process(/)?", &DXServer::process_reset, this);
+
+			/*
 				@METHOD - ANY
 
 				@FUNCTION -
@@ -131,6 +139,7 @@ class DXServer : public cppcms::application {
 		void process_forgot();
 		void forgot_landing();
 		void reset();
+		void process_reset();
 		void logout();
 
 		// send standard status, message json response

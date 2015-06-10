@@ -196,9 +196,9 @@
 <span id='password-reset-header'>Password reset form</span>
 <form id='password-reset-form' method='post' action='/reset/process'>
 	<label>Enter a new password</label>
-	<input type='password' name='p' placeholder='Enter a new password...'><br>
+	<input type='password' id='np' name='np' placeholder='Enter a new password...'><br>
 	<label>Confirm new password</label>
-	<input type='password' name='pa' placeholder='Confirm new password...'><br>
+	<input type='password' id='npa' name='npa' placeholder='Confirm new password...'><br>
 </form>
 <button id='reset-button'>Set new password</button>
 <% end template %>
@@ -253,6 +253,9 @@
 	<% end %>
 	<% if (content.PAGE == "FORGOT_INITIAL") %>
 		<script src='/js/forgot.js'></script>
+	<% end %>
+	<% if (content.PAGE == "PASSWORD_RESET") %>
+		<script src='/js/reset.js'></script>
 	<% end %>
 </body>
 </html>

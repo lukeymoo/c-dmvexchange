@@ -297,9 +297,9 @@ namespace layout {
 				"<span id='password-reset-header'>Password reset form</span>\n"
 				"<form id='password-reset-form' method='post' action='/reset/process'>\n"
 				"\t<label>Enter a new password</label>\n"
-				"\t<input type='password' name='p' placeholder='Enter a new password...'><br>\n"
+				"\t<input type='password' id='np' name='np' placeholder='Enter a new password...'><br>\n"
 				"\t<label>Confirm new password</label>\n"
-				"\t<input type='password' name='pa' placeholder='Confirm new password...'><br>\n"
+				"\t<input type='password' id='npa' name='npa' placeholder='Confirm new password...'><br>\n"
 				"</form>\n"
 				"<button id='reset-button'>Set new password</button>\n"
 				"";
@@ -473,36 +473,47 @@ namespace layout {
 					"\t";
 			#line 256 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
+			#line 257 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"\t";
+			#line 257 "app/tmpl_src/layout/layout.tmpl"
+			if(content.PAGE == "PASSWORD_RESET") {
+				#line 259 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t<script src='/js/reset.js'></script>\n"
+					"\t";
 			#line 259 "app/tmpl_src/layout/layout.tmpl"
+			} // endif
+			#line 262 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"</body>\n"
 				"</html>\n"
 				"";
-		#line 259 "app/tmpl_src/layout/layout.tmpl"
+		#line 262 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template render
-	#line 261 "app/tmpl_src/layout/layout.tmpl"
+	#line 264 "app/tmpl_src/layout/layout.tmpl"
 	}; // end of class master
-#line 262 "app/tmpl_src/layout/layout.tmpl"
+#line 265 "app/tmpl_src/layout/layout.tmpl"
 } // end of namespace layout
-#line 262 "app/tmpl_src/layout/layout.tmpl"
+#line 265 "app/tmpl_src/layout/layout.tmpl"
 namespace {
-#line 262 "app/tmpl_src/layout/layout.tmpl"
+#line 265 "app/tmpl_src/layout/layout.tmpl"
  cppcms::views::generator my_generator; 
-#line 262 "app/tmpl_src/layout/layout.tmpl"
+#line 265 "app/tmpl_src/layout/layout.tmpl"
  struct loader { 
-#line 262 "app/tmpl_src/layout/layout.tmpl"
+#line 265 "app/tmpl_src/layout/layout.tmpl"
   loader() { 
-#line 262 "app/tmpl_src/layout/layout.tmpl"
+#line 265 "app/tmpl_src/layout/layout.tmpl"
    my_generator.name("layout");
-#line 262 "app/tmpl_src/layout/layout.tmpl"
+#line 265 "app/tmpl_src/layout/layout.tmpl"
    my_generator.add_view<layout::master,dxtemplate::context>("master",true);
-#line 262 "app/tmpl_src/layout/layout.tmpl"
+#line 265 "app/tmpl_src/layout/layout.tmpl"
     cppcms::views::pool::instance().add(my_generator);
-#line 262 "app/tmpl_src/layout/layout.tmpl"
+#line 265 "app/tmpl_src/layout/layout.tmpl"
  }
-#line 262 "app/tmpl_src/layout/layout.tmpl"
+#line 265 "app/tmpl_src/layout/layout.tmpl"
  ~loader() {  cppcms::views::pool::instance().remove(my_generator); }
-#line 262 "app/tmpl_src/layout/layout.tmpl"
+#line 265 "app/tmpl_src/layout/layout.tmpl"
 } a_loader;
-#line 262 "app/tmpl_src/layout/layout.tmpl"
+#line 265 "app/tmpl_src/layout/layout.tmpl"
 } // anon 

@@ -508,6 +508,29 @@ void DXServer::reset() {
 	return;
 }
 
+void DXServer::process_reset() {
+	// only allow POST
+	if(request().request_method() != "POST") {
+		response().status(404);
+		response().out() << "http POST is only method allowed on this page";
+		return;
+	}
+	// if not valid password, redirect with error
+	if(!form::validPassword(request().post("np"))) {
+		response().status(302);
+		response().set_header("Location", "/reset/error?err=invalid_pwd");
+		return;
+	}
+	// if passwords dont match, redirect with error
+	if(request().post("np") != request().post("npa")) {
+		response().status(302);
+		response().set_header("Location", "/reset/error?err=non_match");
+		return;
+	}
+	response().out() << "Processing...";
+	return;
+}
+
 /*
 	@METHOD - Only GET method is allowed
 	
