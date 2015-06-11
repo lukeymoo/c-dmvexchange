@@ -21,8 +21,8 @@ main: $(OBJ_DIR)/main.o $(OBJ_DIR)/controller.o $(OBJ_DIR)/view.o $(OBJ_DIR)/met
 	@echo
 	# Linking...
 	@echo
-	g++ $(INC) $(FLAGS) \
-		objects/main.o objects/controller.o objects/view.o objects/methods.o objects/base64.o objects/user.o objects/layout.o -o main
+	g++ objects/main.o objects/controller.o objects/view.o objects/methods.o objects/base64.o objects/user.o objects/layout.o -o main \
+		$(INC) $(FLAGS)
 
 $(OBJ_DIR)/main.o: main.cpp $(SRC_C)/controller.cpp $(C_H)/controller.hpp
 	@echo

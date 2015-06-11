@@ -13,8 +13,8 @@ bool db::check_exist::table(pqxx::connection *c, std::string table_name) {
 	try {
 		// execute query
 		pqxx::result result = worker.exec(query.c_str());
-		pqxx::result::tuple row = result[0];
-		pqxx::result::field field = row[0];
+		pqxx::tuple row = result[0];
+		pqxx::field field = row.at(0);
 		if(field.as<std::string>() == "t") {
 			return true;
 		} else {
@@ -43,8 +43,8 @@ bool db::check_exist::username(pqxx::connection *c, std::string username) {
 	try {
 		// execute query
 		pqxx::result count = worker.exec(query.c_str());
-		pqxx::result::tuple row = count[0];
-		pqxx::result::field field = row[0];
+		pqxx::tuple row = count[0];
+		pqxx::field field = row[0];
 		if(field.as<std::string>() == "t") {
 			return true;
 		} else {
@@ -73,8 +73,8 @@ bool db::check_exist::email(pqxx::connection *c, std::string email) {
 	try {
 		// execute query
 		pqxx::result count = worker.exec(query.c_str());
-		pqxx::result::tuple row = count[0];
-		pqxx::result::field field = row[0];
+		pqxx::tuple row = count[0];
+		pqxx::field field = row[0];
 		if(field.as<std::string>() == "t") {
 			return true;
 		} else {
@@ -102,8 +102,8 @@ bool db::check_exist::forgot_token(pqxx::connection *c, std::string token) {
 	// execute
 	try {
 		pqxx::result result = worker.exec(query.c_str());
-		pqxx::result::tuple row = result[0];
-		pqxx::result::field field = row[0];
+		pqxx::tuple row = result[0];
+		pqxx::field field = row[0];
 		if(field.as<std::string>() == "t") {
 			return true;
 		} else {
@@ -133,8 +133,8 @@ bool db::try_login::with_username(pqxx::connection *c, std::string username, std
 	// execute query
 	try {
 		pqxx::result result = worker.exec(query.c_str());
-		pqxx::result::tuple row = result[0];
-		pqxx::result::field field = row[0];
+		pqxx::tuple row = result[0];
+		pqxx::field field = row[0];
 		if(field.as<std::string>() == "t") {
 			return true;
 		} else {
@@ -169,8 +169,8 @@ bool db::try_login::with_email(pqxx::connection *c, std::string email, std::stri
 	// execute query
 	try {
 		pqxx::result result = worker.exec(query.c_str());
-		pqxx::result::tuple row = result[0];
-		pqxx::result::field field = row[0];
+		pqxx::tuple row = result[0];
+		pqxx::field field = row[0];
 		if(field.as<std::string>() == "t") {
 			return true;
 		} else {
@@ -244,7 +244,9 @@ std::map<std::string, std::string> db::get_user::by_id(pqxx::connection *c, int 
 
 		pqxx::result::const_iterator row_i = result.begin();
 
-		pqxx::result::tuple row = row_i;
+		pqxx::tuple row = row_i;
+		row["asmdk"] >> info["test"];
+		/*
 		if(row["id"].is_null()) {
 			info["id"] = "";
 		} else {
@@ -280,6 +282,7 @@ std::map<std::string, std::string> db::get_user::by_id(pqxx::connection *c, int 
 		} else {
 			row["zipcode"] >> info["zipcode"];
 		}
+		*/
 	} catch(std::exception &e) {
 		// report error to email
 		std::ostringstream ss;
@@ -313,7 +316,8 @@ std::map<std::string, std::string> db::get_user::by_username(pqxx::connection *c
 
 		pqxx::result::const_iterator row_i = result.begin();
 
-		pqxx::result::tuple row = row_i;
+		pqxx::tuple row = row_i;
+		/*
 		if(row["id"].is_null()) {
 			info["id"] = "";
 		} else {
@@ -349,6 +353,7 @@ std::map<std::string, std::string> db::get_user::by_username(pqxx::connection *c
 		} else {
 			row["zipcode"] >> info["zipcode"];
 		}
+		*/
 	} catch(std::exception &e) {
 		// report error to email
 		std::ostringstream ss;
@@ -382,7 +387,8 @@ std::map<std::string, std::string> db::get_user::by_email(pqxx::connection *c, s
 
 		pqxx::result::const_iterator row_i = result.begin();
 
-		pqxx::result::tuple row = row_i;
+		pqxx::tuple row = row_i;
+		/*
 		if(row["id"].is_null()) {
 			info["id"] = "";
 		} else {
@@ -418,6 +424,7 @@ std::map<std::string, std::string> db::get_user::by_email(pqxx::connection *c, s
 		} else {
 			row["zipcode"] >> info["zipcode"];
 		}
+		*/
 	} catch(std::exception &e) {
 		// report error to email
 		std::ostringstream ss;
@@ -444,7 +451,8 @@ std::map<std::string, std::string> db::get_user::by_forgot_token(pqxx::connectio
 
 		pqxx::result::const_iterator row_i = result.begin();
 
-		pqxx::result::tuple row = row_i;
+		pqxx::tuple row = row_i;
+		/*
 		if(row["id"].is_null()) {
 			info["id"] = "";
 		} else {
@@ -480,6 +488,7 @@ std::map<std::string, std::string> db::get_user::by_forgot_token(pqxx::connectio
 		} else {
 			row["zipcode"] >> info["zipcode"];
 		}
+		*/
 	} catch(std::exception &e) {
 		// report error to email
 		std::ostringstream ss;
