@@ -99,6 +99,13 @@ class DXServer : public cppcms::application {
 			dispatcher().assign("/reset/process(/)?", &DXServer::process_reset, this);
 
 			/*
+				@METHOD - GET
+
+				@FUNCTION - Display successful password reset message
+			*/
+			dispatcher().assign("/reset/success(/)?", &DXServer::reset_landing, this);
+
+			/*
 				@METHOD - ANY
 
 				@FUNCTION -
@@ -139,6 +146,7 @@ class DXServer : public cppcms::application {
 		void process_forgot();
 		void forgot_landing();
 		void reset();
+		void reset_landing();
 		void process_reset();
 		void logout();
 

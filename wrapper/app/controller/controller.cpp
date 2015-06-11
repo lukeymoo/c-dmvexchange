@@ -370,6 +370,11 @@ void DXServer::forgot() {
 // Process the previous forgot page data
 // validating input & determining what data to
 // send to the user
+// Errors
+// -------
+// invalid_type		--- neither radio buttons were selected ( username || password )
+// invalid_email 	--- radio button username selected, but invalid email was specified
+// invalid_id 		--- radio button password selected, but neither a valid username || email was given
 void DXServer::process_forgot() {
 	// Only allow POST method
 	if(request().request_method() != "POST") {
@@ -387,27 +392,17 @@ void DXServer::process_forgot() {
 	}
 
 	if(need == "username") {
-		// ensure valid email
+		// if not valid email return with error
 		if(!form::validEmail(request().post("id"))) {
 			response().status(302);
 			response().set_header("Location", "/forgot?err=invalid_email");
 			return;
 		}
-		// if email exists
-		if(db::check_exist::email(&dbconn, request().post("id"))) {
-			// grab username
-			std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, request().post("id"));
-			if(info.empty()) {
-				response().set_header("Content-Type", "text/html");
-				response().status(500);
-				response().out() << "An error occurred retrieving requested information please try again<br><a href='/forgot'>Click here to return to forgot page</a>";
-				return;
-			}
-			// send username
+		// try to grab account info by email
+		std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, request().post("id"));
+		// if account information was retrieved send the username
+		if(!info.empty()) {
 			mail::external::send_username(request().post("id"), info["username"]);
-			// continue to success page
-		} else { // if the email doesn't exist
-			// continue to success page
 		}
 	} else if(need == "password") {
 		// ensure valid username or email
@@ -417,17 +412,11 @@ void DXServer::process_forgot() {
 				response().status(302);
 				response().set_header("Location", "/forgot?err=invalid_id");
 				return;
-			} else { // valid email
-				// if email exists
-				if(db::check_exist::email(&dbconn, request().post("id"))) {
-					// grab username
-					std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, request().post("id"));
-					if(info.empty()) {
-						response().set_header("Content-Type", "text/html");
-						response().status(500);
-						response().out() << "An error occurred retrieving requested information please try again<br><a href='/forgot'>Click here to return to forgot page</a>";
-						return;
-					}
+			} else { // if valid email was specified
+				// try to grab account info by email
+				std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, request().post("id"));
+				// if account with specified email exists
+				if(!info.empty()) {
 					// generate password reset token
 					std::string token = mail::generate_token(info["email"]);
 					// save token to database
@@ -436,22 +425,12 @@ void DXServer::process_forgot() {
 					db::update::user::by_email(&dbconn, info["email"], data1, data2);
 					// send username
 					mail::external::send_pwd_reset(info["email"], token);
-					// continue to success page
-				} else { // if email doesn't exist
-					// continue to success page
 				}
 			}
 		} else { // valid username
-			// ensure username exists in database
-			if(db::check_exist::username(&dbconn, request().post("id"))) {
-				// get the email from database
-				std::map<std::string, std::string> info = db::get_user::by_username(&dbconn, request().post("id"));
-				if(info.empty()) {
-					response().set_header("Content-Type", "text/html");
-					response().status(500);
-					response().out() << "An error occurred retrieving requested information please try again<br><a href='/forgot'>Click here to return to forgot page</a>";
-					return;
-				}
+			// try to grab account info by username
+			std::map<std::string, std::string> info = db::get_user::by_username(&dbconn, request().post("id"));
+			if(!info.empty()) {
 				// generate password reset token
 				std::string token = mail::generate_token(info["email"]);
 				// save token to database
@@ -460,8 +439,6 @@ void DXServer::process_forgot() {
 				db::update::user::by_email(&dbconn, info["email"], data1, data2);
 				// send password reset token to user
 				mail::external::send_pwd_reset(info["email"], token);
-			} else { // username does not exist
-				// continue to success page
 			}
 		}
 	}
@@ -472,6 +449,8 @@ void DXServer::process_forgot() {
 	return;
 }
 
+// provides form for which user can request
+// account information to be emailed
 void DXServer::forgot_landing() {
 	// only allow GET request
 	if(request().request_method() != "GET") {
@@ -487,6 +466,8 @@ void DXServer::forgot_landing() {
 	return;
 }
 
+// provides form for resetting password if the user
+// provided a valid token
 void DXServer::reset() {
 	// only allow GET method
 	if(request().request_method() != "GET") {
@@ -508,6 +489,11 @@ void DXServer::reset() {
 	return;
 }
 
+// validates and sets new password specified on previous page
+// Errors
+// -------
+// invalid_pwd --- invalid password ( failed regex test )
+// non_match   --- passwords didn't match ( fields np && npa )
 void DXServer::process_reset() {
 	// only allow POST
 	if(request().request_method() != "POST") {
@@ -527,7 +513,60 @@ void DXServer::process_reset() {
 		response().set_header("Location", "/reset/error?err=non_match");
 		return;
 	}
-	response().out() << "Processing...";
+	// decode the percent encoded token
+	std::string token_f = cppcms::util::urldecode(request().post("token"));
+	// check if password is the same as the existing one
+	std::map<std::string, std::string> info = db::get_user::by_forgot_token(&dbconn, token_f);
+	std::string password_f = crypto::gen_password::by_username(info["username"], request().post("np"));
+	if(!info.empty()) { // if found with token
+		// if passwords match, return with error same_password
+		if(info["password"] == password_f) {
+			std::string loc = "/reset?token=" + request().post("token") + "&err=same_password";
+			response().status(302);
+			response().set_header("Location", loc.c_str());
+			return;
+		} else {
+			
+
+			// ensure the token hasn't timed out
+
+
+
+			// set new password
+			std::pair<std::string, std::string> data1("password", password_f);
+			db::update::user::by_username(&dbconn, info["username"], data1);
+			// clear forgot token & timestamp
+			std::pair<std::string, std::string> data2("forgot_token", "");
+			std::pair<std::string, std::string> data3("forgot_timestamp", "0");
+			db::update::user::by_username(&dbconn, info["username"], data2, data3);
+			// email user about change
+			mail::external::notice_password(info["email"]);
+			// redirect to landing page
+			response().status(302);
+			response().set_header("Location", "/reset/success");
+			return;
+		}
+	} else { // if failed to find with token, return with error
+		std::string loc = "/reset?token=" + request().post("token") + "&err=invalid_token";
+		response().status(302);
+		response().set_header("Location", loc.c_str());
+	}
+	return;
+}
+
+// display success message
+void DXServer::reset_landing() {
+	// only allow GET method
+	if(request().request_method() != "GET") {
+		response().status(404);
+		response().out() << "http GET is only method allowed on this page";
+		return;
+	}
+	// display message
+	dxtemplate::context c;
+	c.resolve_session(session());
+	c.set_page("RESET_LANDING");
+	render("master", c);
 	return;
 }
 

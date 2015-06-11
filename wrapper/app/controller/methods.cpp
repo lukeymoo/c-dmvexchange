@@ -127,25 +127,7 @@ bool db::try_login::with_username(pqxx::connection *c, std::string username, std
 	pqxx::work worker(*c); // create worker
 	// lowercase username
 	std::string username_f = to_lowercase(username);
-	// generate inital hash
-	std::string init = crypto::generate(username_f, password);
-	std::string init_username;
-	std::string init_password;
-	// hash iteratively 2500 times with username
-	for(int i = 0; i < 2500; i++) {
-		init_username = crypto::generate(init, username_f);
-	}
-	// hash iteratively 2500 times with password
-	for(int i = 0; i < 3000; i++) {
-		init_password = crypto::generate(init, password);
-	}
-	// put them together with generate
-	std::string init_final = crypto::generate(init_username, init_password);
-	std::string password_f;
-	// hash iteratively 2500 times with init_final
-	for(int i = 0; i < 2500; i++) {
-		password_f = crypto::generate(init, init_final);
-	}
+	std::string password_f = crypto::gen_password::by_username(username, password);
 	// prepare query
 	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE username=" + c->quote(username_f) + " AND password=" + c->quote(password_f) + ")";
 	// execute query
@@ -181,26 +163,7 @@ bool db::try_login::with_email(pqxx::connection *c, std::string email, std::stri
 	if(user_account.empty()) {
 		return false;
 	}
-	// generate inital hash
-	std::string init = crypto::generate(user_account["username"], password);
-	std::string init_username;
-	std::string init_password;
-	// hash iteratively 2500 times with username
-	for(int i = 0; i < 2500; i++) {
-		init_username = crypto::generate(init, user_account["username"]);
-	}
-	// hash iteratively 3000 times with password
-	for(int i = 0; i < 3000; i++) {
-		init_password = crypto::generate(init, password);
-	}
-	// put them together with generate
-	std::string init_final = crypto::generate(init_username, init_password);
-	std::string password_f;
-	// hash iteratively 2500 times with init_final
-	for(int i = 0; i < 2500; i++) {
-		password_f = crypto::generate(init, init_final);
-	}
-	
+	std::string password_f = crypto::gen_password::by_email(c, email, password);
 	// prepare query
 	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE email=" + c->quote(email_f) + " AND password=" + c->quote(password_f) + ")";
 	// execute query
@@ -465,6 +428,67 @@ std::map<std::string, std::string> db::get_user::by_email(pqxx::connection *c, s
 	return info;
 }
 
+std::map<std::string, std::string> db::get_user::by_forgot_token(pqxx::connection *c, std::string token) {
+	std::map<std::string, std::string> info; // will contain the user info
+	pqxx::work worker(*c); // create worker
+	// prepare query
+	std::string query = "SELECT * FROM dmv_users_t WHERE forgot_token=" + c->quote(token);
+	try {
+		// execute query
+		pqxx::result result = worker.exec(query.c_str());
+
+		// return to prevent memory access error if no results
+		if(result.empty()) {
+			return info;
+		}
+
+		pqxx::result::const_iterator row_i = result.begin();
+
+		pqxx::result::tuple row = row_i;
+		if(row["id"].is_null()) {
+			info["id"] = "";
+		} else {
+			row["id"] >> info["id"];
+		}
+		if(row["firstname"].is_null()) {
+			info["firstname"] = "";
+		} else {
+			row["firstname"] >> info["firstname"];
+		}
+		if(row["lastname"].is_null()) {
+			info["lastname"] = "";
+		} else {
+			row["lastname"] >> info["lastname"];
+		}
+		if(row["username"].is_null()) {
+			info["username"] = "";
+		} else {
+			row["username"] >> info["username"];
+		}
+		if(row["password"].is_null()) {
+			info["password"] = "";
+		} else {
+			row["password"] >> info["password"];
+		}
+		if(row["email"].is_null()) {
+			info["email"] = "";
+		} else {
+			row["email"] >> info["email"];
+		}
+		if(row["zipcode"].is_null()) {
+			info["zipcode"] = "";
+		} else {
+			row["zipcode"] >> info["zipcode"];
+		}
+	} catch(std::exception &e) {
+		// report error to email
+		std::ostringstream ss;
+		ss << "Finding user by email :: " << e.what();
+		error::send(ss.str());
+		throw; // bubble exception up
+	}
+	return info;
+}
 
 
 /*
@@ -506,6 +530,51 @@ std::string crypto::generate(std::string username, std::string password) {
 	std::string fourth = crypto::sha512_enc(second + third); // hsecond + hthird
 	std::string final = crypto::sha512_enc(first + fourth); // hfirst + hfourth
 	return final;
+}
+
+// calls crypto::gen_password::by_username after recovering username from database
+// with specified identifier ( id in this case )
+std::string crypto::gen_password::by_id(pqxx::connection *dbconn, int id, std::string password) {
+	std::map<std::string, std::string> info = db::get_user::by_id(dbconn, id);
+	std::string password_f = "";
+	if(!info.empty()) {
+		password_f = crypto::gen_password::by_username(info["username"], password);
+	}
+	return password_f;
+}
+
+// calls crypto::gen_password::by_username after recovering username from database
+// with specified identifier ( email in this case )
+std::string crypto::gen_password::by_email(pqxx::connection *dbconn, std::string email, std::string password) {
+	std::map<std::string, std::string> info = db::get_user::by_email(dbconn, email);
+	std::string password_f = "";
+	if(!info.empty()) {
+		password_f = crypto::gen_password::by_username(info["username"], password);
+	}
+	return password_f;
+}
+
+std::string crypto::gen_password::by_username(std::string username, std::string password) {
+	std::string password_f;
+	// generate password with crazy hashing technique
+	std::string init = crypto::generate(username, password);
+	std::string init_username;
+	std::string init_password;
+	// hash iteratively 2500 times with username
+	for(int i = 0; i < 2500; i++) {
+		init_username = crypto::generate(init, username);
+	}
+	// hash iteratively 2500 times with password
+	for(int i = 0; i < 3000; i++) {
+		init_password = crypto::generate(init, password);
+	}
+	// put them together with generate
+	std::string init_final = crypto::generate(init_username, init_password);
+	// hash iteratively 2500 times with init_final
+	for(int i = 0; i < 2500; i++) {
+		password_f = crypto::generate(init, init_final);
+	}
+	return password_f;
 }
 
 /*
@@ -647,6 +716,24 @@ void mail::external::send_pwd_reset(std::string email, std::string token) {
 	FILE *pHandle = popen(command.c_str(), "w");
 	if(!pHandle) {
 		std::string err = "Failed to send password reset to " + email_f + " with token " + token;
+		// report error to email
+		error::send(err);
+		std::cerr << err << std::endl;
+		return;
+	}
+	pclose(pHandle);
+	return;
+}
+
+// notify the user that their password has been changed
+void mail::external::notice_password(std::string email) {
+	std::string email_f = to_lowercase(email);
+	std::string subject = "Password Changed!";
+	std::string message = "Your password has been changed!";
+	std::string command = "echo '" + message + "' | mail -aContent-Type:text/html -aFrom:'DMV Exchange'\\<no-reply@dmv-exchange.com\\> -s '" + subject + "' " + email_f;
+	FILE *pHandle = popen(command.c_str(), "w");
+	if(!pHandle) {
+		std::string err = "Failed to send password change notice to " + email_f;
 		// report error to email
 		error::send(err);
 		std::cerr << err << std::endl;

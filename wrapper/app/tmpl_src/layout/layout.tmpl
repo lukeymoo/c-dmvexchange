@@ -195,12 +195,18 @@
 <% template reset_password() %>
 <span id='password-reset-header'>Password reset form</span>
 <form id='password-reset-form' method='post' action='/reset/process'>
+	<input class='hidden' id='token' name='token' type='text' value=''>
 	<label>Enter a new password</label>
 	<input type='password' id='np' name='np' placeholder='Enter a new password...'><br>
 	<label>Confirm new password</label>
 	<input type='password' id='npa' name='npa' placeholder='Confirm new password...'><br>
 </form>
 <button id='reset-button'>Set new password</button>
+<% end template %>
+
+<% template reset_landing() %>
+<span id='reset-landing-header'>Your password has been reset!</span>
+<a id='forgot-return' href='/'>Click here to return home</a>
 <% end template %>
 
 <% template render() %>
@@ -236,6 +242,9 @@
 			<% end %>
 			<% if (content.PAGE == "PASSWORD_RESET") %>
 				<% include reset_password() %>
+			<% end %>
+			<% if (content.PAGE == "RESET_LANDING") %>
+				<% include reset_landing() %>
 			<% end %>
 		</div>
 	</div>

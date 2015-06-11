@@ -46,6 +46,9 @@ void dxtemplate::context::set_page(std::string page_id) {
 	if(PAGE == "PASSWORD_RESET") {
 		TITLE = "Password Reset";
 	}
+	if(PAGE == "RESET_LANDING") {
+		TITLE = "Password reset";
+	}
 	return;
 }
 

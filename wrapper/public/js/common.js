@@ -277,7 +277,7 @@ function getParam(sParam) {
 	for(var i = 0; i < sURLVariables.length; i++) {
 		var sParameterName = sURLVariables[i].split('=');
 		if (sParameterName[0] == sParam) {
-			return decodeURI(sParameterName[1]);
+			return decodeURIComponent(sParameterName[1]);
 		}
 	}
 }

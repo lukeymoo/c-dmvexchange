@@ -847,6 +847,14 @@ body {
 	font-family: GOOGLE;
 }
 
+#reset-landing-header {
+	position: absolute;
+	top: 25px;
+	left: 375px;
+	font-size: 1.15em;
+	font-family: GOOGLE;
+}
+
 #forgot-return {
 	position: absolute;
 	top: 60px;

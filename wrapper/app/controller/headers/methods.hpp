@@ -16,6 +16,12 @@ namespace crypto {
 	std::string sha512_enc(std::string input);
 	std::string sha512_noenc(std::string input);
 	std::string generate(std::string username, std::string password);
+	namespace gen_password {
+		// gets user account & generates a password as usual
+		std::string by_username(std::string username, std::string password);
+		std::string by_email(pqxx::connection *dbconn, std::string email, std::string password);
+		std::string by_id(pqxx::connection *dbconn, int id, std::string password);
+	};
 };
 
 namespace form {
@@ -41,6 +47,7 @@ namespace mail {
 		void send_registration(std::string email, std::string token); // activate account
 		void send_pwd_reset(std::string email, std::string token); // forgot password
 		void send_username(std::string email, std::string username); // forgot username
+		void notice_password(std::string email); // update password change
 	};
 };
 
@@ -68,6 +75,7 @@ namespace db {
 		std::map<std::string, std::string> by_id(pqxx::connection *c, int id);
 		std::map<std::string, std::string> by_username(pqxx::connection *c, std::string username);
 		std::map<std::string, std::string> by_email(pqxx::connection *c, std::string email);
+		std::map<std::string, std::string> by_forgot_token(pqxx::connection *c, std::string token);
 	};
 
 	namespace check_exist {
