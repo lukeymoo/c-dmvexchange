@@ -2,7 +2,7 @@
 
 int main(int argc, char **argv) {
 	// Connect to database
-	pqxx::connection c("dbname=dmvexchange user=db password=f9a548add9f0007ca4071e06f04e3f81 hostaddr=127.0.0.1 port=5432");
+	pqxx::connection c("dbname=dmvexchange user=db password=f9a548add9f0007ca4071e06f04e3f81 hostaddr=173.66.17.87 port=5432");
 
 	// Ensure connection is open
 	if(c.is_open()) {
