@@ -16,7 +16,7 @@
 
 class DXServer : public cppcms::application {
 	public:
-		DXServer(cppcms::service &srv) : cppcms::application(srv), dbconn("dbname=dmvexchange user=db password=f9a548add9f0007ca4071e06f04e3f81 hostaddr=127.0.0.1 port=5432") {
+		DXServer(cppcms::service &srv) : cppcms::application(srv), dbconn("dbname=dmvexchange user=db password=f9a548add9f0007ca4071e06f04e3f81 hostaddr=173.66.17.87 port=5432") {
 			std::cout << "[+] Threaded..." << std::endl;
 			/*
 				@METHOD - GET
