@@ -425,6 +425,8 @@ void DXServer::process_forgot() {
 					db::update::user::by_email(&dbconn, info["email"], data1, data2);
 					// send username
 					mail::external::send_pwd_reset(info["email"], token);
+				} else {
+					std::cout << "bad email was given => " << request().post("id") << std::endl;
 				}
 			}
 		} else { // valid username
@@ -439,6 +441,8 @@ void DXServer::process_forgot() {
 				db::update::user::by_email(&dbconn, info["email"], data1, data2);
 				// send password reset token to user
 				mail::external::send_pwd_reset(info["email"], token);
+			} else {
+				std::cout << "bad username was given => " << request().post("id") << std::endl;
 			}
 		}
 	}

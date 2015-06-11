@@ -245,44 +245,47 @@ std::map<std::string, std::string> db::get_user::by_id(pqxx::connection *c, int 
 		pqxx::result::const_iterator row_i = result.begin();
 
 		pqxx::tuple row = row_i;
-		row["asmdk"] >> info["test"];
-		/*
-		if(row["id"].is_null()) {
-			info["id"] = "";
-		} else {
+		try {
 			row["id"] >> info["id"];
+		} catch(std::exception &e) {
+			info["id"] = "";
 		}
-		if(row["firstname"].is_null()) {
-			info["firstname"] = "";
-		} else {
+
+		try {
 			row["firstname"] >> info["firstname"];
+		} catch(std::exception &e) {
+			info["firstname"] = "";
 		}
-		if(row["lastname"].is_null()) {
-			info["lastname"] = "";
-		} else {
+
+		try {
 			row["lastname"] >> info["lastname"];
+		} catch(std::exception &e) {
+			info["lastname"] = "";
 		}
-		if(row["username"].is_null()) {
-			info["username"] = "";
-		} else {
+
+		try {
 			row["username"] >> info["username"];
+		} catch(std::exception &e) {
+			info["username"] = "";
 		}
-		if(row["password"].is_null()) {
-			info["password"] = "";
-		} else {
+
+		try {
 			row["password"] >> info["password"];
+		} catch(std::exception &e) {
+			info["password"] = "";
 		}
-		if(row["email"].is_null()) {
-			info["email"] = "";
-		} else {
+
+		try {
 			row["email"] >> info["email"];
+		} catch(std::exception &e) {
+			info["email"] = "";
 		}
-		if(row["zipcode"].is_null()) {
-			info["zipcode"] = "";
-		} else {
+
+		try {
 			row["zipcode"] >> info["zipcode"];
+		} catch(std::exception &e) {
+			info["zipcode"] = "";
 		}
-		*/
 	} catch(std::exception &e) {
 		// report error to email
 		std::ostringstream ss;
@@ -317,43 +320,47 @@ std::map<std::string, std::string> db::get_user::by_username(pqxx::connection *c
 		pqxx::result::const_iterator row_i = result.begin();
 
 		pqxx::tuple row = row_i;
-		/*
-		if(row["id"].is_null()) {
-			info["id"] = "";
-		} else {
+		try {
 			row["id"] >> info["id"];
+		} catch(std::exception &e) {
+			info["id"] = "";
 		}
-		if(row["firstname"].is_null()) {
-			info["firstname"] = "";
-		} else {
+
+		try {
 			row["firstname"] >> info["firstname"];
+		} catch(std::exception &e) {
+			info["firstname"] = "";
 		}
-		if(row["lastname"].is_null()) {
-			info["lastname"] = "";
-		} else {
+
+		try {
 			row["lastname"] >> info["lastname"];
+		} catch(std::exception &e) {
+			info["lastname"] = "";
 		}
-		if(row["username"].is_null()) {
-			info["username"] = "";
-		} else {
+
+		try {
 			row["username"] >> info["username"];
+		} catch(std::exception &e) {
+			info["username"] = "";
 		}
-		if(row["password"].is_null()) {
-			info["password"] = "";
-		} else {
+
+		try {
 			row["password"] >> info["password"];
+		} catch(std::exception &e) {
+			info["password"] = "";
 		}
-		if(row["email"].is_null()) {
-			info["email"] = "";
-		} else {
+
+		try {
 			row["email"] >> info["email"];
+		} catch(std::exception &e) {
+			info["email"] = "";
 		}
-		if(row["zipcode"].is_null()) {
-			info["zipcode"] = "";
-		} else {
+
+		try {
 			row["zipcode"] >> info["zipcode"];
+		} catch(std::exception &e) {
+			info["zipcode"] = "";
 		}
-		*/
 	} catch(std::exception &e) {
 		// report error to email
 		std::ostringstream ss;
@@ -388,43 +395,47 @@ std::map<std::string, std::string> db::get_user::by_email(pqxx::connection *c, s
 		pqxx::result::const_iterator row_i = result.begin();
 
 		pqxx::tuple row = row_i;
-		/*
-		if(row["id"].is_null()) {
-			info["id"] = "";
-		} else {
+		try {
 			row["id"] >> info["id"];
+		} catch(std::exception &e) {
+			info["id"] = "";
 		}
-		if(row["firstname"].is_null()) {
-			info["firstname"] = "";
-		} else {
+
+		try {
 			row["firstname"] >> info["firstname"];
+		} catch(std::exception &e) {
+			info["firstname"] = "";
 		}
-		if(row["lastname"].is_null()) {
-			info["lastname"] = "";
-		} else {
+
+		try {
 			row["lastname"] >> info["lastname"];
+		} catch(std::exception &e) {
+			info["lastname"] = "";
 		}
-		if(row["username"].is_null()) {
-			info["username"] = "";
-		} else {
+
+		try {
 			row["username"] >> info["username"];
+		} catch(std::exception &e) {
+			info["username"] = "";
 		}
-		if(row["password"].is_null()) {
-			info["password"] = "";
-		} else {
+
+		try {
 			row["password"] >> info["password"];
+		} catch(std::exception &e) {
+			info["password"] = "";
 		}
-		if(row["email"].is_null()) {
-			info["email"] = "";
-		} else {
+
+		try {
 			row["email"] >> info["email"];
+		} catch(std::exception &e) {
+			info["email"] = "";
 		}
-		if(row["zipcode"].is_null()) {
-			info["zipcode"] = "";
-		} else {
+
+		try {
 			row["zipcode"] >> info["zipcode"];
+		} catch(std::exception &e) {
+			info["zipcode"] = "";
 		}
-		*/
 	} catch(std::exception &e) {
 		// report error to email
 		std::ostringstream ss;
@@ -452,43 +463,47 @@ std::map<std::string, std::string> db::get_user::by_forgot_token(pqxx::connectio
 		pqxx::result::const_iterator row_i = result.begin();
 
 		pqxx::tuple row = row_i;
-		/*
-		if(row["id"].is_null()) {
-			info["id"] = "";
-		} else {
+		try {
 			row["id"] >> info["id"];
+		} catch(std::exception &e) {
+			info["id"] = "";
 		}
-		if(row["firstname"].is_null()) {
-			info["firstname"] = "";
-		} else {
+
+		try {
 			row["firstname"] >> info["firstname"];
+		} catch(std::exception &e) {
+			info["firstname"] = "";
 		}
-		if(row["lastname"].is_null()) {
-			info["lastname"] = "";
-		} else {
+
+		try {
 			row["lastname"] >> info["lastname"];
+		} catch(std::exception &e) {
+			info["lastname"] = "";
 		}
-		if(row["username"].is_null()) {
-			info["username"] = "";
-		} else {
+
+		try {
 			row["username"] >> info["username"];
+		} catch(std::exception &e) {
+			info["username"] = "";
 		}
-		if(row["password"].is_null()) {
-			info["password"] = "";
-		} else {
+
+		try {
 			row["password"] >> info["password"];
+		} catch(std::exception &e) {
+			info["password"] = "";
 		}
-		if(row["email"].is_null()) {
-			info["email"] = "";
-		} else {
+
+		try {
 			row["email"] >> info["email"];
+		} catch(std::exception &e) {
+			info["email"] = "";
 		}
-		if(row["zipcode"].is_null()) {
-			info["zipcode"] = "";
-		} else {
+
+		try {
 			row["zipcode"] >> info["zipcode"];
+		} catch(std::exception &e) {
+			info["zipcode"] = "";
 		}
-		*/
 	} catch(std::exception &e) {
 		// report error to email
 		std::ostringstream ss;
