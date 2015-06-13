@@ -7,9 +7,9 @@ namespace layout {
 	#line 3 "app/tmpl_src/layout/layout.tmpl"
 	{
 	#line 3 "app/tmpl_src/layout/layout.tmpl"
-		dxtemplate::context &content;
+		Context &content;
 	#line 3 "app/tmpl_src/layout/layout.tmpl"
-		master(std::ostream &_s,dxtemplate::context &_content): cppcms::base_view(_s),content(_content)
+		master(std::ostream &_s,Context &_content): cppcms::base_view(_s),content(_content)
 	#line 3 "app/tmpl_src/layout/layout.tmpl"
 		{
 	#line 3 "app/tmpl_src/layout/layout.tmpl"
@@ -531,7 +531,7 @@ namespace {
 #line 274 "app/tmpl_src/layout/layout.tmpl"
    my_generator.name("layout");
 #line 274 "app/tmpl_src/layout/layout.tmpl"
-   my_generator.add_view<layout::master,dxtemplate::context>("master",true);
+   my_generator.add_view<layout::master,Context>("master",true);
 #line 274 "app/tmpl_src/layout/layout.tmpl"
     cppcms::views::pool::instance().add(my_generator);
 #line 274 "app/tmpl_src/layout/layout.tmpl"

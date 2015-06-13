@@ -2,6 +2,34 @@
 
 
 $(function() {
+
+	// handle errors
+	if(getParam('err')) {
+		switch(getParam('err')) {
+			case 'invalid_type':
+				createAlert('Must select<br>`forgot username` OR<br>`forgot password`', 'medium');
+				break;
+			case 'invalid_email':
+				createAlert('Invalid email specified', 'medium');
+				break;
+			case 'invalid_id':
+				createAlert('Invalid username or email specified', 'medium');
+				break;
+			case 'token_expired':
+				createAlert('Token expired must request new token', 'medium');
+				break;
+			case 'bk_error':
+				createAlert('Used token, please request a new one', 'medium');
+				break;
+			case 'tk_unset':
+				createAlert('No token was specified please ensure you\'ve entered the reset password URL correctly', 'medium');
+				break;
+			case 'bad_token':
+				createAlert('Bad token, please ensure you\'ve entered the reset password URL correctly or request a new one', 'medium');
+				break;
+		}
+	}
+
 	// uncheck all the recheck this
 	$('.radio-button').on('click', function() {
 		$('.radio-button').each(function() {

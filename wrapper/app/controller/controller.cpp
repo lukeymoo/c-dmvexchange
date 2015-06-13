@@ -1,23 +1,3 @@
-/*
-
-
-TIP FROM QUORA USER
----------------------
-1. Get a list of potential customers
-2. Developma message
-3. Create a catalogue
-4 Start calling, emailing
-5. Get perdonal visits
-6. Sell, sell, sell
-7. Talk to as many cuetomers as you can . Make your presentation and listen to them,mto see what they need
-8. Tweak your speaxh with the following customers until you get it right.
-
-
-*/
-
-
-
-
 #include "controller.hpp"
 #include "view.hpp"
 #include "user.hpp"
@@ -34,14 +14,14 @@ DXServer::~DXServer() {
 		Renders home page
 */
 void DXServer::index_page() {
+	session().load();
 	// only allow get method
 	if(request().request_method() != "GET") {
 		response().status(404);
 		response().out() << "http GET is only method allowed on this page";
 		return;
 	}
-	session().load();
-	dxtemplate::context c;
+	Context c;
 	c.resolve_session(session());
 	c.set_page("HOME");
 	render("master", c);
@@ -56,20 +36,20 @@ void DXServer::index_page() {
 		Gets session and sets context
 */
 void DXServer::register_page() {
+	session().load();
 	// only allow get method
 	if(request().request_method() != "GET") {
 		response().status(404);
 		response().out() << "http GET is only method allowed on this page";
 		return;
 	}
-	session().load();
-	dxtemplate::context c;
-	c.resolve_session(session());
-	if(c.LOGGED_IN == "true") {
-		response().status(302);
-		response().set_header("Location", "/");
+	// disallow logged in
+	if(Context::logged_in(session())) {
+		response().set_redirect_header("/", 302);
 		return;
 	}
+	Context c;
+	c.resolve_session(session());
 	c.set_page("REGISTER");
 	render("master", c);
 	return;
@@ -78,30 +58,11 @@ void DXServer::register_page() {
 /*
 	@METHOD - Only POST method is allowed
 
-	@FUNCTION - 
-		Processes login form which contains
-		`u` and `p` field ~ Username/Email, Password field
-		
-		Ensure the user sent a valid username or email in the `u` field
-		Ensures the user sent a valid password
-
-		Queries server to determine if username/email + password combo exists in database
-
-		Returns a JSON response structured => { status: '', message: '' }
-		where status is 1 of types DX-OK, DX-REJECTED or DX-FAILED and
-		where message is 1 of types...
-
-		Meaning 						Error code
-		----------------------- 	   ----------------
-		username/email invalid 		=> u_invalid
-		invalid username/password 	=> U_invalid_login
-		invalid email/password 		=> E_invalid_login
-		missing form fields 		=> invalid_form
-		invalid username 			=> U
-		invalid email 				=> E
-		invalid password 			=> P
+	@FUNCTION -
+		Authenticates user based on submitted login form
 */
 void DXServer::process_login() {
+	session().load();
 	// only allow POST method
 	if(request().request_method() != "POST") {
 		response().status(404);
@@ -109,9 +70,8 @@ void DXServer::process_login() {
 		return;
 	}
 
-	// Make sure the user is not already logged in
-	session().load();
-	if(dxtemplate::context::is_logged_in(session())) {
+	// disallow logged in
+	if(Context::logged_in(session())) {
 		json_response("DX-REJECTED", "logged_in");
 		return;
 	}
@@ -188,6 +148,7 @@ void DXServer::process_login() {
 		Redirect to home page
 */
 void DXServer::process_register() {
+	session().load();
 	// only allow post
 	if(request().request_method() != "POST") {
 		response().status(404);
@@ -195,11 +156,9 @@ void DXServer::process_register() {
 		return;
 	}
 
-	// if logged in redirect to home
-	session().load();
-	if(dxtemplate::context::is_logged_in(session())) {
-		response().status(302);
-		response().set_header("Location", "/");
+	// disallow logged in users
+	if(Context::logged_in(session())) {
+		response().set_redirect_header("/", 302);
 		return;
 	}
 
@@ -217,8 +176,7 @@ void DXServer::process_register() {
 	form["tos"] = request().post("tos");
 	if(form["tos"] == "") {
 		std::string loc = "/register?err=tos" + form::generate_query(form);
-		response().status(302);
-		response().set_header("Location", loc.c_str());
+		response().set_redirect_header(loc.c_str(), 302);
 		return;
 	}
 
@@ -229,16 +187,14 @@ void DXServer::process_register() {
 			if(kv.second != "m" && kv.second != "f") { // male or female (m || f)
 				// generate query and return
 				std::string loc = "/register?err=invalid_form" + form::generate_query(form);
-				response().status(302);
-				response().set_header("Location", loc.c_str());
+				response().set_redirect_header(loc.c_str(), 302);
 				return;
 			}
 		} else {
 			if(kv.second == "") {
 				// generate query and return
 				std::string loc = "/register?err=invalid_form" + form::generate_query(form);
-				response().status(302);
-				response().set_header("Location", loc.c_str());
+				response().set_redirect_header(loc.c_str(), 302);
 				return;
 			}
 		}
@@ -266,8 +222,7 @@ void DXServer::process_register() {
 	if(err != "") {
 		err.pop_back();
 		std::string loc = "/register?err=" + err + form::generate_query(form);
-		response().status(302);
-		response().set_header("Location", loc.c_str());
+		response().set_redirect_header(loc.c_str(), 302);
 		return;
 	}
 
@@ -282,8 +237,7 @@ void DXServer::process_register() {
 		if(err != "") {
 			err.pop_back();
 			std::string loc = "/register?err=" + err + form::generate_query(form);
-			response().status(302);
-			response().set_header("Location", loc.c_str());
+			response().set_redirect_header(loc.c_str(), 302);
 			return;
 		}
 	} catch(std::exception &e) {
@@ -326,8 +280,7 @@ void DXServer::process_register() {
 			info = db::get_user::by_username(&dbconn, form["u"]);
 			if(info.empty()) {
 				// redirect to home page with session values
-				response().status(302);
-				response().set_header("Location", "/");
+				response().set_redirect_header("/", 302);
 				return;
 			}
 		}
@@ -344,23 +297,26 @@ void DXServer::process_register() {
 
 
 	// redirect to home page with session values
-	response().status(302);
-	response().set_header("Location", "/");
-
+	response().set_redirect_header("/", 302);
 	return;
 }
 
 // Display forgot page offering options
 // to select what data they wish to recover
 void DXServer::forgot() {
+	session().load();
 	// only allow GET
 	if(request().request_method() != "GET") {
 		response().status(404);
 		response().out() << "http GET is only method allowed on this page";
 		return;
 	}
-	session().load();
-	dxtemplate::context c;
+	// disallow logged in user
+	if(Context::logged_in(session())) {
+		response().set_redirect_header("/", 302);
+		return;
+	}
+	Context c;
 	c.resolve_session(session());
 	c.set_page("FORGOT_INITIAL");
 	render("master", c);
@@ -376,6 +332,7 @@ void DXServer::forgot() {
 // invalid_email 	--- radio button username selected, but invalid email was specified
 // invalid_id 		--- radio button password selected, but neither a valid username || email was given
 void DXServer::process_forgot() {
+	session().load();
 	// Only allow POST method
 	if(request().request_method() != "POST") {
 		response().status(404);
@@ -383,19 +340,23 @@ void DXServer::process_forgot() {
 		return;
 	}
 
+	// disallow logged in user
+	if(Context::logged_in(session())) {
+		response().set_redirect_header("/", 302);
+		return;
+	}
+
 	// validate forgot request
 	std::string need = request().post("type");
 	if(need != "username" && need != "password") {
-		response().status(302);
-		response().set_header("Location", "/forgot?err=invalid_type");
+		response().set_redirect_header("/forgot?err=invalid_type", 302);
 		return;
 	}
 
 	if(need == "username") {
 		// if not valid email return with error
 		if(!form::validEmail(request().post("id"))) {
-			response().status(302);
-			response().set_header("Location", "/forgot?err=invalid_email");
+			response().set_redirect_header("/forgot?err=invalid_email", 302);
 			return;
 		}
 		// try to grab account info by email
@@ -409,8 +370,7 @@ void DXServer::process_forgot() {
 		if(!form::validUsername(request().post("id"))) {
 			if(!form::validEmail(request().post("id"))) {
 				// bad id
-				response().status(302);
-				response().set_header("Location", "/forgot?err=invalid_id");
+				response().set_redirect_header("/forgot?err=invalid_id", 302);
 				return;
 			} else { // if valid email was specified
 				// try to grab account info by email
@@ -448,22 +408,28 @@ void DXServer::process_forgot() {
 	}
 
 	// redirect to success page
-	response().status(302);
-	response().set_header("Location", "/forgot/success");
+	response().set_redirect_header("/forgot/success", 302);
 	return;
 }
 
 // provides form for which user can request
 // account information to be emailed
 void DXServer::forgot_landing() {
+	session().load();
 	// only allow GET request
 	if(request().request_method() != "GET") {
 		response().status(404);
 		response().out() << "http GET is only method allowed on this page";
 		return;
 	}
-	session().load();
-	dxtemplate::context c;
+
+	// disallow logged in users
+	if(Context::logged_in(session())) {
+		response().set_redirect_header("/", 302);
+		return;
+	}
+	
+	Context c;
 	c.resolve_session(session());
 	c.set_page("FORGOT_LANDING");
 	render("master", c);
@@ -473,52 +439,62 @@ void DXServer::forgot_landing() {
 // provides form for resetting password if the user
 // provided a valid token
 void DXServer::reset() {
+	session().load();
 	// only allow GET method
 	if(request().request_method() != "GET") {
 		response().status(404);
 		response().out() << "http GET is only method allowed on this page";
 		return;
 	}
+	// disallow logged in
+	if(Context::logged_in(session())) {
+		response().set_redirect_header("/", 302);
+		return;
+	}
+	// redirect if empty token
+	if(request().get("token") == "") {
+		response().set_redirect_header("/forgot?err=tk_unset", 302);
+		return;
+	}
 	// if valid token, render page
 	if(db::check_exist::forgot_token(&dbconn, request().get("token"))) {
-		session().load();
-		dxtemplate::context c;
+		Context c;
 		c.resolve_session(session());
 		c.set_page("PASSWORD_RESET");
 		render("master", c);
 	} else { // invalid token, redirect to error page
-		response().status(302);
-		response().set_header("Location", "/forgot/badtoken");
+		response().set_redirect_header("/forgot?err=bad_token", 302);
 	}
 	return;
 }
 
 // validates and sets new password specified on previous page
-// Errors
-// -------
-// invalid_pwd --- invalid password ( failed regex test )
-// non_match   --- passwords didn't match ( fields np && npa )
 void DXServer::process_reset() {
+	session().load();
 	// only allow POST
 	if(request().request_method() != "POST") {
 		response().status(404);
 		response().out() << "http POST is only method allowed on this page";
 		return;
 	}
+	// disallow logged in users
+	if(Context::logged_in(session())) {
+		response().set_redirect_header("/", 302);
+		return;
+	}
 	// if not valid password, redirect with error
 	if(!form::validPassword(request().post("np"))) {
-		response().status(302);
-		response().set_header("Location", "/reset/error?err=invalid_pwd");
+		response().set_redirect_header("/reset?err=invalid_pwd", 302);
 		return;
 	}
 	// if passwords dont match, redirect with error
 	if(request().post("np") != request().post("npa")) {
-		response().status(302);
-		response().set_header("Location", "/reset/error?err=non_match");
+		response().set_redirect_header("/reset?err=non_match", 302);
 		return;
 	}
 	// decode the percent encoded token
 	std::string token_f = cppcms::util::urldecode(request().post("token"));
+
 	// check if password is the same as the existing one
 	std::map<std::string, std::string> info = db::get_user::by_forgot_token(&dbconn, token_f);
 	std::string password_f = crypto::gen_password::by_username(info["username"], request().post("np"));
@@ -526,48 +502,77 @@ void DXServer::process_reset() {
 		// if passwords match, return with error same_password
 		if(info["password"] == password_f) {
 			std::string loc = "/reset?token=" + request().post("token") + "&err=same_password";
-			response().status(302);
-			response().set_header("Location", loc.c_str());
+			response().set_redirect_header(loc.c_str(), 302);
 			return;
 		} else {
-			
+			// if timestamp is empty, error, need to request new token
+			if(info["forgot_token"] == "") {
+				response().set_redirect_header("/forgot?err=bk_error", 302);
+				return;
+			}
 
 			// ensure the token hasn't timed out
+			long int forgot_timestamp;
+			long int current_time;
+			try {
+				forgot_timestamp = std::stoi(info["forgot_timestamp"], nullptr, 10);
+				current_time = static_cast<long int>(std::time(0));
+			} catch(std::exception &e) {
+				std::cout << "Exception => " << e.what() << std::endl;
+			}
 
+			// Ensure the forgot_token hasn't timed out
+			// 21600 seconds -> 6 hours
+			if(current_time - forgot_timestamp >= 21600) {
+				// clear forgot token/timestamp
+				std::pair<std::string, std::string> data1("forgot_token", "");
+				std::pair<std::string, std::string> data2("forgot_timestamp", "0");
+				db::update::user::by_username(&dbconn, info["username"], data1, data2);
+				// redirect with error
+				response().set_redirect_header("/forgot?err=token_expired", 302);
+				return;
+			}
 
 
 			// set new password
 			std::pair<std::string, std::string> data1("password", password_f);
 			db::update::user::by_username(&dbconn, info["username"], data1);
+
 			// clear forgot token & timestamp
 			std::pair<std::string, std::string> data2("forgot_token", "");
 			std::pair<std::string, std::string> data3("forgot_timestamp", "0");
 			db::update::user::by_username(&dbconn, info["username"], data2, data3);
+
 			// email user about change
 			mail::external::notice_password(info["email"]);
+
 			// redirect to landing page
-			response().status(302);
-			response().set_header("Location", "/reset/success");
+			response().set_redirect_header("/reset/success", 302);
 			return;
 		}
 	} else { // if failed to find with token, return with error
 		std::string loc = "/reset?token=" + request().post("token") + "&err=invalid_token";
-		response().status(302);
-		response().set_header("Location", loc.c_str());
+		response().set_redirect_header(loc.c_str(), 302);
 	}
 	return;
 }
 
 // display success message
 void DXServer::reset_landing() {
+	session().load();
 	// only allow GET method
 	if(request().request_method() != "GET") {
 		response().status(404);
 		response().out() << "http GET is only method allowed on this page";
 		return;
 	}
+	// disallow logged in users
+	if(Context::logged_in(session())) {
+		response().set_redirect_header("/", 302);
+		return;
+	}
 	// display message
-	dxtemplate::context c;
+	Context c;
 	c.resolve_session(session());
 	c.set_page("RESET_LANDING");
 	render("master", c);
@@ -583,14 +588,14 @@ void DXServer::reset_landing() {
 		while inactive
 */
 void DXServer::json_session() {
+	session().load();
 	// only allow get
 	if(request().request_method() != "GET") {
 		response().status(404);
 		response().out() << "http GET is only method allowed on this page";
 		return;
 	}
-	session().load();
-	dxtemplate::context c;
+	Context c;
 	c.resolve_session(session());
 
 	cppcms::json::value jres;
@@ -640,8 +645,7 @@ void DXServer::update_activity() {
 */
 void DXServer::logout() {
 	clear_session();
-	response().status(302);
-	response().set_header("Location", "/");
+	response().set_redirect_header("/", 302);
 	return;
 }
 
@@ -675,7 +679,7 @@ void DXServer::json_response(std::string status, std::string message) {
 // Debugging
 void DXServer::debug_session() {
 	session().load();
-	dxtemplate::context c;
+	Context c;
 	c.resolve_session(session());
 	cppcms::json::value jres;
 	jres["LOGGED_IN"] = c.LOGGED_IN;
@@ -688,12 +692,6 @@ void DXServer::debug_session() {
 }
 
 void DXServer::debug_page() {
-	std::string token = "OT8zlIGca3HqUzX0Ma6QbhdiBCN+yFIzFbY6QWOsf4idCTItfOptnnGAKFd32YRZya5YiCzN28+Kp+3mcqn7fA==";
-	response().out() << token << "<br>";
-	if(db::check_exist::forgot_token(&dbconn, token)) {
-		response().out() << "exists";
-	} else {
-		response().out() << "doesnt exist";
-	}
+	response().out() << "Nothing to debug<br>";
 	return;
 }

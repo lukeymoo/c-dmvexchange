@@ -1,0 +1,148 @@
+<html>
+<head>
+	<title>DX Server Documentation</title>
+	<style>
+		table {
+			border-spacing: 0px;
+			border-collapse: collapse;
+		}
+		th, td {
+			padding-left: 5px;
+			padding-right: 5px;
+		}
+		th {
+			border-top: 1px solid rgba(0, 0, 0, 0.5);
+			border-left: 1px solid rgba(0, 0, 0, 0.5);
+			border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+			border-right: 1px solid rgba(0, 0, 0, 0.5);
+		}
+		td {
+			border-right: 1px solid rgba(0, 0, 0, 0.5);
+			border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+			border-left: 1px solid rgba(0, 0, 0, 0.5);
+		}
+	</style>
+</head>
+<body>
+	<h1>Page error codes</h1>
+	<h2>Register page</h2>
+	<table>
+		<colgroup></colgroup>
+		<th>Code</th><th>Meaning</th><th>Added?</th>
+		<tr>
+			<td>tos</td>
+			<td>The user didn't agree with terms of service</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>invalid_form</td>
+			<td>The register form has empty fields</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>F</td>
+			<td>Firstname failed regex testing</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>L</td>
+			<td>Lastname failed regex testing</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>U</td>
+			<td>Username failed regex testing</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>P</td>
+			<td>Password failed regex testing</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>PM</td>
+			<td>Passwords didn't match</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>E</td>
+			<td>Email didn't pass regex testing</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>EM</td>
+			<td>Emails did not match</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>Z</td>
+			<td>Zipcode did not pass regex testing</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>UIN</td>
+			<td>The selected username is already in use</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>EIN</td>
+			<td>The selected email is already in use</td>
+			<td>Y</td>
+		</tr>
+	</table>
+
+	<h3>Forgot page</h3>
+	<table>
+		<th>Code</th>
+		<th>Meaning</th>
+		<th>Added?</th>
+		<tr>
+			<td>invalid_type</td>
+			<td>(hidden field) Forgot request type is not `username` or `password`</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>invalid_email</td>
+			<td>The specified email did not pass regex testing</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>invalid_id</td>
+			<td>Specified ID failed username regex and email regex testing</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>token_expired</td>
+			<td>Forgot token was set more than 6 hours ago</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>bk_error</td>
+			<td>Forgot token timestamp was empty/not set</td>
+			<td>Y</td>
+		</tr>
+		<tr>
+			<td>bad_token</td>
+			<td>The specified reset token was invalid</td>
+			<td>Y</td>
+		</tr>
+	</table>
+
+	<h4>Reset Page</h4>
+	<table>
+		<th>Code</th>
+		<th>Meaning</th>
+		<th>Added?</th>
+		<tr>
+			<td>invalid_pwd</td>
+			<td>Specified new password did not pass regex testing</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>non_match</td>
+			<td>Specified passwords did not match</td>
+			<td></td>
+		</tr>
+	</table>
+</body>
+</html>

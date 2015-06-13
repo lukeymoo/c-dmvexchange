@@ -3,7 +3,7 @@
 /*
 	Sets default values for a session -> Non-authenticated user on Home page
 */
-dxtemplate::context::context() {
+Context::Context() {
 	TITLE = "Home";
 	
 	PAGE = "HOME";
@@ -19,14 +19,14 @@ dxtemplate::context::context() {
 /*
 	@FUNCTION - Destructor, does nothing
 */
-dxtemplate::context::~context() {
+Context::~Context() {
 	return;
 }
 
 /*
 	@FUNCTION - Sets context to match specified page
 */
-void dxtemplate::context::set_page(std::string page_id) {
+void Context::set_page(std::string page_id) {
 	PAGE = page_id;
 	if(PAGE == "HOME") {
 		TITLE = "Home";
@@ -49,20 +49,23 @@ void dxtemplate::context::set_page(std::string page_id) {
 	if(PAGE == "RESET_LANDING") {
 		TITLE = "Password reset";
 	}
+	if(PAGE == "RESETERROR") {
+		TITLE = "Reset Error";
+	}
 	return;
 }
 
 /*
 	@FUNCTION - Retreives and returns title of current page
 */
-std::string dxtemplate::context::get_title() {
+std::string Context::get_title() {
 	return TITLE;
 }
 
 /*
 	@FUNCTION - Checks if the user is currently logged in
 */
-bool dxtemplate::context::is_logged_in(cppcms::session_interface &interface) {
+bool Context::logged_in(cppcms::session_interface &interface) {
 	// check if session is set
 	if(!interface.is_set("LOGGED_IN")) {
 		interface.set("LOGGED_IN", "false");
@@ -87,16 +90,16 @@ bool dxtemplate::context::is_logged_in(cppcms::session_interface &interface) {
 	@FUNCTION -
 		Determine if session LAST_ACTIVITY has exceeded max timeout limit ( 3600 seconds | 1 hour )
 */
-bool dxtemplate::context::eval_logged_in() {
+bool Context::eval_logged_in() {
 	return false;
 }
 
 /*
 	@FUNCTION - Retrieves session values and places them in context for page rendering
 */
-void dxtemplate::context::resolve_session(cppcms::session_interface &interface) {
+void Context::resolve_session(cppcms::session_interface &interface) {
 	// if logged in
-	if(is_logged_in(interface)) {
+	if(logged_in(interface)) {
 		// check if timeout
 		LOGGED_IN = "true";
 		USERNAME = interface.get("USERNAME");

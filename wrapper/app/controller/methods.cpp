@@ -270,21 +270,51 @@ std::map<std::string, std::string> db::get_user::by_id(pqxx::connection *c, int 
 		}
 
 		try {
-			row["password"] >> info["password"];
-		} catch(std::exception &e) {
-			info["password"] = "";
-		}
-
-		try {
 			row["email"] >> info["email"];
 		} catch(std::exception &e) {
 			info["email"] = "";
 		}
 
 		try {
+			row["password"] >> info["password"];
+		} catch(std::exception &e) {
+			info["password"] = "";
+		}
+
+		try {
+			row["token"] >> info["token"];
+		} catch(std::exception &e) {
+			info["token"] = "";
+		}
+
+		try {
 			row["zipcode"] >> info["zipcode"];
 		} catch(std::exception &e) {
 			info["zipcode"] = "";
+		}
+
+		try {
+			row["gender"] >> info["gender"];
+		} catch(std::exception &e) {
+			info["gender"] = "";
+		}
+
+		try {
+			row["forgot_token"] >> info["forgot_token"];
+		} catch(std::exception &e) {
+			info["forgot_token"] = "";
+		}
+
+		try {
+			row["forgot_timestamp"] >> info["forgot_timestamp"];
+		} catch(std::exception &e) {
+			info["forgot_timestamp"] = "";
+		}
+
+		try {
+			row["timestamp"] >> info["timestamp"];
+		} catch(std::exception &e) {
+			info["timestamp"] = "";
 		}
 	} catch(std::exception &e) {
 		// report error to email
@@ -345,15 +375,21 @@ std::map<std::string, std::string> db::get_user::by_username(pqxx::connection *c
 		}
 
 		try {
+			row["email"] >> info["email"];
+		} catch(std::exception &e) {
+			info["email"] = "";
+		}
+
+		try {
 			row["password"] >> info["password"];
 		} catch(std::exception &e) {
 			info["password"] = "";
 		}
 
 		try {
-			row["email"] >> info["email"];
+			row["token"] >> info["token"];
 		} catch(std::exception &e) {
-			info["email"] = "";
+			info["token"] = "";
 		}
 
 		try {
@@ -361,6 +397,32 @@ std::map<std::string, std::string> db::get_user::by_username(pqxx::connection *c
 		} catch(std::exception &e) {
 			info["zipcode"] = "";
 		}
+
+		try {
+			row["gender"] >> info["gender"];
+		} catch(std::exception &e) {
+			info["gender"] = "";
+		}
+
+		try {
+			row["forgot_token"] >> info["forgot_token"];
+		} catch(std::exception &e) {
+			info["forgot_token"] = "";
+		}
+
+		try {
+			row["forgot_timestamp"] >> info["forgot_timestamp"];
+		} catch(std::exception &e) {
+			info["forgot_timestamp"] = "";
+		}
+
+		try {
+			row["timestamp"] >> info["timestamp"];
+		} catch(std::exception &e) {
+			info["timestamp"] = "";
+		}
+
+
 	} catch(std::exception &e) {
 		// report error to email
 		std::ostringstream ss;
@@ -420,21 +482,51 @@ std::map<std::string, std::string> db::get_user::by_email(pqxx::connection *c, s
 		}
 
 		try {
-			row["password"] >> info["password"];
-		} catch(std::exception &e) {
-			info["password"] = "";
-		}
-
-		try {
 			row["email"] >> info["email"];
 		} catch(std::exception &e) {
 			info["email"] = "";
 		}
 
 		try {
+			row["password"] >> info["password"];
+		} catch(std::exception &e) {
+			info["password"] = "";
+		}
+
+		try {
+			row["token"] >> info["token"];
+		} catch(std::exception &e) {
+			info["token"] = "";
+		}
+
+		try {
 			row["zipcode"] >> info["zipcode"];
 		} catch(std::exception &e) {
 			info["zipcode"] = "";
+		}
+
+		try {
+			row["gender"] >> info["gender"];
+		} catch(std::exception &e) {
+			info["gender"] = "";
+		}
+
+		try {
+			row["forgot_token"] >> info["forgot_token"];
+		} catch(std::exception &e) {
+			info["forgot_token"] = "";
+		}
+
+		try {
+			row["forgot_timestamp"] >> info["forgot_timestamp"];
+		} catch(std::exception &e) {
+			info["forgot_timestamp"] = "";
+		}
+
+		try {
+			row["timestamp"] >> info["timestamp"];
+		} catch(std::exception &e) {
+			info["timestamp"] = "";
 		}
 	} catch(std::exception &e) {
 		// report error to email
@@ -488,21 +580,51 @@ std::map<std::string, std::string> db::get_user::by_forgot_token(pqxx::connectio
 		}
 
 		try {
-			row["password"] >> info["password"];
-		} catch(std::exception &e) {
-			info["password"] = "";
-		}
-
-		try {
 			row["email"] >> info["email"];
 		} catch(std::exception &e) {
 			info["email"] = "";
 		}
 
 		try {
+			row["password"] >> info["password"];
+		} catch(std::exception &e) {
+			info["password"] = "";
+		}
+
+		try {
+			row["token"] >> info["token"];
+		} catch(std::exception &e) {
+			info["token"] = "";
+		}
+
+		try {
 			row["zipcode"] >> info["zipcode"];
 		} catch(std::exception &e) {
 			info["zipcode"] = "";
+		}
+
+		try {
+			row["gender"] >> info["gender"];
+		} catch(std::exception &e) {
+			info["gender"] = "";
+		}
+
+		try {
+			row["forgot_token"] >> info["forgot_token"];
+		} catch(std::exception &e) {
+			info["forgot_token"] = "";
+		}
+
+		try {
+			row["forgot_timestamp"] >> info["forgot_timestamp"];
+		} catch(std::exception &e) {
+			info["forgot_timestamp"] = "";
+		}
+
+		try {
+			row["timestamp"] >> info["timestamp"];
+		} catch(std::exception &e) {
+			info["timestamp"] = "";
 		}
 	} catch(std::exception &e) {
 		// report error to email
