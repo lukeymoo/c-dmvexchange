@@ -37,7 +37,7 @@ void api::new_email() {
 		return;
 	}
 	// added email, return ok
-	json::send("DX-OK", "Email added", response().out());
+	json::send("DX-OK", "Email added!", response().out());
 	return;
 }
 
