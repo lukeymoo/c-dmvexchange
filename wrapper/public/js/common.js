@@ -17,7 +17,7 @@ $(function() {
 		if(res.error) {
 			presentError(res.error);
 		} else {
-			if(res.LOGGED_IN) {
+			if(res.LOGGED_IN == "true") {
 				state.LOGGED_IN = true;
 				state.USERNAME = res.USERNAME;
 			} else {
@@ -155,7 +155,7 @@ function getSessionState(callback) {
 		url: '/api/session/state',
 		error: function(err) {
 			var res = {
-				error: ['Server error']
+				error: ['Server error, please try again']
 			};
 			if(err.status == 0) {
 				res.error[0] = 'Server is currently down';
@@ -196,7 +196,7 @@ function tryLogin(callback) {
 		error: function(err) {
 			var res = {
 				status: 'DX-FAILED',
-				message: 'Server error'
+				message: 'Server error please try again'
 			};
 			if(err.status == 0) {
 				res.Message = 'Server is currently down';

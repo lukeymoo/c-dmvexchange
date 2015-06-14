@@ -134,11 +134,11 @@ body {
 }
 
 #header-menu-button[data-state='opened'] {
-	color: rgb(210, 25, 0);
+	color: rgb(250, 100, 0);
 }
 
 #header-menu-button[data-state='opened']:hover {
-	color: rgb(230, 40, 0);
+	color: rgb(255, 125, 0);
 }
 
 #header-menu-button:hover {
@@ -213,6 +213,7 @@ body {
 
 .header-control-button[data-active='true'] {
 	background-color: rgba(0, 0, 0, 0.03);
+	color: rgb(250, 100, 0);
 	border-bottom: 2px solid rgba(0, 0, 0, 0.2);
 }
 
@@ -956,4 +957,144 @@ body {
 	background-color: rgb(250, 100, 0);
 	width: 150px;
 	height: 26px;
+}
+
+#account-tabs-container {
+	position: absolute;
+	top: 25px;
+	left: 5px;
+	width: 175px;
+}
+
+#account-tabs-label {
+	display: block;
+	padding-bottom: 5px;
+	font-family: GOOGLE;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.account-tab {
+	display: block;
+	font-size: .85em;
+	margin-top: 5px;
+	width: 60px;
+	padding: 2px 5px;
+	padding-left: 7px;
+	border-radius: 4px;
+	font-family: GOOGLE;
+	font-size: .85em;
+}
+
+.account-tab[data-selected='true'] {
+	background-color: rgba(0, 0, 0, 0.075);
+}
+
+.account-tab[data-selected='true']:hover {
+	background-color: rgba(100, 100, 100, 0.075);
+	cursor: default;
+	pointer: default;
+}
+
+.account-tab[data-selected='false']:hover {
+	color: rgb(0, 100, 200);
+	cursor: pointer;
+	pointer: hand;
+}
+
+#account-view-container {
+	position: absolute;
+	top: 25px;
+	left: 250px;
+	width: 500px;
+}
+
+#account-view-label {
+	display: block;
+	padding-bottom: 5px;
+	font-family: GOOGLE;
+}
+
+#email-view-container {
+}
+
+#primary-email-label {
+	padding-right: 75px;
+	font-size: .85em;
+	font-weight: bold;
+}
+
+#secondary-email-label {
+	display: inline-block;
+	width: 170px;
+}
+
+#password-label {
+	display: inline-block;
+	width: 170px;
+}
+
+#password-button {
+	color: rgb(0, 100, 200);
+	cursor: pointer;
+	pointer: hand;
+}
+
+.add-new-button {
+	color: rgb(0, 100, 200);
+	cursor: pointer;
+	pointer: hand;
+}
+
+#primary-email-row, #secondary-email-row {
+	display: block;
+}
+
+.email:not(.add-new-button):not(.add-new) {
+	border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+	display: inline-block;
+	width: 326px;
+	height: 25px;
+	line-height: 25px;
+	padding: 5px 0px;
+}
+
+.add-new-button {
+	height: 30px;
+	line-height: 25px;
+}
+
+.add-new {
+	display: inline-block;
+	margin-top: 5px;
+}
+
+#password-view-container,
+#email-view-container,
+#connect-account-container {
+	display: block;
+	padding: 5px 0px;
+	border-top: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.add-new input {
+	font-family: GOOGLE;
+	font-size: .9em;
+	padding-left: 5px;
+	height: 22px;
+}
+
+.add-new input:focus {
+	outline: none;
+}
+
+.add-new-submit {
+	display: block;
+	width: 75px;
+	height: 24px;
+	line-height: 22px;
+	font-family: GOOGLE;
+	font-size: .9em;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	margin-top: 5px;
+	background-color: rgb(0, 200, 255);
 }

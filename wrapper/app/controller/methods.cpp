@@ -10,22 +10,29 @@ bool db::check_exist::table(pqxx::connection *c, std::string table_name) {
 	std::string table_name_f = to_lowercase(table_name);
 	// format query
 	std::string query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name=" + c->quote(table_name_f) + " AND table_schema='public')";
-	try {
-		// execute query
-		pqxx::result result = worker.exec(query.c_str());
-		pqxx::tuple row = result[0];
-		pqxx::field field = row.at(0);
-		if(field.as<std::string>() == "t") {
-			return true;
-		} else {
-			return false;
+	// execute query
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result result = worker.exec(query.c_str());
+			pqxx::tuple row = result[0];
+			pqxx::field field = row.at(0);
+			if(field.as<std::string>() == "t") {
+				return true;
+			} else {
+				return false;
+			}
+			success = true;
+		} catch(std::exception &e) {
+			// if exception is caught on last try
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Checking if table exists :: " << e.what();
+				error::send(ss.str());
+				throw;
+			}
 		}
-	} catch(std::exception &e) {
-		// report error to email
-		std::ostringstream ss;
-		ss << "Checking if table exists :: " << e.what();
-		error::send(ss.str());
-		throw;
 	}
 	return false;
 }
@@ -40,22 +47,28 @@ bool db::check_exist::username(pqxx::connection *c, std::string username) {
 	std::string username_f = to_lowercase(username);
 	// format query
 	std::string query = "SELECT EXISTS (SELECT 1 FROM dmv_users_t WHERE username=" + c->quote(username_f) + " )";
-	try {
-		// execute query
-		pqxx::result count = worker.exec(query.c_str());
-		pqxx::tuple row = count[0];
-		pqxx::field field = row[0];
-		if(field.as<std::string>() == "t") {
-			return true;
-		} else {
-			return false;
+	// execute query
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result count = worker.exec(query.c_str());
+			pqxx::tuple row = count[0];
+			pqxx::field field = row[0];
+			if(field.as<std::string>() == "t") {
+				return true;
+			} else {
+				return false;
+			}
+			success = true;
+		} catch(std::exception &e) {
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Checking if username exists :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
 		}
-	} catch(std::exception &e) {
-		// report error to email
-		std::ostringstream ss;
-		ss << "Checking if username exists :: " << e.what();
-		error::send(ss.str());
-		throw; // bubble exception up
 	}
 	return false;
 }
@@ -69,23 +82,29 @@ bool db::check_exist::email(pqxx::connection *c, std::string email) {
 	// lowercase email
 	std::string email_f = to_lowercase(email);
 	// format query
-	std::string query = "SELECT EXISTS (SELECT 1 FROM dmv_users_t WHERE email=" + c->quote(email_f) + ")";
-	try {
-		// execute query
-		pqxx::result count = worker.exec(query.c_str());
-		pqxx::tuple row = count[0];
-		pqxx::field field = row[0];
-		if(field.as<std::string>() == "t") {
-			return true;
-		} else {
-			return false;
+	std::string query = "SELECT EXISTS (SELECT 1 FROM dmv_users_t WHERE email=" + c->quote(email_f) + " OR secondary_email=" + c->quote(email_f) + ")";
+	// execute query
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result count = worker.exec(query.c_str());
+			pqxx::tuple row = count[0];
+			pqxx::field field = row[0];
+			if(field.as<std::string>() == "t") {
+				return true;
+			} else {
+				return false;
+			}
+			success = true;
+		} catch(std::exception &e) {
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Checking if email exists :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
 		}
-	} catch(std::exception &e) {
-		// report error to email
-		std::ostringstream ss;
-		ss << "Checking if email exists :: " << e.what();
-		error::send(ss.str());
-		throw; // bubble exception up
 	}
 	return false;
 }
@@ -100,21 +119,27 @@ bool db::check_exist::forgot_token(pqxx::connection *c, std::string token) {
 	// prepare query
 	std::string query = "SELECT EXISTS ( SELECT 1 FROM dmv_users_t WHERE forgot_token=" + c->quote(token) + ")";
 	// execute
-	try {
-		pqxx::result result = worker.exec(query.c_str());
-		pqxx::tuple row = result[0];
-		pqxx::field field = row[0];
-		if(field.as<std::string>() == "t") {
-			return true;
-		} else {
-			return false;
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result result = worker.exec(query.c_str());
+			pqxx::tuple row = result[0];
+			pqxx::field field = row[0];
+			if(field.as<std::string>() == "t") {
+				return true;
+			} else {
+				return false;
+			}
+			success = true;
+		} catch(std::exception &e) {
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Checking if forgot_token exists :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
 		}
-	} catch(std::exception &e) {
-		// report error to email
-		std::ostringstream ss;
-		ss << "Checking if forgot_token exists :: " << e.what();
-		error::send(ss.str());
-		throw; // bubble exception up
 	}
 	return false;
 }
@@ -131,21 +156,28 @@ bool db::try_login::with_username(pqxx::connection *c, std::string username, std
 	// prepare query
 	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE username=" + c->quote(username_f) + " AND password=" + c->quote(password_f) + ")";
 	// execute query
-	try {
-		pqxx::result result = worker.exec(query.c_str());
-		pqxx::tuple row = result[0];
-		pqxx::field field = row[0];
-		if(field.as<std::string>() == "t") {
-			return true;
-		} else {
-			return false;
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result result = worker.exec(query.c_str());
+			pqxx::tuple row = result[0];
+			pqxx::field field = row[0];
+			if(field.as<std::string>() == "t") {
+				return true;
+			} else {
+				return false;
+			}
+			success = true;
+		} catch(std::exception &e) {
+			std::cout << "Error(" << e.what() << ")" << std::endl;
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Logging in with username :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
 		}
-	} catch(std::exception &e) {
-		// report error to email
-		std::ostringstream ss;
-		ss << "Logging in with username :: " << e.what();
-		error::send(ss.str());
-		throw; // bubble exception up
 	}
 	return false;
 }
@@ -167,21 +199,27 @@ bool db::try_login::with_email(pqxx::connection *c, std::string email, std::stri
 	// prepare query
 	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE email=" + c->quote(email_f) + " AND password=" + c->quote(password_f) + ")";
 	// execute query
-	try {
-		pqxx::result result = worker.exec(query.c_str());
-		pqxx::tuple row = result[0];
-		pqxx::field field = row[0];
-		if(field.as<std::string>() == "t") {
-			return true;
-		} else {
-			return false;
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result result = worker.exec(query.c_str());
+			pqxx::tuple row = result[0];
+			pqxx::field field = row[0];
+			if(field.as<std::string>() == "t") {
+				return true;
+			} else {
+				return false;
+			}
+			success = true;
+		} catch(std::exception &e) {
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Logging in with email :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
 		}
-	} catch(std::exception &e) {
-		// report error to email
-		std::ostringstream ss;
-		ss << "Logging in with email :: " << e.what();
-		error::send(ss.str());
-		throw; // bubble exception up
 	}
 	return false;
 }
@@ -208,17 +246,23 @@ bool db::try_login::with_email(pqxx::connection *c, std::string email, std::stri
 bool db::create_table::user(pqxx::connection *c) {
 	pqxx::work worker(*c); // create worker
 	// prepare query
-	std::string query = "CREATE TABLE dmv_users_t (id SERIAL PRIMARY KEY, firstname VARCHAR(32) NOT NULL, lastname VARCHAR(32) NOT NULL, username VARCHAR(16) UNIQUE NOT NULL, email VARCHAR(64) UNIQUE NOT NULL, password VARCHAR(256) NOT NULL, token VARCHAR(256) NOT NULL, zipcode INT NOT NULL, gender CHAR(1) NOT NULL, forgot_token VARCHAR(256) NOT NULL DEFAULT '', forgot_timestamp INT NOT NULL, timestamp INT NOT NULL)";
-	try {
-		// execute query
-		pqxx::result result = worker.exec(query.c_str());
-		worker.commit();
-	} catch(std::exception &e) {
-		// report error to email
-		std::ostringstream ss;
-		ss << "Creating user table :: " << e.what();
-		error::send(ss.str());
-		throw; // bubble exception up
+	std::string query = "CREATE TABLE dmv_users_t (id SERIAL PRIMARY KEY, firstname VARCHAR(32) NOT NULL, lastname VARCHAR(32) NOT NULL, username VARCHAR(16) UNIQUE NOT NULL, email VARCHAR(64) UNIQUE NOT NULL, secondary_email VARCHAR(64) UNIQUE DEFAULT '', password VARCHAR(256) NOT NULL, token VARCHAR(256) NOT NULL, zipcode INT NOT NULL, gender CHAR(1) NOT NULL, forgot_token VARCHAR(256) NOT NULL DEFAULT '', forgot_timestamp INT NOT NULL, timestamp INT NOT NULL)";
+	// execute query
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result result = worker.exec(query.c_str());
+			worker.commit();
+			success = true;
+		} catch(std::exception &e) {
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Creating user table :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
+		}
 	}
 	return true;
 }
@@ -233,95 +277,107 @@ std::map<std::string, std::string> db::get_user::by_id(pqxx::connection *c, int 
 	pqxx::work worker(*c); // create worker
 	// prepare query
 	std::string query = "SELECT * FROM dmv_users_t WHERE id=" + c->quote(id);
-	try {
-		// execute query
-		pqxx::result result = worker.exec(query.c_str());
-
-		// return to prevent memory access error if no results
-		if(result.empty()) {
-			return info;
-		}
-
-		pqxx::result::const_iterator row_i = result.begin();
-
-		pqxx::tuple row = row_i;
+	// execute query
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
 		try {
-			row["id"] >> info["id"];
-		} catch(std::exception &e) {
-			info["id"] = "";
-		}
+			pqxx::result result = worker.exec(query.c_str());
 
-		try {
-			row["firstname"] >> info["firstname"];
-		} catch(std::exception &e) {
-			info["firstname"] = "";
-		}
+			// return to prevent memory access error if no results
+			if(result.empty()) {
+				return info;
+			}
 
-		try {
-			row["lastname"] >> info["lastname"];
-		} catch(std::exception &e) {
-			info["lastname"] = "";
-		}
+			pqxx::result::const_iterator row_i = result.begin();
 
-		try {
-			row["username"] >> info["username"];
-		} catch(std::exception &e) {
-			info["username"] = "";
-		}
+			pqxx::tuple row = row_i;
+			try {
+				row["id"] >> info["id"];
+			} catch(std::exception &e) {
+				info["id"] = "";
+			}
 
-		try {
-			row["email"] >> info["email"];
-		} catch(std::exception &e) {
-			info["email"] = "";
-		}
+			try {
+				row["firstname"] >> info["firstname"];
+			} catch(std::exception &e) {
+				info["firstname"] = "";
+			}
 
-		try {
-			row["password"] >> info["password"];
-		} catch(std::exception &e) {
-			info["password"] = "";
-		}
+			try {
+				row["lastname"] >> info["lastname"];
+			} catch(std::exception &e) {
+				info["lastname"] = "";
+			}
 
-		try {
-			row["token"] >> info["token"];
-		} catch(std::exception &e) {
-			info["token"] = "";
-		}
+			try {
+				row["username"] >> info["username"];
+			} catch(std::exception &e) {
+				info["username"] = "";
+			}
 
-		try {
-			row["zipcode"] >> info["zipcode"];
-		} catch(std::exception &e) {
-			info["zipcode"] = "";
-		}
+			try {
+				row["email"] >> info["email"];
+			} catch(std::exception &e) {
+				info["email"] = "";
+			}
 
-		try {
-			row["gender"] >> info["gender"];
-		} catch(std::exception &e) {
-			info["gender"] = "";
-		}
+			try {
+				row["secondary_email"] >> info["secondary_email"];
+			} catch(std::exception &e) {
+				info["secondary_email"] = "";
+			}
 
-		try {
-			row["forgot_token"] >> info["forgot_token"];
-		} catch(std::exception &e) {
-			info["forgot_token"] = "";
-		}
+			try {
+				row["password"] >> info["password"];
+			} catch(std::exception &e) {
+				info["password"] = "";
+			}
 
-		try {
-			row["forgot_timestamp"] >> info["forgot_timestamp"];
-		} catch(std::exception &e) {
-			info["forgot_timestamp"] = "";
-		}
+			try {
+				row["token"] >> info["token"];
+			} catch(std::exception &e) {
+				info["token"] = "";
+			}
 
-		try {
-			row["timestamp"] >> info["timestamp"];
+			try {
+				row["zipcode"] >> info["zipcode"];
+			} catch(std::exception &e) {
+				info["zipcode"] = "";
+			}
+
+			try {
+				row["gender"] >> info["gender"];
+			} catch(std::exception &e) {
+				info["gender"] = "";
+			}
+
+			try {
+				row["forgot_token"] >> info["forgot_token"];
+			} catch(std::exception &e) {
+				info["forgot_token"] = "";
+			}
+
+			try {
+				row["forgot_timestamp"] >> info["forgot_timestamp"];
+			} catch(std::exception &e) {
+				info["forgot_timestamp"] = "";
+			}
+
+			try {
+				row["timestamp"] >> info["timestamp"];
+			} catch(std::exception &e) {
+				info["timestamp"] = "";
+			}
+			success = true;
 		} catch(std::exception &e) {
-			info["timestamp"] = "";
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Finding user by ID :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
 		}
-	} catch(std::exception &e) {
-		// report error to email
-		std::ostringstream ss;
-		ss << "Finding user by ID :: " << e.what();
-		error::send(ss.str());
-		throw; // bubble exception up
 	}
 	return info;
 }
@@ -338,97 +394,107 @@ std::map<std::string, std::string> db::get_user::by_username(pqxx::connection *c
 	std::string username_f = to_lowercase(username);
 	// prepare query
 	std::string query = "SELECT * FROM dmv_users_t WHERE username=" + c->quote(username_f);
-	try {
-		// execute query
-		pqxx::result result = worker.exec(query.c_str());
-
-		// return to prevent memory access error if no results
-		if(result.empty()) {
-			return info;
-		}
-
-		pqxx::result::const_iterator row_i = result.begin();
-
-		pqxx::tuple row = row_i;
+	// execute query
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
 		try {
-			row["id"] >> info["id"];
+			pqxx::result result = worker.exec(query.c_str());
+
+			// return to prevent memory access error if no results
+			if(result.empty()) {
+				return info;
+			}
+
+			pqxx::result::const_iterator row_i = result.begin();
+
+			pqxx::tuple row = row_i;
+			try {
+				row["id"] >> info["id"];
+			} catch(std::exception &e) {
+				info["id"] = "";
+			}
+
+			try {
+				row["firstname"] >> info["firstname"];
+			} catch(std::exception &e) {
+				info["firstname"] = "";
+			}
+
+			try {
+				row["lastname"] >> info["lastname"];
+			} catch(std::exception &e) {
+				info["lastname"] = "";
+			}
+
+			try {
+				row["username"] >> info["username"];
+			} catch(std::exception &e) {
+				info["username"] = "";
+			}
+
+			try {
+				row["email"] >> info["email"];
+			} catch(std::exception &e) {
+				info["email"] = "";
+			}
+
+			try {
+				row["secondary_email"] >> info["secondary_email"];
+			} catch(std::exception &e) {
+				info["secondary_email"] = "";
+			}
+
+			try {
+				row["password"] >> info["password"];
+			} catch(std::exception &e) {
+				info["password"] = "";
+			}
+
+			try {
+				row["token"] >> info["token"];
+			} catch(std::exception &e) {
+				info["token"] = "";
+			}
+
+			try {
+				row["zipcode"] >> info["zipcode"];
+			} catch(std::exception &e) {
+				info["zipcode"] = "";
+			}
+
+			try {
+				row["gender"] >> info["gender"];
+			} catch(std::exception &e) {
+				info["gender"] = "";
+			}
+
+			try {
+				row["forgot_token"] >> info["forgot_token"];
+			} catch(std::exception &e) {
+				info["forgot_token"] = "";
+			}
+
+			try {
+				row["forgot_timestamp"] >> info["forgot_timestamp"];
+			} catch(std::exception &e) {
+				info["forgot_timestamp"] = "";
+			}
+
+			try {
+				row["timestamp"] >> info["timestamp"];
+			} catch(std::exception &e) {
+				info["timestamp"] = "";
+			}
+			success = true;
 		} catch(std::exception &e) {
-			info["id"] = "";
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Finding user by username :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
 		}
-
-		try {
-			row["firstname"] >> info["firstname"];
-		} catch(std::exception &e) {
-			info["firstname"] = "";
-		}
-
-		try {
-			row["lastname"] >> info["lastname"];
-		} catch(std::exception &e) {
-			info["lastname"] = "";
-		}
-
-		try {
-			row["username"] >> info["username"];
-		} catch(std::exception &e) {
-			info["username"] = "";
-		}
-
-		try {
-			row["email"] >> info["email"];
-		} catch(std::exception &e) {
-			info["email"] = "";
-		}
-
-		try {
-			row["password"] >> info["password"];
-		} catch(std::exception &e) {
-			info["password"] = "";
-		}
-
-		try {
-			row["token"] >> info["token"];
-		} catch(std::exception &e) {
-			info["token"] = "";
-		}
-
-		try {
-			row["zipcode"] >> info["zipcode"];
-		} catch(std::exception &e) {
-			info["zipcode"] = "";
-		}
-
-		try {
-			row["gender"] >> info["gender"];
-		} catch(std::exception &e) {
-			info["gender"] = "";
-		}
-
-		try {
-			row["forgot_token"] >> info["forgot_token"];
-		} catch(std::exception &e) {
-			info["forgot_token"] = "";
-		}
-
-		try {
-			row["forgot_timestamp"] >> info["forgot_timestamp"];
-		} catch(std::exception &e) {
-			info["forgot_timestamp"] = "";
-		}
-
-		try {
-			row["timestamp"] >> info["timestamp"];
-		} catch(std::exception &e) {
-			info["timestamp"] = "";
-		}
-
-
-	} catch(std::exception &e) {
-		// report error to email
-		std::ostringstream ss;
-		ss << "Finding user by username :: " << e.what();
-		error::send(ss.str());
-		throw; // bubble exception up
 	}
 	return info;
 }
@@ -445,95 +511,107 @@ std::map<std::string, std::string> db::get_user::by_email(pqxx::connection *c, s
 	std::string email_f = to_lowercase(email);
 	// prepare query
 	std::string query = "SELECT * FROM dmv_users_t WHERE email=" + c->quote(email_f);
-	try {
-		// execute query
-		pqxx::result result = worker.exec(query.c_str());
-
-		// return to prevent memory access error if no results
-		if(result.empty()) {
-			return info;
-		}
-
-		pqxx::result::const_iterator row_i = result.begin();
-
-		pqxx::tuple row = row_i;
+	// execute query
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
 		try {
-			row["id"] >> info["id"];
-		} catch(std::exception &e) {
-			info["id"] = "";
-		}
+			pqxx::result result = worker.exec(query.c_str());
 
-		try {
-			row["firstname"] >> info["firstname"];
-		} catch(std::exception &e) {
-			info["firstname"] = "";
-		}
+			// return to prevent memory access error if no results
+			if(result.empty()) {
+				return info;
+			}
 
-		try {
-			row["lastname"] >> info["lastname"];
-		} catch(std::exception &e) {
-			info["lastname"] = "";
-		}
+			pqxx::result::const_iterator row_i = result.begin();
 
-		try {
-			row["username"] >> info["username"];
-		} catch(std::exception &e) {
-			info["username"] = "";
-		}
+			pqxx::tuple row = row_i;
+			try {
+				row["id"] >> info["id"];
+			} catch(std::exception &e) {
+				info["id"] = "";
+			}
 
-		try {
-			row["email"] >> info["email"];
-		} catch(std::exception &e) {
-			info["email"] = "";
-		}
+			try {
+				row["firstname"] >> info["firstname"];
+			} catch(std::exception &e) {
+				info["firstname"] = "";
+			}
 
-		try {
-			row["password"] >> info["password"];
-		} catch(std::exception &e) {
-			info["password"] = "";
-		}
+			try {
+				row["lastname"] >> info["lastname"];
+			} catch(std::exception &e) {
+				info["lastname"] = "";
+			}
 
-		try {
-			row["token"] >> info["token"];
-		} catch(std::exception &e) {
-			info["token"] = "";
-		}
+			try {
+				row["username"] >> info["username"];
+			} catch(std::exception &e) {
+				info["username"] = "";
+			}
 
-		try {
-			row["zipcode"] >> info["zipcode"];
-		} catch(std::exception &e) {
-			info["zipcode"] = "";
-		}
+			try {
+				row["email"] >> info["email"];
+			} catch(std::exception &e) {
+				info["email"] = "";
+			}
 
-		try {
-			row["gender"] >> info["gender"];
-		} catch(std::exception &e) {
-			info["gender"] = "";
-		}
+			try {
+				row["secondary_email"] >> info["secondary_email"];
+			} catch(std::exception &e) {
+				info["secondary_email"] = "";
+			}
 
-		try {
-			row["forgot_token"] >> info["forgot_token"];
-		} catch(std::exception &e) {
-			info["forgot_token"] = "";
-		}
+			try {
+				row["password"] >> info["password"];
+			} catch(std::exception &e) {
+				info["password"] = "";
+			}
 
-		try {
-			row["forgot_timestamp"] >> info["forgot_timestamp"];
-		} catch(std::exception &e) {
-			info["forgot_timestamp"] = "";
-		}
+			try {
+				row["token"] >> info["token"];
+			} catch(std::exception &e) {
+				info["token"] = "";
+			}
 
-		try {
-			row["timestamp"] >> info["timestamp"];
+			try {
+				row["zipcode"] >> info["zipcode"];
+			} catch(std::exception &e) {
+				info["zipcode"] = "";
+			}
+
+			try {
+				row["gender"] >> info["gender"];
+			} catch(std::exception &e) {
+				info["gender"] = "";
+			}
+
+			try {
+				row["forgot_token"] >> info["forgot_token"];
+			} catch(std::exception &e) {
+				info["forgot_token"] = "";
+			}
+
+			try {
+				row["forgot_timestamp"] >> info["forgot_timestamp"];
+			} catch(std::exception &e) {
+				info["forgot_timestamp"] = "";
+			}
+
+			try {
+				row["timestamp"] >> info["timestamp"];
+			} catch(std::exception &e) {
+				info["timestamp"] = "";
+			}
+			success = true;
 		} catch(std::exception &e) {
-			info["timestamp"] = "";
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Finding user by email :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
 		}
-	} catch(std::exception &e) {
-		// report error to email
-		std::ostringstream ss;
-		ss << "Finding user by email :: " << e.what();
-		error::send(ss.str());
-		throw; // bubble exception up
 	}
 	return info;
 }
@@ -543,95 +621,107 @@ std::map<std::string, std::string> db::get_user::by_forgot_token(pqxx::connectio
 	pqxx::work worker(*c); // create worker
 	// prepare query
 	std::string query = "SELECT * FROM dmv_users_t WHERE forgot_token=" + c->quote(token);
-	try {
-		// execute query
-		pqxx::result result = worker.exec(query.c_str());
-
-		// return to prevent memory access error if no results
-		if(result.empty()) {
-			return info;
-		}
-
-		pqxx::result::const_iterator row_i = result.begin();
-
-		pqxx::tuple row = row_i;
+	// execute query
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
 		try {
-			row["id"] >> info["id"];
-		} catch(std::exception &e) {
-			info["id"] = "";
-		}
+			pqxx::result result = worker.exec(query.c_str());
 
-		try {
-			row["firstname"] >> info["firstname"];
-		} catch(std::exception &e) {
-			info["firstname"] = "";
-		}
+			// return to prevent memory access error if no results
+			if(result.empty()) {
+				return info;
+			}
 
-		try {
-			row["lastname"] >> info["lastname"];
-		} catch(std::exception &e) {
-			info["lastname"] = "";
-		}
+			pqxx::result::const_iterator row_i = result.begin();
 
-		try {
-			row["username"] >> info["username"];
-		} catch(std::exception &e) {
-			info["username"] = "";
-		}
+			pqxx::tuple row = row_i;
+			try {
+				row["id"] >> info["id"];
+			} catch(std::exception &e) {
+				info["id"] = "";
+			}
 
-		try {
-			row["email"] >> info["email"];
-		} catch(std::exception &e) {
-			info["email"] = "";
-		}
+			try {
+				row["firstname"] >> info["firstname"];
+			} catch(std::exception &e) {
+				info["firstname"] = "";
+			}
 
-		try {
-			row["password"] >> info["password"];
-		} catch(std::exception &e) {
-			info["password"] = "";
-		}
+			try {
+				row["lastname"] >> info["lastname"];
+			} catch(std::exception &e) {
+				info["lastname"] = "";
+			}
 
-		try {
-			row["token"] >> info["token"];
-		} catch(std::exception &e) {
-			info["token"] = "";
-		}
+			try {
+				row["username"] >> info["username"];
+			} catch(std::exception &e) {
+				info["username"] = "";
+			}
 
-		try {
-			row["zipcode"] >> info["zipcode"];
-		} catch(std::exception &e) {
-			info["zipcode"] = "";
-		}
+			try {
+				row["email"] >> info["email"];
+			} catch(std::exception &e) {
+				info["email"] = "";
+			}
 
-		try {
-			row["gender"] >> info["gender"];
-		} catch(std::exception &e) {
-			info["gender"] = "";
-		}
+			try {
+				row["secondary_email"] >> info["secondary_email"];
+			} catch(std::exception &e) {
+				info["secondary_email"] = "";
+			}
 
-		try {
-			row["forgot_token"] >> info["forgot_token"];
-		} catch(std::exception &e) {
-			info["forgot_token"] = "";
-		}
+			try {
+				row["password"] >> info["password"];
+			} catch(std::exception &e) {
+				info["password"] = "";
+			}
 
-		try {
-			row["forgot_timestamp"] >> info["forgot_timestamp"];
-		} catch(std::exception &e) {
-			info["forgot_timestamp"] = "";
-		}
+			try {
+				row["token"] >> info["token"];
+			} catch(std::exception &e) {
+				info["token"] = "";
+			}
 
-		try {
-			row["timestamp"] >> info["timestamp"];
+			try {
+				row["zipcode"] >> info["zipcode"];
+			} catch(std::exception &e) {
+				info["zipcode"] = "";
+			}
+
+			try {
+				row["gender"] >> info["gender"];
+			} catch(std::exception &e) {
+				info["gender"] = "";
+			}
+
+			try {
+				row["forgot_token"] >> info["forgot_token"];
+			} catch(std::exception &e) {
+				info["forgot_token"] = "";
+			}
+
+			try {
+				row["forgot_timestamp"] >> info["forgot_timestamp"];
+			} catch(std::exception &e) {
+				info["forgot_timestamp"] = "";
+			}
+
+			try {
+				row["timestamp"] >> info["timestamp"];
+			} catch(std::exception &e) {
+				info["timestamp"] = "";
+			}
+			success = true;
 		} catch(std::exception &e) {
-			info["timestamp"] = "";
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Finding user by email :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
 		}
-	} catch(std::exception &e) {
-		// report error to email
-		std::ostringstream ss;
-		ss << "Finding user by email :: " << e.what();
-		error::send(ss.str());
-		throw; // bubble exception up
 	}
 	return info;
 }
@@ -821,7 +911,7 @@ bool form::validZipcode(std::string zipcode) {
 void mail::external::send_registration(std::string email_f, std::string token) {
 	std::string subject = "DMV Exchange :: Registration";
 	std::string token_f = cppcms::util::urlencode(token);
-	std::string message = "Thank you for registering at DMV Exchange click \\<a href='http://dmv-exchange.com/activate?token=" + token_f + "'\\>here\\</a\\> to activate your account\\<br\\>\\<br\\>If the link does not work copy and paste this link into the address bar\\<br\\>http://dmv-exchange.com/activate?token=" + token_f;
+	std::string message = "Thank you for registering at DMV Exchange click <a href='http://dmv-exchange.com/activate?token=" + token_f + "'>here</a> to activate your account<br><br>If the link does not work copy and paste this link into the address bar<br>http://dmv-exchange.com/activate?token=" + token_f;
 	std::string command = "echo '" + message + "' | mail -aContent-Type:text/html -aFrom:'DMV Exchange'\\<no-reply@dmv-exchange.com\\> -s \'" + subject + "\' " + email_f;
 	FILE *pHandle = popen(command.c_str(), "w");
 	if(!pHandle) {
@@ -912,11 +1002,21 @@ void db::update::user::by_id(pqxx::connection *c, int id, std::pair<std::string,
 	// prepare query
 	std::string query = "UPDATE dmv_users_t SET " + c->esc(data.first) + "=" + c->quote(data.second) + " WHERE id=" + c->quote(id);
 	// execute
-	try {
-		pqxx::result result = worker.exec(query.c_str());
-		worker.commit();
-	} catch(std::exception &e) {
-		throw; // bubble exception up
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result result = worker.exec(query.c_str());
+			worker.commit();
+			success = true;
+		} catch(std::exception &e) {
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Updating user by id :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
+		}
 	}
 	return;
 }
@@ -930,11 +1030,21 @@ void db::update::user::by_email(pqxx::connection *c, std::string email, std::pai
 	// prepare query
 	std::string query = "UPDATE dmv_users_t SET " + c->esc(data.first) + "=" + c->quote(data.second) + " WHERE email=" + c->quote(email);
 	// execute
-	try {
-		pqxx::result result = worker.exec(query.c_str());
-		worker.commit();
-	} catch(std::exception &e) {
-		throw; // bubble exception up
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result result = worker.exec(query.c_str());
+			worker.commit();
+			success = true;
+		} catch(std::exception &e) {
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Updating user by email :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
+		}
 	}
 	return;
 }
@@ -948,11 +1058,21 @@ void db::update::user::by_username(pqxx::connection *c, std::string username, st
 	// prepare query
 	std::string query = "UPDATE dmv_users_t SET " + c->esc(data.first) + "=" + c->quote(data.second) + " WHERE username=" + c->quote(username);
 	// execute
-	try {
-		pqxx::result result = worker.exec(query.c_str());
-		worker.commit();
-	} catch(std::exception &e) {
-		throw; // bubble exception up
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result result = worker.exec(query.c_str());
+			worker.commit();
+			success = true;
+		} catch(std::exception &e) {
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Updating user by username :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
+		}
 	}
 	return;
 }
@@ -964,11 +1084,21 @@ void db::update::user::by_id(pqxx::connection *c, int id, std::pair<std::string,
 	// prepare query
 	std::string query = "UPDATE dmv_users_t SET " + c->esc(data1.first) + "=" + c->quote(data1.second) + ", " + c->esc(data2.first) + "=" + c->quote(data2.second) + " WHERE id=" + c->quote(id);
 	// execute
-	try {
-		pqxx::result result = worker.exec(query.c_str());
-		worker.commit();
-	} catch(std::exception &e) {
-		throw; // bubble exception up
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result result = worker.exec(query.c_str());
+			worker.commit();
+			success = true;
+		} catch(std::exception &e) {
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Updating user by id :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
+		}
 	}
 	return;
 }
@@ -980,11 +1110,21 @@ void db::update::user::by_username(pqxx::connection *c, std::string username, st
 	// prepare query
 	std::string query = "UPDATE dmv_users_t SET " + c->esc(data1.first) + "=" + c->quote(data1.second) + ", " + c->esc(data2.first) + "=" + c->quote(data2.second) + " WHERE username=" + c->quote(username);
 	// execute
-	try {
-		pqxx::result result = worker.exec(query.c_str());
-		worker.commit();
-	} catch(std::exception &e) {
-		throw; // bubble exception up
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result result = worker.exec(query.c_str());
+			worker.commit();
+			success = true;
+		} catch(std::exception &e) {
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Updating user by username :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
+		}
 	}
 	return;
 }
@@ -996,11 +1136,21 @@ void db::update::user::by_email(pqxx::connection *c, std::string email, std::pai
 	// prepare query
 	std::string query = "UPDATE dmv_users_t SET " + c->esc(data1.first) + "=" + c->quote(data1.second) + ", " + c->esc(data2.first) + "=" + c->quote(data2.second) + " WHERE email=" + c->quote(email);
 	// execute
-	try {
-		pqxx::result result = worker.exec(query.c_str());
-		worker.commit();
-	} catch(std::exception &e) {
-		throw; // bubble exception up
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result result = worker.exec(query.c_str());
+			worker.commit();
+			success = true;
+		} catch(std::exception &e) {
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Updating user by email :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
+		}
 	}
 	return;
 }

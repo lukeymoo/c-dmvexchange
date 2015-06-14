@@ -52,6 +52,9 @@ void Context::set_page(std::string page_id) {
 	if(PAGE == "RESETERROR") {
 		TITLE = "Reset Error";
 	}
+	if(PAGE == "ACCOUNT") {
+		TITLE = "Account Settings";
+	}
 	return;
 }
 

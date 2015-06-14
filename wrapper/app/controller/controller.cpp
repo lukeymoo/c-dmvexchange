@@ -2,7 +2,7 @@
 #include "view.hpp"
 #include "user.hpp"
 
-DXServer::~DXServer() {
+BaseController::~BaseController() {
 	return;
 }
 
@@ -13,7 +13,7 @@ DXServer::~DXServer() {
 		Gets session and sets context then
 		Renders home page
 */
-void DXServer::index_page() {
+void BaseController::index_page() {
 	session().load();
 	// only allow get method
 	if(request().request_method() != "GET") {
@@ -35,7 +35,7 @@ void DXServer::index_page() {
 		Render register page
 		Gets session and sets context
 */
-void DXServer::register_page() {
+void BaseController::register_page() {
 	session().load();
 	// only allow get method
 	if(request().request_method() != "GET") {
@@ -61,7 +61,7 @@ void DXServer::register_page() {
 	@FUNCTION -
 		Authenticates user based on submitted login form
 */
-void DXServer::process_login() {
+void BaseController::process_login() {
 	session().load();
 	// only allow POST method
 	if(request().request_method() != "POST") {
@@ -72,7 +72,7 @@ void DXServer::process_login() {
 
 	// disallow logged in
 	if(Context::logged_in(session())) {
-		json_response("DX-REJECTED", "logged_in");
+		json::send("DX-REJECTED", "logged_in", response().out());
 		return;
 	}
 
@@ -84,7 +84,7 @@ void DXServer::process_login() {
 		if(form::validEmail(request().post("u"))) { // is valid email ?
 			ID_TYPE = ID_EMAIL;
 		} else { // invalid `u` field
-			json_response("DX-REJECTED", "u_invalid");
+			json::send("DX-REJECTED", "u_invalid", response().out());
 			return;
 		}
 	}
@@ -101,14 +101,14 @@ void DXServer::process_login() {
 				session().set("USERNAME", info["username"]);
 				session().set("EMAIL", info["email"]);
 				session().set("USER_ID", info["id"]);
-				json_response("DX-OK", "Logged in");
+				json::send("DX-OK", "Logged in", response().out());
 				return;
 			} else { // invalid username login
-				json_response("DX-REJECTED", "U_invalid_login");
+				json::send("DX-REJECTED", "U_invalid_login", response().out());
 				return;
 			}
 		} catch(std::exception &e) {
-			json_response("DX-FAILED", "Server error");
+			json::send("DX-FAILED", "Server error", response().out());
 			return;
 		}
 	} else if(ID_TYPE == ID_EMAIL) {
@@ -122,14 +122,14 @@ void DXServer::process_login() {
 				session().set("USERNAME", info["username"]);
 				session().set("EMAIL", info["email"]);
 				session().set("USER_ID", info["id"]);
-				json_response("DX-OK", "Logged in");
+				json::send("DX-OK", "Logged in", response().out());
 				return;
 			} else { // invalid email login
-				json_response("DX-REJECTED", "E_invalid_login");
+				json::send("DX-REJECTED", "E_invalid_login", response().out());
 				return;
 			}
 		} catch(std::exception &e) {
-			json_response("DX-FAILED", "Server error");
+			json::send("DX-FAILED", "Server error", response().out());
 			return;
 		}
 	}
@@ -147,7 +147,7 @@ void DXServer::process_login() {
 		Send activation token to user's email address
 		Redirect to home page
 */
-void DXServer::process_register() {
+void BaseController::process_register() {
 	session().load();
 	// only allow post
 	if(request().request_method() != "POST") {
@@ -303,7 +303,7 @@ void DXServer::process_register() {
 
 // Display forgot page offering options
 // to select what data they wish to recover
-void DXServer::forgot() {
+void BaseController::forgot() {
 	session().load();
 	// only allow GET
 	if(request().request_method() != "GET") {
@@ -331,7 +331,7 @@ void DXServer::forgot() {
 // invalid_type		--- neither radio buttons were selected ( username || password )
 // invalid_email 	--- radio button username selected, but invalid email was specified
 // invalid_id 		--- radio button password selected, but neither a valid username || email was given
-void DXServer::process_forgot() {
+void BaseController::process_forgot() {
 	session().load();
 	// Only allow POST method
 	if(request().request_method() != "POST") {
@@ -414,7 +414,7 @@ void DXServer::process_forgot() {
 
 // provides form for which user can request
 // account information to be emailed
-void DXServer::forgot_landing() {
+void BaseController::forgot_landing() {
 	session().load();
 	// only allow GET request
 	if(request().request_method() != "GET") {
@@ -438,7 +438,7 @@ void DXServer::forgot_landing() {
 
 // provides form for resetting password if the user
 // provided a valid token
-void DXServer::reset() {
+void BaseController::reset() {
 	session().load();
 	// only allow GET method
 	if(request().request_method() != "GET") {
@@ -469,7 +469,7 @@ void DXServer::reset() {
 }
 
 // validates and sets new password specified on previous page
-void DXServer::process_reset() {
+void BaseController::process_reset() {
 	session().load();
 	// only allow POST
 	if(request().request_method() != "POST") {
@@ -557,8 +557,31 @@ void DXServer::process_reset() {
 	return;
 }
 
+// Render create post form
+void BaseController::create_post() {
+	// allow only GET
+	if(request().request_method() != "GET") {
+		response().status(404);
+		response().out() << "http GET is only method allowed on this page";
+		return;
+	}
+
+	// only allow logged in users
+	if(!Context::logged_in(session())) {
+		response().set_redirect_header("/?err=need_login&next=/p/new", 302);
+		return;
+	}
+
+	// render page
+	Context c;
+	c.resolve_session(session());
+	c.set_page("CREATEPOST");
+	render("master", c);
+	return;
+}
+
 // display success message
-void DXServer::reset_landing() {
+void BaseController::reset_landing() {
 	session().load();
 	// only allow GET method
 	if(request().request_method() != "GET") {
@@ -579,32 +602,23 @@ void DXServer::reset_landing() {
 	return;
 }
 
-/*
-	@METHOD - Only GET method is allowed
-	
-	@FUNCTION -
-		Used by scripts to query server and retreive session state
-		Main function of scripts is to log the user out should session timeout
-		while inactive
-*/
-void DXServer::json_session() {
-	session().load();
-	// only allow get
+void BaseController::account_page() {
+	// only allow GET
 	if(request().request_method() != "GET") {
 		response().status(404);
 		response().out() << "http GET is only method allowed on this page";
 		return;
 	}
+	// must be logged in
+	if(!Context::logged_in(session())) {
+		response().set_redirect_header("/?err=need_login&next=/account", 302);
+		return;
+	}
+	// render page
 	Context c;
 	c.resolve_session(session());
-
-	cppcms::json::value jres;
-	jres["LOGGED_IN"] = c.LOGGED_IN;
-	jres["USERNAME"] = c.USERNAME;
-	jres["USER_ID"] = c.USER_ID;
-	jres["EMAIL"] = c.EMAIL;
-	jres["LAST_ACTIVITY"] = c.LAST_ACTIVITY;
-	jres.save(response().out(), cppcms::json::compact);
+	c.set_page("ACCOUNT");
+	render("master", c);
 	return;
 }
 
@@ -615,7 +629,7 @@ void DXServer::json_session() {
 		Clears the session values
 		Used to destroy authenticated sessions
 */
-void DXServer::clear_session() {
+void BaseController::clear_session() {
 	session().load();
 	session().set("LOGGED_IN", "false");
 	session().set("USERNAME", "");
@@ -632,7 +646,7 @@ void DXServer::clear_session() {
 		Updates session LAST_ACTIVITY to
 		current time since UNIX EPOCH std::time(0)
 */
-void DXServer::update_activity() {
+void BaseController::update_activity() {
 	return;
 }
 
@@ -643,41 +657,15 @@ void DXServer::update_activity() {
 		Clears session values and redirects
 		the user to home page
 */
-void DXServer::logout() {
+void BaseController::logout() {
 	clear_session();
 	response().set_redirect_header("/", 302);
 	return;
 }
 
 
-
-/*
-	@METHOD - Not used by web client
-
-	@FUNCTION -
-		Returns a JSON Parsed response to client
-		Structured as { status: '', message: '' }
-
-		. Valid statuses -> `DX-OK`, `DX-REJECTED`, `DX-FAILED`
-		. Message can vary to pre-specified error codes or custom responses
-			depending on status
-*/
-void DXServer::json_response(std::string status, std::string message) {
-	cppcms::json::value jres;
-	jres["status"] = status;
-	jres["message"] = message;
-	jres.save(response().out(), cppcms::json::compact);
-	return;
-}
-
-
-
-
-
-
-
 // Debugging
-void DXServer::debug_session() {
+void BaseController::debug_session() {
 	session().load();
 	Context c;
 	c.resolve_session(session());
@@ -691,7 +679,7 @@ void DXServer::debug_session() {
 	return;
 }
 
-void DXServer::debug_page() {
+void BaseController::debug_page() {
 	response().out() << "Nothing to debug<br>";
 	return;
 }

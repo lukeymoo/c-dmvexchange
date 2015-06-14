@@ -4,210 +4,234 @@
 
 
 <% template header() %>
-<div id='header-bar'>
-	<span id='header-menu-button'>&#9776;</span>
-	<% if (content.LOGGED_IN == "true") %>
-		<a href='/'><span id='header-logo' class='logo-with-login'> DMV EXCHANGE </span></a>
-		<span id='beta-logo' class='beta-with-login'>*BETA</span>
-	<% else %>
-		<a href='/'><span id='header-logo' class='logo-no-login'> DMV EXCHANGE </span></a>
-		<span id='beta-logo' class='beta-no-login'>*BETA</span>
-	<% end %>
-	<div id='header-menu'>
-		<a href='/'>
-			<span class='header-menu-option'>Home</span>
-		</a>
-		<span class='header-menu-option'>Submit advice</span>
+	<div id='header-bar'>
+		<span id='header-menu-button'>&#9776;</span>
 		<% if (content.LOGGED_IN == "true") %>
-			<a href="/account"><span class='header-menu-option'>Account</span></a>
-			<a href="/logout"><span class="header-menu-option">Logout</span></a>
+			<a href='/'><span id='header-logo' class='logo-with-login'> DMV EXCHANGE </span></a>
+			<span id='beta-logo' class='beta-with-login'>*BETA</span>
 		<% else %>
-			<a href='/register'>
-				<span class='header-menu-option'>Sign up</span>
-			</a>
+			<a href='/'><span id='header-logo' class='logo-no-login'> DMV EXCHANGE </span></a>
+			<span id='beta-logo' class='beta-no-login'>*BETA</span>
 		<% end %>
-	</div>
-	<!-- Header controls -->
-	<% if (content.LOGGED_IN == "true") %>
-		<div id='header-controls'>
-			<% if (content.PAGE == "CREATEPOST") %>
-				<span data-active='true' id='header-create-post-button' class='header-control-button'>Create Post</span>
+		<div id='header-menu'>
+			<a href='/'>
+				<span class='header-menu-option'>Home</span>
+			</a>
+			<span class='header-menu-option'>Submit advice</span>
+			<% if (content.LOGGED_IN == "true") %>
+				<a href="/account"><span class='header-menu-option'>Account</span></a>
+				<a href="/logout"><span class="header-menu-option">Logout</span></a>
 			<% else %>
-				<a href='/p/new'><span data-active='false' id='header-create-post-button' class='header-control-button'>Create Post</span></a>
+				<a href='/register'>
+					<span class='header-menu-option'>Sign up</span>
+				</a>
 			<% end %>
+		</div>
+		<!-- Header controls -->
+		<% if (content.LOGGED_IN == "true") %>
+			<div id='header-controls'>
+				<% if (content.PAGE == "CREATEPOST") %>
+					<span data-active='true' id='header-create-post-button' class='header-control-button'>Create Post</span>
+				<% else %>
+					<a href='/p/new'><span data-active='false' id='header-create-post-button' class='header-control-button'>Create Post</span></a>
+				<% end %>
 
-			<span data-active='false' id='header-notifications-button' class='header-control-button'>Notifications</span>
-			<span data-active='false' id='header-profile-button' class='header-control-button'><%= USERNAME %></span>
+				<span data-active='false' id='header-notifications-button' class='header-control-button'>Notifications</span>
+				<span data-active='false' id='header-profile-button' class='header-control-button'><%= USERNAME %></span>
+			</div>
+		<% else %>
+		<div id='header-controls'>
+			<span id='header-login-button' data-active='false' class='header-control-button' data-state='closed'>Log in</span>
+			<a href='/register'>
+				<% if (content.PAGE == "REGISTER") %>
+					<span data-active='true' class='header-control-button'>Register</span>
+				<% else %>
+					<span data-active='false' class='header-control-button'>Register</span>
+				<% end %>
+			</a>
 		</div>
-	<% else %>
-	<div id='header-controls'>
-		<span id='header-login-button' data-active='false' class='header-control-button' data-state='closed'>Log in</span>
-		<a href='/register'>
-			<% if (content.PAGE == "REGISTER") %>
-				<span data-active='true' class='header-control-button'>Register</span>
-			<% else %>
-				<span data-active='false' class='header-control-button'>Register</span>
-			<% end %>
-		</a>
+		<% end %>
+		<!-- End header controls -->
+		<!-- Login form -->
+		<% if (content.LOGGED_IN == "false") %>
+			<div id='header-login-container'>
+				<form id='header-login-form'>
+					<label>Username or email</label>
+					<input id='username-or-email' type='text' spellcheck='false' placeholder='Username or email'>
+					<input id='password' type='password' placeholder='Password'>
+					<a href="/forgot"><span id='header-login-forgot'>forgot password?</span></a>
+				</form>
+				<button id='header-login-form-button'>Log in</button>
+			</div>
+		<% end %>
+		<!-- End login form -->
 	</div>
-	<% end %>
-	<!-- End header controls -->
-	<!-- Login form -->
-	<% if (content.LOGGED_IN == "false") %>
-		<div id='header-login-container'>
-			<form id='header-login-form'>
-				<label>Username or email</label>
-				<input id='username-or-email' type='text' spellcheck='false' placeholder='Username or email'>
-				<input id='password' type='password' placeholder='Password'>
-				<a href="/forgot"><span id='header-login-forgot'>forgot password?</span></a>
-			</form>
-			<button id='header-login-form-button'>Log in</button>
-		</div>
-	<% end %>
-	<!-- End login form -->
-</div>
-<div id='notification-container'></div>
+	<div id='notification-container'></div>
 <% end template %>
 
-
-
 <% template create_post_form() %>
-<div data-visible='true' id='post-form-container'>
-	<form action='/p/process' method='POST' enctype='multipart/form-data' name='postform' id='post-form' data-type='sale' data-valid='false'>
-		<img id='post-form-validator' src='/img/cross.png'>
-		<input type='text' name='posttype' class='hidden-input' value='sale'>
-		<label>What kind of post is this?</label>
-		<div id='post-type-container'>
-			<span data-selected='true' data-value='sale' id='post-type-left' class='post-type'>Sale</span>
-			<span data-selected='false' data-value='general' id='post-type-right' class='post-type'>General Post</span>
-		</div>
-		<label>Post description</label>
-		<textarea name='postdescription' id='post-form-description'></textarea>
-		<input type='file' data-for='#handler-container1' id='photo1' name='photo1' class='post-image hidden-input'>
-		<input type='file' data-for='#handler-container2' id='photo2' name='photo2' class='post-image hidden-input'>
-		<input type='file' data-for='#handler-container3' id='photo3' name='photo3' class='post-image hidden-input'>
-		<input type='file' data-for='#handler-container4' id='photo4' name='photo4' class='post-image hidden-input'>
-		<label id='post-image-label'>Sales <span style="color:rgb(190, 0, 0);">must</span> have at least 1 image</label>
-		<!-- Photo Handlers -->
-		<div id='preview-container'>
-			<!-- Handler 1 -->
-			<div id='handler-container1' class='handler-container' data-visible='true' data-active='false'>
-				<span data-for='#photo1' class='photo-remover'>&times;</span>
-				<img data-for='#photo1' id='photo-handler1' class='photo-handler' src='/img/cross.png'>
+	<div data-visible='true' id='post-form-container'>
+		<form action='/p/process' method='POST' enctype='multipart/form-data' name='postform' id='post-form' data-type='sale' data-valid='false'>
+			<img id='post-form-validator' src='/img/cross.png'>
+			<input type='text' name='posttype' class='hidden-input' value='sale'>
+			<label>What kind of post is this?</label>
+			<div id='post-type-container'>
+				<span data-selected='true' data-value='sale' id='post-type-left' class='post-type'>Sale</span>
+				<span data-selected='false' data-value='general' id='post-type-right' class='post-type'>General Post</span>
 			</div>
-			<!-- Handler 2 -->
-			<div id='handler-container2' class='handler-container' data-visible='false' data-active='false'>
-				<span data-for='#photo2' class='photo-remover'>&times;</span>
-				<img data-for='#photo2' id='photo-handler2' class='photo-handler' src='/img/cross.png'>
+			<label>Post description</label>
+			<textarea name='postdescription' id='post-form-description'></textarea>
+			<input type='file' data-for='#handler-container1' id='photo1' name='photo1' class='post-image hidden-input'>
+			<input type='file' data-for='#handler-container2' id='photo2' name='photo2' class='post-image hidden-input'>
+			<input type='file' data-for='#handler-container3' id='photo3' name='photo3' class='post-image hidden-input'>
+			<input type='file' data-for='#handler-container4' id='photo4' name='photo4' class='post-image hidden-input'>
+			<label id='post-image-label'>Sales <span style="color:rgb(190, 0, 0);">must</span> have at least 1 image</label>
+			<!-- Photo Handlers -->
+			<div id='preview-container'>
+				<!-- Handler 1 -->
+				<div id='handler-container1' class='handler-container' data-visible='true' data-active='false'>
+					<span data-for='#photo1' class='photo-remover'>&times;</span>
+					<img data-for='#photo1' id='photo-handler1' class='photo-handler' src='/img/cross.png'>
+				</div>
+				<!-- Handler 2 -->
+				<div id='handler-container2' class='handler-container' data-visible='false' data-active='false'>
+					<span data-for='#photo2' class='photo-remover'>&times;</span>
+					<img data-for='#photo2' id='photo-handler2' class='photo-handler' src='/img/cross.png'>
+				</div>
+				<!-- Handler 3 -->
+				<div id='handler-container3' class='handler-container' data-visible='false' data-active='false'>
+					<span data-for='#photo3' class='photo-remover'>&times;</span>
+					<img data-for='#photo3' id='photo-handler3' class='photo-handler' src='/img/cross.png'>
+				</div>
+				<!-- Handler 4 -->
+				<div id='handler-container4' class='handler-container' data-visible='false' data-active='false'>
+					<span data-for='#photo4' class='photo-remover'>&times;</span>
+					<img data-for='#photo4' id='photo-handler4' class='photo-handler' src='/img/cross.png'>
+				</div>
 			</div>
-			<!-- Handler 3 -->
-			<div id='handler-container3' class='handler-container' data-visible='false' data-active='false'>
-				<span data-for='#photo3' class='photo-remover'>&times;</span>
-				<img data-for='#photo3' id='photo-handler3' class='photo-handler' src='/img/cross.png'>
-			</div>
-			<!-- Handler 4 -->
-			<div id='handler-container4' class='handler-container' data-visible='false' data-active='false'>
-				<span data-for='#photo4' class='photo-remover'>&times;</span>
-				<img data-for='#photo4' id='photo-handler4' class='photo-handler' src='/img/cross.png'>
-			</div>
-		</div>
-	</form>
-	<button id='post-form-button'>Create Post</button>
-</div>
+		</form>
+		<button id='post-form-button'>Create Post</button>
+	</div>
 <% end template %>
 
 
 <% template register_form() %>
-<span id='banner'>Create an account to get started</span>
-<div id='signup-why'>
-	<span id='main'>Build trust with your buyers and sellers</span>
-	<span id='main-support'>
-		With built-in review and reporting system we filter and remove scammers and people who have a history of backing-out/wasting time.
-	</span>
-	<span id='secondary'>Find buyers and sellers quickly and efficiently</span>
-	<span id='secondary-support'>
-		Efficient search algorithms ensure you can find relevant products closests to you and at a price you want.
-	</span>
-	<span id='last'>Build a brand with no overhead</span>
-	<span id='last-support'>
-		Sell your products through DMV Exchange and avoid the cost and associated overhead of a business.
-	</span>
-</div>
-<div id='signup-card'>
-	<div id='signup-container'>
-		<form id='signup-form' action='/register/process' method='post'>
-			<label>Name</label>
-			<input id='firstname' name='f' type='text' placeholder='First' class='same-line-input field' spellcheck='false'>
-			<input id='lastname' name='l' type='text' placeholder='Last' class='same-line-input field' spellcheck='false'>
-			<label>Username</label>
-			<input id='username' name='u' type='text' placeholder='Username' class='single-line-input field' spellcheck='false'>
-			<label>Password</label>
-			<input id='password' name='p' type='password' placeholder='Password' class='single-line-input field'>
-			<label>Confirm password</label>
-			<input id='password-again' name='pa' type='password' placeholder='Confirm password' class='single-line-input field'>
-			<label>Email</label>
-			<input id='email' name='e' type='text' placeholder='Email' class='single-line-input field' spellcheck='false'>
-			<label>Confirm email</label>
-			<input id='email-again' name='ea' type='text' placeholder='Confirm email' class='single-line-input field' spellcheck='false'>
-			<label>Zipcode</label>
-			<input id='zipcode' name='z' maxlength='5' type='text' placeholder='Zipcode' class='same-line-input field' spellcheck='false'>
-			<label>Gender</label>
-			<select id='gender-select' name='g' class='field'>
-				<option selected='true'>I am...</option>
-				<option value='m'>Male</option>
-				<option value='f'>Female</option>
-			</select>
-			<label>Terms and Conditions</label>
-			<div id='tos-container' class='field'>
-				<input id='tos-checkbox' type='checkbox' value='I_AGREE' name='tos'>
-				<span id='tos-disclosure'>
-					I agree to the <a target="_blank" href='/h/policy.html'>policies</a> and the <a target="_blank" href='/h/policy.html'>Terms of Service</a>
-				</span>
-			</div>
-			<button id='signup-button'>Sign up</button>
-		</form>
+	<span id='banner'>Create an account to get started</span>
+	<div id='signup-why'>
+		<span id='main'>Build trust with your buyers and sellers</span>
+		<span id='main-support'>
+			With built-in review and reporting system we filter and remove scammers and people who have a history of backing-out/wasting time.
+		</span>
+		<span id='secondary'>Find buyers and sellers quickly and efficiently</span>
+		<span id='secondary-support'>
+			Efficient search algorithms ensure you can find relevant products closests to you and at a price you want.
+		</span>
+		<span id='last'>Build a brand with no overhead</span>
+		<span id='last-support'>
+			Sell your products through DMV Exchange and avoid the cost and associated overhead of a business.
+		</span>
 	</div>
-</div>
+	<div id='signup-card'>
+		<div id='signup-container'>
+			<form id='signup-form' action='/register/process' method='post'>
+				<label>Name</label>
+				<input id='firstname' name='f' type='text' placeholder='First' class='same-line-input field' spellcheck='false'>
+				<input id='lastname' name='l' type='text' placeholder='Last' class='same-line-input field' spellcheck='false'>
+				<label>Username</label>
+				<input id='username' name='u' type='text' placeholder='Username' class='single-line-input field' spellcheck='false'>
+				<label>Password</label>
+				<input id='password' name='p' type='password' placeholder='Password' class='single-line-input field'>
+				<label>Confirm password</label>
+				<input id='password-again' name='pa' type='password' placeholder='Confirm password' class='single-line-input field'>
+				<label>Email</label>
+				<input id='email' name='e' type='text' placeholder='Email' class='single-line-input field' spellcheck='false'>
+				<label>Confirm email</label>
+				<input id='email-again' name='ea' type='text' placeholder='Confirm email' class='single-line-input field' spellcheck='false'>
+				<label>Zipcode</label>
+				<input id='zipcode' name='z' maxlength='5' type='text' placeholder='Zipcode' class='same-line-input field' spellcheck='false'>
+				<label>Gender</label>
+				<select id='gender-select' name='g' class='field'>
+					<option selected='true'>I am...</option>
+					<option value='m'>Male</option>
+					<option value='f'>Female</option>
+				</select>
+				<label>Terms and Conditions</label>
+				<div id='tos-container' class='field'>
+					<input id='tos-checkbox' type='checkbox' value='I_AGREE' name='tos'>
+					<span id='tos-disclosure'>
+						I agree to the <a target="_blank" href='/h/policy.html'>policies</a> and the <a target="_blank" href='/h/policy.html'>Terms of Service</a>
+					</span>
+				</div>
+				<button id='signup-button'>Sign up</button>
+			</form>
+		</div>
+	</div>
 <% end template %>
 
 
 
 <% template forgot_initial() %>
-<span id='forgot-header'>Select what you've forgotten...</span><br>
-<div id='forgot-container'>
-	<form id='forgot-form' method='post' action='/forgot/process'>
-		<div id='forgot-type-container'>
-			<label>Forgot username</label><input class='radio-button' name='type' type='radio' value='username'>
-			<br>
-			<label>Forgot password</label><input class='radio-button' name='type' type='radio' value='password'>
-		</div>
-		<input id='id' type='text' name='id' placeholder='Username or email...' spellcheck='false'>
-	</form>
-	<button id='forgot-button'>Submit Request</button>
-</div>
-<% end template %>
+	<span id='forgot-header'>Select what you've forgotten...</span><br>
+	<div id='forgot-container'>
+		<form id='forgot-form' method='post' action='/forgot/process'>
+			<div id='forgot-type-container'>
+				<label>Forgot username</label><input class='radio-button' name='type' type='radio' value='username'>
+				<br>
+				<label>Forgot password</label><input class='radio-button' name='type' type='radio' value='password'>
+			</div>
+			<input id='id' type='text' name='id' placeholder='Username or email...' spellcheck='false'>
+		</form>
+		<button id='forgot-button'>Submit Request</button>
+	</div>
+	<% end template %>
 
-<% template forgot_landing() %>
-<span id='forgot-landing-header'>An email has been sent with further information</span>
-<a id='forgot-return' href='/'>Click here to return home</a>
+	<% template forgot_landing() %>
+	<span id='forgot-landing-header'>An email has been sent with further information</span>
+	<a id='forgot-return' href='/'>Click here to return home</a>
 <% end template %>
 
 <% template reset_password() %>
-<span id='password-reset-header'>Password reset form</span>
-<form id='password-reset-form' method='post' action='/reset/process'>
-	<input class='hidden' id='token' name='token' type='text' value=''>
-	<label>Enter a new password</label>
-	<input type='password' id='np' name='np' placeholder='Enter a new password...'><br>
-	<label>Confirm new password</label>
-	<input type='password' id='npa' name='npa' placeholder='Confirm new password...'><br>
-</form>
-<button id='reset-button'>Set new password</button>
+	<span id='password-reset-header'>Password reset form</span>
+	<form id='password-reset-form' method='post' action='/reset/process'>
+		<input class='hidden' id='token' name='token' type='text' value=''>
+		<label>Enter a new password</label>
+		<input type='password' id='np' name='np' placeholder='Enter a new password...'><br>
+		<label>Confirm new password</label>
+		<input type='password' id='npa' name='npa' placeholder='Confirm new password...'><br>
+	</form>
+	<button id='reset-button'>Set new password</button>
 <% end template %>
 
 <% template reset_landing() %>
-<span id='reset-landing-header'>Your password has been reset!</span>
-<a id='forgot-return' href='/'>Click here to return home</a>
+	<span id='reset-landing-header'>Your password has been reset!</span>
+	<a id='forgot-return' href='/'>Click here to return home</a>
 <% end template %>
+
+<% template account_page() %>
+	<div id='account-tabs-container'>
+		<label id='account-tabs-label'>Settings</label>
+		<span class='account-tab' data-selected='true'>Account</span>
+		<span class='account-tab' data-selected='false'>Blocked</span>
+	</div>
+	<div id='account-view-container'>
+		<label id='account-view-label'>Account</label>
+		<div id='email-view-container'>
+			<div id='primary-email-row'>
+				<span id='primary-email-label'>Primary Email</span>
+				<span class='email'>termiosx@gmail.com</span>
+			</div>
+			<div id='secondary-email-row'>
+				<span id='secondary-email-label'></span>
+				<span class='email add-new-button'>Add new email</span>
+			</div>
+		</div>
+		<div id='password-view-container'>
+			<span id='password-label'>Password</span>
+			<span id='password-button'>Change Password</span>
+		</div>
+		<!-- Connect Social Accounts TBAH(To be added here) -->
+	</div>
+<% end %>
 
 <% template render() %>
 <!doctype html>
@@ -227,6 +251,8 @@
 		<% include header() %>
 		<div id='body-wrapper'>
 			<% if (content.PAGE == "HOME") %>
+			<% end %>
+			<% if (content.PAGE == "CREATEPOST") %>
 				<% if (content.LOGGED_IN == "true") %>
 					<% include create_post_form() %>
 				<% end %>
@@ -245,6 +271,9 @@
 			<% end %>
 			<% if (content.PAGE == "RESET_LANDING") %>
 				<% include reset_landing() %>
+			<% end %>
+			<% if (content.PAGE == "ACCOUNT") %>
+				<% include account_page() %>
 			<% end %>
 		</div>
 	</div>
@@ -265,6 +294,9 @@
 	<% end %>
 	<% if (content.PAGE == "PASSWORD_RESET") %>
 		<script src='/js/reset.js'></script>
+	<% end %>
+	<% if (content.PAGE == "ACCOUNT") %>
+		<script src='/js/account.js'></script>
 	<% end %>
 </body>
 </html>
