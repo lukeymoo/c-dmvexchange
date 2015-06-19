@@ -14,27 +14,54 @@
 
 namespace json {
 	void send(std::string status, std::string message, std::ostream &stream);
-}
+};
 
 class api : public cppcms::application {
 	public:
-		api(cppcms::service &srv, pqxx::connection *conn) : cppcms::application(srv) {
-			dbconn = conn;
+		api(cppcms::service &srv, std::shared_ptr<DatabaseClass> db_ptr, Pages::Context *context_ptr) : cppcms::application(srv) {
+			db = db_ptr;
+			context = context_ptr;
 			// Account page -- Add new email
-			dispatcher().assign("/add_email(/)?", &api::new_email, this);
+			dispatcher().assign("/settings/add_email(/)?", &api::settings_add_email, this);
+
+			// Account page -- Unlocks settings page
+			dispatcher().assign("/settings/unlock(/)?", &api::settings_unlock, this);
+
+			// Account page -- Checks if settings already unlocked
+			dispatcher().assign("/settings/check_auth(/)?", &api::settings_check_auth, this);
+
+			// Account page -- Process new password request
+			dispatcher().assign("/settings/change_password(/)?", &api::settings_change_password, this);
+
+			// Account page -- unblock user
+			dispatcher().assign("/settings/unblock(/)?", &api::settings_unblock, this);
 
 			// Returns session values
-			dispatcher().assign("/session/state(/)?", &api::session_handler, this);
-		
+			dispatcher().assign("/session/state(/)?", &api::session_state, this);
 		}
 		~api();
 
-		pqxx::connection *dbconn;
+		Pages::Context *context;
+
+		std::shared_ptr<DatabaseClass> db;
+
+		// returns session values
+		void session_state();
 
 		// add new email
-		void new_email();
+		void settings_add_email();
 
-		void session_handler();
+		// unlocks account settings page
+		void settings_unlock();
+
+		// unblock user
+		void settings_unblock();
+
+		// checks if user has unlocked the settings page
+		void settings_check_auth();
+
+		// processes new password request
+		void settings_change_password();
 };
 
 #endif

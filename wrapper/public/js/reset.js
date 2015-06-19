@@ -29,7 +29,9 @@ $(function() {
 	$('#password-reset-form').on('keypress', function(e) {
 		if(e.which == 13) {
 			e.preventDefault();
-			$('#reset-button').click();
+			if($('#reset-button').is(':visible')) {
+				$('#reset-button').click();
+			}
 		}
 	});
 

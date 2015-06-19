@@ -6,14 +6,9 @@ BaseController::~BaseController() {
 	return;
 }
 
-/*
-	@METHOD - Only GET method is allowed
-	
-	@FUNCTION -
-		Gets session and sets context then
-		Renders home page
-*/
-void BaseController::index_page() {
+// @METHOD - Only GET method is allowed
+// @FUNCTION -	Gets session and sets context then renders home page
+void BaseController::index_main() {
 	session().load();
 	// only allow get method
 	if(request().request_method() != "GET") {
@@ -21,21 +16,15 @@ void BaseController::index_page() {
 		response().out() << "http GET is only method allowed on this page";
 		return;
 	}
-	Context c;
-	c.resolve_session(session());
-	c.set_page("HOME");
-	render("master", c);
+	Pages::set_page(&context, "HOME");
+	Pages::resolve_session(&context, session());
+	render("master", context);
 	return;
 }
 
-/*
-	@METHOD - Only GET method is allowed
-	
-	@FUNCTION -
-		Render register page
-		Gets session and sets context
-*/
-void BaseController::register_page() {
+// @METHOD - Only GET method is allowed
+// @FUNCTION - Render register page gets session and sets context
+void BaseController::register_main() {
 	session().load();
 	// only allow get method
 	if(request().request_method() != "GET") {
@@ -44,24 +33,19 @@ void BaseController::register_page() {
 		return;
 	}
 	// disallow logged in
-	if(Context::logged_in(session())) {
+	if(Pages::logged_in(session())) {
 		response().set_redirect_header("/", 302);
 		return;
 	}
-	Context c;
-	c.resolve_session(session());
-	c.set_page("REGISTER");
-	render("master", c);
+	Pages::set_page(&context, "REGISTER");
+	Pages::resolve_session(&context, session());
+	render("master", context);
 	return;
 }
 
-/*
-	@METHOD - Only POST method is allowed
-
-	@FUNCTION -
-		Authenticates user based on submitted login form
-*/
-void BaseController::process_login() {
+// @METHOD - Only POST method is allowed
+// @FUNCTION -	Authenticates user based on submitted login form
+void BaseController::login_process() {
 	session().load();
 	// only allow POST method
 	if(request().request_method() != "POST") {
@@ -71,7 +55,7 @@ void BaseController::process_login() {
 	}
 
 	// disallow logged in
-	if(Context::logged_in(session())) {
+	if(Pages::logged_in(session())) {
 		json::send("DX-REJECTED", "logged_in", response().out());
 		return;
 	}
@@ -93,14 +77,16 @@ void BaseController::process_login() {
 	if(ID_TYPE == ID_USERNAME) {
 		try {
 			// valid username login - set session & redirect
-			if(db::try_login::with_username(&dbconn, request().post("u"), request().post("p"))) {
+			if(db::try_login::with_username(db, request().post("u"), request().post("p"))) {
 				// grab user info from database for session
-				std::map<std::string, std::string> info = db::get_user::by_username(&dbconn, request().post("u"));
+				std::map<std::string, std::string> info = db::get_user::by_username(db, request().post("u"));
 				// set session then redirect
 				session().set("LOGGED_IN", "true");
 				session().set("USERNAME", info["username"]);
 				session().set("EMAIL", info["email"]);
+				session().set("SECONDARY_EMAIL", info["secondary_email"]);
 				session().set("USER_ID", info["id"]);
+				session().set("SETTINGS", "false");
 				json::send("DX-OK", "Logged in", response().out());
 				return;
 			} else { // invalid username login
@@ -114,14 +100,16 @@ void BaseController::process_login() {
 	} else if(ID_TYPE == ID_EMAIL) {
 		// valid email login
 		try {
-			if(db::try_login::with_email(&dbconn, request().post("u"), request().post("p"))) {
+			if(db::try_login::with_email(db, request().post("u"), request().post("p"))) {
 				// grab user info from database for session
-				std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, request().post("u"));
+				std::map<std::string, std::string> info = db::get_user::by_email(db, request().post("u"));
 				// set session then redirect
 				session().set("LOGGED_IN", "true");
 				session().set("USERNAME", info["username"]);
 				session().set("EMAIL", info["email"]);
+				session().set("SECONDARY_EMAIL", info["secondary_email"]);
 				session().set("USER_ID", info["id"]);
+				session().set("SETTINGS", "false");
 				json::send("DX-OK", "Logged in", response().out());
 				return;
 			} else { // invalid email login
@@ -129,6 +117,7 @@ void BaseController::process_login() {
 				return;
 			}
 		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
 			json::send("DX-FAILED", "Server error", response().out());
 			return;
 		}
@@ -136,18 +125,15 @@ void BaseController::process_login() {
 	return;
 }
 
-/*
-	@METHOD - Only POST method is allowed
-
-	@FUNCTION - 
-		Ensure all fields are not empty
-		Ensure all fields have validated values
-		Ensure username & email are not already in use
-		Create database entry for account
-		Send activation token to user's email address
-		Redirect to home page
-*/
-void BaseController::process_register() {
+// @METHOD - Only POST method is allowed
+// @FUNCTION - 
+//		Ensure all fields are not empty
+//		Ensure all fields have validated values
+//		Ensure username & email are not already in use
+//		Create database entry for account
+//		Send activation token to user's email address
+//		Redirect to home page
+void BaseController::register_process() {
 	session().load();
 	// only allow post
 	if(request().request_method() != "POST") {
@@ -157,7 +143,7 @@ void BaseController::process_register() {
 	}
 
 	// disallow logged in users
-	if(Context::logged_in(session())) {
+	if(Pages::logged_in(session())) {
 		response().set_redirect_header("/", 302);
 		return;
 	}
@@ -228,10 +214,10 @@ void BaseController::process_register() {
 
 	// check if username or email address is in use
 	try {
-		if(db::check_exist::username(&dbconn, form["u"])) {
+		if(db::check_exist::username(db, form["u"])) {
 			err += "UIN|";
 		}
-		if(db::check_exist::email(&dbconn, form["e"])) {
+		if(db::check_exist::email(db, form["e"])) {
 			err += "EIN|";
 		}
 		if(err != "") {
@@ -261,7 +247,7 @@ void BaseController::process_register() {
 	// save the user into database
 	UserModel user(form["f"], form["l"], form["u"], form["e"], form["p"], token, zipcode_i, form["g"]);
 	try {
-		user.save(&dbconn);
+		user.save(db);
 	} catch(std::exception &e) {
 		// report error
 		response().set_header("Content-Type", "text/html");
@@ -275,9 +261,9 @@ void BaseController::process_register() {
 
 	// grab the user from database to get the generated id
 	try {
-		std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, form["e"]);
+		std::map<std::string, std::string> info = db::get_user::by_email(db, form["e"]);
 		if(info.empty()) {
-			info = db::get_user::by_username(&dbconn, form["u"]);
+			info = db::get_user::by_username(db, form["u"]);
 			if(info.empty()) {
 				// redirect to home page with session values
 				response().set_redirect_header("/", 302);
@@ -288,7 +274,9 @@ void BaseController::process_register() {
 		session().set("LOGGED_IN", "true");
 		session().set("USERNAME", info["username"]);
 		session().set("EMAIL", info["email"]);
+		session().set("SECONDARY_EMAIL", "");
 		session().set("USER_ID", info["id"]);
+		session().set("SETTINGS", "false");
 	} catch(std::exception &e) {
 		// capture get user error
 		response().out() << "Server error => " << e.what() << "<br>";
@@ -303,7 +291,7 @@ void BaseController::process_register() {
 
 // Display forgot page offering options
 // to select what data they wish to recover
-void BaseController::forgot() {
+void BaseController::forgot_main() {
 	session().load();
 	// only allow GET
 	if(request().request_method() != "GET") {
@@ -312,14 +300,13 @@ void BaseController::forgot() {
 		return;
 	}
 	// disallow logged in user
-	if(Context::logged_in(session())) {
+	if(Pages::logged_in(session())) {
 		response().set_redirect_header("/", 302);
 		return;
 	}
-	Context c;
-	c.resolve_session(session());
-	c.set_page("FORGOT_INITIAL");
-	render("master", c);
+	Pages::set_page(&context, "FORGOT_INITIAL");
+	Pages::resolve_session(&context, session());
+	render("master", context);
 	return;
 }
 
@@ -331,7 +318,7 @@ void BaseController::forgot() {
 // invalid_type		--- neither radio buttons were selected ( username || password )
 // invalid_email 	--- radio button username selected, but invalid email was specified
 // invalid_id 		--- radio button password selected, but neither a valid username || email was given
-void BaseController::process_forgot() {
+void BaseController::forgot_process() {
 	session().load();
 	// Only allow POST method
 	if(request().request_method() != "POST") {
@@ -341,7 +328,7 @@ void BaseController::process_forgot() {
 	}
 
 	// disallow logged in user
-	if(Context::logged_in(session())) {
+	if(Pages::logged_in(session())) {
 		response().set_redirect_header("/", 302);
 		return;
 	}
@@ -360,7 +347,7 @@ void BaseController::process_forgot() {
 			return;
 		}
 		// try to grab account info by email
-		std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, request().post("id"));
+		std::map<std::string, std::string> info = db::get_user::by_email(db, request().post("id"));
 		// if account information was retrieved send the username
 		if(!info.empty()) {
 			mail::external::send_username(request().post("id"), info["username"]);
@@ -374,7 +361,7 @@ void BaseController::process_forgot() {
 				return;
 			} else { // if valid email was specified
 				// try to grab account info by email
-				std::map<std::string, std::string> info = db::get_user::by_email(&dbconn, request().post("id"));
+				std::map<std::string, std::string> info = db::get_user::by_email(db, request().post("id"));
 				// if account with specified email exists
 				if(!info.empty()) {
 					// generate password reset token
@@ -382,7 +369,7 @@ void BaseController::process_forgot() {
 					// save token to database
 					std::pair<std::string, std::string> data1("forgot_token", token);
 					std::pair<std::string, std::string> data2("forgot_timestamp", get_time());
-					db::update::user::by_email(&dbconn, info["email"], data1, data2);
+					db::update::user::by_email(db, info["email"], data1, data2);
 					// send username
 					mail::external::send_pwd_reset(info["email"], token);
 				} else {
@@ -391,14 +378,14 @@ void BaseController::process_forgot() {
 			}
 		} else { // valid username
 			// try to grab account info by username
-			std::map<std::string, std::string> info = db::get_user::by_username(&dbconn, request().post("id"));
+			std::map<std::string, std::string> info = db::get_user::by_username(db, request().post("id"));
 			if(!info.empty()) {
 				// generate password reset token
 				std::string token = mail::generate_token(info["email"]);
 				// save token to database
 				std::pair<std::string, std::string> data1("forgot_token", token);
 				std::pair<std::string, std::string> data2("forgot_timestamp", get_time());
-				db::update::user::by_email(&dbconn, info["email"], data1, data2);
+				db::update::user::by_email(db, info["email"], data1, data2);
 				// send password reset token to user
 				mail::external::send_pwd_reset(info["email"], token);
 			} else {
@@ -414,7 +401,7 @@ void BaseController::process_forgot() {
 
 // provides form for which user can request
 // account information to be emailed
-void BaseController::forgot_landing() {
+void BaseController::forgot_success() {
 	session().load();
 	// only allow GET request
 	if(request().request_method() != "GET") {
@@ -424,21 +411,20 @@ void BaseController::forgot_landing() {
 	}
 
 	// disallow logged in users
-	if(Context::logged_in(session())) {
+	if(Pages::logged_in(session())) {
 		response().set_redirect_header("/", 302);
 		return;
 	}
 	
-	Context c;
-	c.resolve_session(session());
-	c.set_page("FORGOT_LANDING");
-	render("master", c);
+	Pages::set_page(&context, "FORGOT_LANDING");
+	Pages::resolve_session(&context, session());
+	render("master", context);
 	return;
 }
 
 // provides form for resetting password if the user
 // provided a valid token
-void BaseController::reset() {
+void BaseController::reset_main() {
 	session().load();
 	// only allow GET method
 	if(request().request_method() != "GET") {
@@ -447,7 +433,7 @@ void BaseController::reset() {
 		return;
 	}
 	// disallow logged in
-	if(Context::logged_in(session())) {
+	if(Pages::logged_in(session())) {
 		response().set_redirect_header("/", 302);
 		return;
 	}
@@ -457,11 +443,10 @@ void BaseController::reset() {
 		return;
 	}
 	// if valid token, render page
-	if(db::check_exist::forgot_token(&dbconn, request().get("token"))) {
-		Context c;
-		c.resolve_session(session());
-		c.set_page("PASSWORD_RESET");
-		render("master", c);
+	if(db::check_exist::forgot_token(db, request().get("token"))) {
+		Pages::set_page(&context, "PASSWORD_RESET");
+		Pages::resolve_session(&context, session());
+		render("master", context);
 	} else { // invalid token, redirect to error page
 		response().set_redirect_header("/forgot?err=bad_token", 302);
 	}
@@ -469,7 +454,7 @@ void BaseController::reset() {
 }
 
 // validates and sets new password specified on previous page
-void BaseController::process_reset() {
+void BaseController::reset_process() {
 	session().load();
 	// only allow POST
 	if(request().request_method() != "POST") {
@@ -478,7 +463,7 @@ void BaseController::process_reset() {
 		return;
 	}
 	// disallow logged in users
-	if(Context::logged_in(session())) {
+	if(Pages::logged_in(session())) {
 		response().set_redirect_header("/", 302);
 		return;
 	}
@@ -496,7 +481,7 @@ void BaseController::process_reset() {
 	std::string token_f = cppcms::util::urldecode(request().post("token"));
 
 	// check if password is the same as the existing one
-	std::map<std::string, std::string> info = db::get_user::by_forgot_token(&dbconn, token_f);
+	std::map<std::string, std::string> info = db::get_user::by_forgot_token(db, token_f);
 	std::string password_f = crypto::gen_password::by_username(info["username"], request().post("np"));
 	if(!info.empty()) { // if found with token
 		// if passwords match, return with error same_password
@@ -527,7 +512,7 @@ void BaseController::process_reset() {
 				// clear forgot token/timestamp
 				std::pair<std::string, std::string> data1("forgot_token", "");
 				std::pair<std::string, std::string> data2("forgot_timestamp", "0");
-				db::update::user::by_username(&dbconn, info["username"], data1, data2);
+				db::update::user::by_username(db, info["username"], data1, data2);
 				// redirect with error
 				response().set_redirect_header("/forgot?err=token_expired", 302);
 				return;
@@ -536,12 +521,12 @@ void BaseController::process_reset() {
 
 			// set new password
 			std::pair<std::string, std::string> data1("password", password_f);
-			db::update::user::by_username(&dbconn, info["username"], data1);
+			db::update::user::by_username(db, info["username"], data1);
 
 			// clear forgot token & timestamp
 			std::pair<std::string, std::string> data2("forgot_token", "");
 			std::pair<std::string, std::string> data3("forgot_timestamp", "0");
-			db::update::user::by_username(&dbconn, info["username"], data2, data3);
+			db::update::user::by_username(db, info["username"], data2, data3);
 
 			// email user about change
 			mail::external::notice_password(info["email"]);
@@ -558,7 +543,7 @@ void BaseController::process_reset() {
 }
 
 // Render create post form
-void BaseController::create_post() {
+void BaseController::p_new() {
 	// allow only GET
 	if(request().request_method() != "GET") {
 		response().status(404);
@@ -567,21 +552,20 @@ void BaseController::create_post() {
 	}
 
 	// only allow logged in users
-	if(!Context::logged_in(session())) {
+	if(!Pages::logged_in(session())) {
 		response().set_redirect_header("/?err=need_login&next=/p/new", 302);
 		return;
 	}
 
 	// render page
-	Context c;
-	c.resolve_session(session());
-	c.set_page("CREATEPOST");
-	render("master", c);
+	Pages::set_page(&context, "CREATEPOST");
+	Pages::resolve_session(&context, session());
+	render("master", context);
 	return;
 }
 
 // display success message
-void BaseController::reset_landing() {
+void BaseController::reset_success() {
 	session().load();
 	// only allow GET method
 	if(request().request_method() != "GET") {
@@ -590,19 +574,19 @@ void BaseController::reset_landing() {
 		return;
 	}
 	// disallow logged in users
-	if(Context::logged_in(session())) {
+	if(Pages::logged_in(session())) {
 		response().set_redirect_header("/", 302);
 		return;
 	}
 	// display message
-	Context c;
-	c.resolve_session(session());
-	c.set_page("RESET_LANDING");
-	render("master", c);
+	Pages::set_page(&context, "RESET_LANDING");
+	Pages::resolve_session(&context, session());
+	render("master", context);
 	return;
 }
 
-void BaseController::account_page() {
+void BaseController::account_main() {
+	session().load();
 	// only allow GET
 	if(request().request_method() != "GET") {
 		response().status(404);
@@ -610,53 +594,57 @@ void BaseController::account_page() {
 		return;
 	}
 	// must be logged in
-	if(!Context::logged_in(session())) {
+	Pages::set_page(&context, "ACCOUNT_MAIN");
+	if(!Pages::resolve_session(&context, session())) {
 		response().set_redirect_header("/?err=need_login&next=/account", 302);
 		return;
 	}
 	// render page
-	Context c;
-	c.resolve_session(session());
-	c.set_page("ACCOUNT");
-	render("master", c);
+	render("master", context);
 	return;
 }
 
-/*
-	@METHOD - ANY
+void BaseController::account_filters() {
+	session().load();
+	// only allow GET
+	if(request().request_method() != "GET") {
+		response().status(404);
+		response().out() << "http GET is only method allowed on this page";
+		return;
+	}
+	// must be logged in
+	Pages::set_page(&context, "ACCOUNT_FILTERS");
+	if(!Pages::resolve_session(&context, session())) {
+		response().set_redirect_header("/?err=need_login&next=/account/filters", 302);
+		return;
+	}
+	// render page
+	render("master", context);
+	return;
+}
 
-	@FUNCTION -
-		Clears the session values
-		Used to destroy authenticated sessions
-*/
+// @METHOD - Any
+// @FUNCTION -	Clears the session values used to destroy authenticated sessions
 void BaseController::clear_session() {
 	session().load();
 	session().set("LOGGED_IN", "false");
 	session().set("USERNAME", "");
 	session().set("USER_ID", "");
 	session().set("EMAIL", "");
+	session().set("SECONDARY_EMAIL", "");
+	session().set("SETTINGS", "false");
 	session().set("LAST_ACTIVITY", 0);
 	return;
 }
 
-/*
-	@METHOD - Not used by web client
-
-	@FUNCTION -
-		Updates session LAST_ACTIVITY to
-		current time since UNIX EPOCH std::time(0)
-*/
+// @METHOD - Not used by web client
+// @FUNCTION - Updates session LAST_ACTIVITY to current time since UNIX EPOCH std::time(0)
 void BaseController::update_activity() {
 	return;
 }
 
-/*
-	@METHOD - Any
-
-	@FUNCTION -
-		Clears session values and redirects
-		the user to home page
-*/
+// @METHOD - Any
+// @FUNCTION - Clears session values and redirects the user to home page
 void BaseController::logout() {
 	clear_session();
 	response().set_redirect_header("/", 302);
@@ -667,14 +655,14 @@ void BaseController::logout() {
 // Debugging
 void BaseController::debug_session() {
 	session().load();
-	Context c;
-	c.resolve_session(session());
+	Pages::resolve_session(&context, session());
 	cppcms::json::value jres;
-	jres["LOGGED_IN"] = c.LOGGED_IN;
-	jres["USERNAME"] = c.USERNAME;
-	jres["EMAIL"] = c.EMAIL;
-	jres["USER_ID"] = c.USER_ID;
-	jres["LAST_ACTIVITY"] = c.LAST_ACTIVITY;
+	jres["LOGGED_IN"] = context.LOGGED_IN;
+	jres["USERNAME"] = context.USERNAME;
+	jres["EMAIL"] = context.EMAIL;
+	jres["SECONDARY_EMAIL"] = context.SECONDARY_EMAIL;
+	jres["USER_ID"] = context.USER_ID;
+	jres["LAST_ACTIVITY"] = context.LAST_ACTIVITY;
 	jres.save(response().out(), cppcms::json::readable);
 	return;
 }

@@ -1,6 +1,6 @@
 <% c++ #include "view.hpp" %>
 <% skin layout %>
-<% view master uses Context %>
+<% view master uses Pages::Context %>
 
 
 <% template header() %>
@@ -183,9 +183,9 @@
 		</form>
 		<button id='forgot-button'>Submit Request</button>
 	</div>
-	<% end template %>
+<% end template %>
 
-	<% template forgot_landing() %>
+<% template forgot_success() %>
 	<span id='forgot-landing-header'>An email has been sent with further information</span>
 	<a id='forgot-return' href='/'>Click here to return home</a>
 <% end template %>
@@ -202,36 +202,72 @@
 	<button id='reset-button'>Set new password</button>
 <% end template %>
 
-<% template reset_landing() %>
+<% template reset_success() %>
 	<span id='reset-landing-header'>Your password has been reset!</span>
 	<a id='forgot-return' href='/'>Click here to return home</a>
 <% end template %>
 
-<% template account_page() %>
+<% template account_main() %>
 	<div id='account-tabs-container'>
 		<label id='account-tabs-label'>Settings</label>
 		<span class='account-tab' data-selected='true'>Account</span>
-		<span class='account-tab' data-selected='false'>Blocked</span>
+		<a href='/account/filters'>
+			<span class='account-tab' data-selected='false'>Blocked</span>
+		</a>
 	</div>
 	<div id='account-view-container'>
 		<label id='account-view-label'>Account</label>
 		<div id='email-view-container'>
 			<div id='primary-email-row'>
 				<span id='primary-email-label'>Primary Email</span>
-				<span class='email'>termiosx@gmail.com</span>
+				<span class='email'><%= EMAIL %></span>
 			</div>
-			<div id='secondary-email-row'>
-				<span id='secondary-email-label'></span>
-				<span class='email add-new-button'>Add new email</span>
-			</div>
+			<% if (content.SECONDARY_EMAIL == "") %>
+				<div id='secondary-email-row'>
+					<span id='secondary-email-label'></span>
+					<span class='email add-new-button'>Add new email</span>
+				</div>
+			<% else %>
+				<div id='secondary-email-row'>
+					<span id='secondary-email-label'></span>
+					<span class='email filled'><%= SECONDARY_EMAIL %></span>
+				</div>
+			<% end %>
 		</div>
 		<div id='password-view-container'>
 			<span id='password-label'>Password</span>
-			<span id='password-button'>Change Password</span>
+			<span id='change-password-button'>Change Password</span>
 		</div>
 		<!-- Connect Social Accounts TBAH(To be added here) -->
 	</div>
 <% end %>
+
+<% template account_filters() %>
+	<div id='account-tabs-container'>
+		<label id='account-tabs-label'>Settings</label>
+		<a href='/account'>
+			<span class='account-tab' data-selected='false'>Account</span>
+		</a>
+		<span class='account-tab' data-selected='true'>Blocked</span>
+	</div>
+	<div id='account-view-container'>
+		<label id='account-view-label'>Blocked</label>
+		<div id='blocked-users-container'>
+			<div id='blocked-users-controls'>
+				<div class='control-row'>
+					<button id='add-user'>+</button><label>Add user</label>
+				</div>
+				<div class='control-row'>
+					<button id='remove-user'>-</button><label>Remove user</label>
+				</div>
+			</div>
+			<div id='blocked-users-list'>
+				<!-- sample blocked user listing -->
+				<!-- <span class='blocked-user' data-selected='true'>sample_usr</span> -->				
+			</div>
+		</div>
+	</div>
+<% end template %>
 
 <% template render() %>
 <!doctype html>
@@ -263,17 +299,20 @@
 			<% if (content.PAGE == "FORGOT_INITIAL") %>
 				<% include forgot_initial() %>
 			<% end %>
-			<% if (content.PAGE == "FORGOT_LANDING") %>
-				<% include forgot_landing() %>
+			<% if (content.PAGE == "FORGOT_SUCCESS") %>
+				<% include forgot_success() %>
 			<% end %>
 			<% if (content.PAGE == "PASSWORD_RESET") %>
 				<% include reset_password() %>
 			<% end %>
-			<% if (content.PAGE == "RESET_LANDING") %>
-				<% include reset_landing() %>
+			<% if (content.PAGE == "RESET_SUCCESS") %>
+				<% include reset_success() %>
 			<% end %>
-			<% if (content.PAGE == "ACCOUNT") %>
-				<% include account_page() %>
+			<% if (content.PAGE == "ACCOUNT_MAIN") %>
+				<% include account_main() %>
+			<% end %>
+			<% if (content.PAGE == "ACCOUNT_FILTERS") %>
+				<% include account_filters() %>
 			<% end %>
 		</div>
 	</div>
@@ -295,7 +334,7 @@
 	<% if (content.PAGE == "PASSWORD_RESET") %>
 		<script src='/js/reset.js'></script>
 	<% end %>
-	<% if (content.PAGE == "ACCOUNT") %>
+	<% if (content.PAGE == "ACCOUNT_MAIN" || content.PAGE == "ACCOUNT_FILTERS") %>
 		<script src='/js/account.js'></script>
 	<% end %>
 </body>

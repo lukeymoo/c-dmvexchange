@@ -18,7 +18,7 @@ body {
 
 #background-blur {
 	position: fixed;
-	z-index: 101;
+	z-index: 1001;
 	top: 0px;
 	left: 0px;
 	width: 100vw;
@@ -306,7 +306,7 @@ body {
 
 #notification-container {
 	position: fixed;
-	z-index: 510;
+	z-index: 1005;
 	top: 50px;
 	right: 0px;
 	padding-top: 25px;
@@ -1001,6 +1001,9 @@ body {
 	pointer: hand;
 }
 
+
+
+
 #account-view-container {
 	position: absolute;
 	top: 25px;
@@ -1029,14 +1032,19 @@ body {
 }
 
 #password-label {
-	display: inline-block;
+	float: left;
 	width: 170px;
+	font-size: .85em;
+	font-weight: bold;
 }
 
-#password-button {
+#change-password-button {
 	color: rgb(0, 100, 200);
 	cursor: pointer;
 	pointer: hand;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
 }
 
 .add-new-button {
@@ -1049,7 +1057,12 @@ body {
 	display: block;
 }
 
-.email:not(.add-new-button):not(.add-new) {
+.email {
+	font-family: GOOGLE;
+	font-size: .8em;
+}
+
+.email:not(.add-new-button):not(.add-new):not(.filled) {
 	border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 	display: inline-block;
 	width: 326px;
@@ -1097,4 +1110,209 @@ body {
 	border: 1px solid rgba(0, 0, 0, 0.2);
 	margin-top: 5px;
 	background-color: rgb(0, 200, 255);
+}
+
+#confirm-password-form {
+	position: absolute;
+	z-index: 1002;
+	top: 125px;
+	left: 335px;
+	color: black;
+	background: rgb(230, 230, 230);
+	width: 250px;
+	height: 120px;
+	padding: 30px;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	border-radius: 3px;
+}
+
+#confirm-password-form .error {
+	font-size: .75em;
+}
+
+#confirm-password-form #submit-button {
+	margin-top: 5px;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	background-color: rgb(240, 240, 240);
+	padding: 5px 15px;
+	width: 257px;
+	height: 32px;
+	font-family: GOOGLE;
+	font-size: .8em;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+
+#confirm-password-form #cancel-button {
+	float: right;
+	width: 22px;
+	height: 22px;
+	text-align: center;
+	margin-top: -20px;
+	margin-right: -10px;
+	color: red;
+	font-family: GOOGLE;
+	font-weight: bold;
+	cursor: pointer;
+	pointer: hand;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+
+#confirm-password-form-header {
+	display: block;
+	font-weight: bold;
+	font-size: .9em;
+	font-family: GOOGLE;
+	margin-top: -5px;
+	margin-bottom: 5px;
+	text-align: center;
+	color: rgb(90, 90, 90);
+	margin-left: 20px;
+}
+
+#confirm-password-form label {
+	display: block;
+	font-weight: bold;
+	font-size: .8em;
+	font-family: GOOGLE;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+
+#confirm-password-form input {
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	padding-left: 5px;
+	font-family: GOOGLE;
+	font-size: .9em;
+	height: 24px;
+	margin-top: 10px;
+	width: 250px;
+}
+
+#confirm-password-form input:focus {
+	outline: none;
+}
+
+#change-password-form {
+	display: inline-block;
+}
+
+#change-password-form label {
+	display: block;
+	margin-bottom: 5px;
+	font-family: GOOGLE;
+	font-size: .8em;
+	font-weight: bold;
+}
+
+#change-password-form input {
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	padding-left: 5px;
+	font-family: GOOGLE;
+	font-size: .9em;
+	height: 24px;
+	margin-bottom: 5px;
+	width: 250px;
+}
+
+#change-password-form input:focus {
+	outline: none;
+}
+
+#change-password-form button {
+	display: block;
+	width: 257px;
+	border-radius: 2px;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	background-color: rgb(100, 200, 255);
+	padding: 5px 15px;
+	margin-top: 5px;
+	font-family: GOOGLE;
+	font-size: .8em;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+
+#password-row {
+	border: 1px solid red;
+}
+
+
+
+
+
+#blocked-users-container {
+	position: absolute;
+	top: 27px;
+	width: 500px;
+	display: block;
+	padding: 5px 0px;
+	border-top: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+#blocked-users-controls {
+	position: absolute;
+	margin-top: 5px;
+	margin-left: 510px;
+	width: 150px;
+}
+
+#blocked-users-controls .control-row {
+	display: inline-block;
+	margin-bottom: 5px;
+}
+
+.control-row label {
+	margin-left: 5px;
+	font-family: GOOGLE;
+	font-size: .85em;
+}
+
+#blocked-users-controls button {
+	width: 26px;
+	height: 26px;
+	line-height: 24px;
+	text-align: center;
+	font-family: GOOGLE;
+	font-weight: bold;
+	font-size: .6em;
+	border-radius: 3px;
+	border: 1px solid rgb(150, 150, 150);
+	background-color: rgb(210, 210, 210);
+	cursor: pointer;
+	pointer: hand;
+}
+
+#blocked-users-controls button:focus {
+	outline: none;
+}
+
+#blocked-users-list {
+	display: block;
+	margin-top: 5px;
+	height: 500px;
+	border: 1px solid rgb(150, 150, 150);
+	background-color: white;
+	overflow: scroll;
+	font-size: .85em;
+	font-family: GOOGLE;
+}
+
+#blocked-users-list .blocked-user {
+	display: block;
+	padding-left: 5px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+	cursor: pointer;
+	pointer: hand;
+}
+
+#blocked-users-list .blocked-user[data-selected="true"] {
+	background-color: rgba(0, 150, 200, 0.5);
 }

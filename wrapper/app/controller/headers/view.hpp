@@ -8,35 +8,32 @@
 #include <cppcms/view.h>
 #include <string>
 
-class Context : public cppcms::base_content {
-	public:
-		// set default session values ( defaults Home page with no auth )
-		Context();
-		~Context();
+namespace Pages {
 
-		// get title
-		std::string get_title();
-		
-		// return LOGGED_IN
-		static bool logged_in(cppcms::session_interface &interface);
+	struct Context : public cppcms::base_content {
+		public:
+			std::string TITLE; // Page title
+			std::string PAGE; // page ID
 
-		// validates session checking last_activity
-		bool eval_logged_in();
+			std::string LOGGED_IN;
+			std::string USERNAME;
+			std::string EMAIL;
+			std::string SECONDARY_EMAIL;
+			std::string USER_ID;
+			std::string SETTINGS;
+			int LAST_ACTIVITY;
+	};
 
-		// get session values into context for rendering
-		void resolve_session(cppcms::session_interface &interface);
+	// set page id
+	void set_page(Context *context, std::string page_id);
 
-		// set page id
-		void set_page(std::string page_id);
+	// return LOGGED_IN
+	bool logged_in(cppcms::session_interface &interface);
 
-		std::string TITLE; // Page title
-		std::string PAGE; // page ID
+	// get session values into context for rendering
+	// returns true/false if logged in / logged out
+	bool resolve_session(Context *context, cppcms::session_interface &interface);
 
-		std::string LOGGED_IN;
-		std::string USERNAME;
-		std::string EMAIL;
-		std::string USER_ID;
-		int LAST_ACTIVITY;
 };
 
 #endif

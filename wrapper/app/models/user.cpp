@@ -33,15 +33,15 @@ std::string to_lowercase(std::string word) {
 }
 
 // Execute PostgresQL command to insert a user into database
-void UserModel::save(pqxx::connection *c) {
+void UserModel::save(std::shared_ptr<DatabaseClass> &db) {
 	std::time_t timestamp_t = std::time(0);
 	std::ostringstream ss;
 	ss << timestamp_t;
 	std::string timestamp = ss.str();
 	// create worker
-	pqxx::work worker(*c);
+	pqxx::work worker(db->conn);
 	// prepare query
-	std::string query = "INSERT INTO dmv_users_t (firstname, lastname, username, email, password, token, zipcode, gender, forgot_token, forgot_timestamp, timestamp) VALUES (" + c->quote(firstname) + ", " + c->quote(lastname) + ", " + c->quote(username) + ", " + c->quote(email) + ", " + c->quote(password) + ", " + c->quote(token) + ", " + c->quote(zipcode) + ", " + c->quote(gender) + ", '', 0, " + c->quote(timestamp) + ")";
+	std::string query = "INSERT INTO dmv_users_t (firstname, lastname, username, email, password, token, zipcode, gender, forgot_token, forgot_timestamp, timestamp) VALUES (" + db->conn.quote(firstname) + ", " + db->conn.quote(lastname) + ", " + db->conn.quote(username) + ", " + db->conn.quote(email) + ", " + db->conn.quote(password) + ", " + db->conn.quote(token) + ", " + db->conn.quote(zipcode) + ", " + db->conn.quote(gender) + ", '', 0, " + db->conn.quote(timestamp) + ")";
 	// execute
 	try {
 		pqxx::result result = worker.exec(query.c_str());

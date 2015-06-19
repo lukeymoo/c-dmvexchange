@@ -1,21 +1,57 @@
 #include "methods.hpp"
 
+DatabaseClass::~DatabaseClass() {
+	conn.disconnect();
+	std::cout << "[+] Connection closed" << std::endl;
+	return;
+}
+
+void DatabaseClass::reconnect() {
+	std::cout << "[+] Attempting to reconnect" << std::endl;
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			conn.activate();
+			if(conn.is_open()) {
+				success = true;
+			} else {
+				std::cout << "\t => Connection unopened, trying again..." << std::endl;
+			}
+		} catch(pqxx::broken_connection &e) {
+			if(try_count == 1) {
+				std::cerr << "[-] Failed to open connection, exception thrown" << std::endl;
+				throw;
+			}
+		}
+	}
+	return;
+}
+
 /*
 	@FUNCTION - Checks if specified table exists in database
 	@RETURNS - TRUE/FALSE
 */
-bool db::check_exist::table(pqxx::connection *c, std::string table_name) {
-	pqxx::work worker(*c); // create worker
+bool db::check_exist::table(std::shared_ptr<DatabaseClass> &db, std::string table_name) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
+	pqxx::work worker(db->conn); // create worker
 	// lowercase table name
 	std::string table_name_f = to_lowercase(table_name);
 	// format query
-	std::string query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name=" + c->quote(table_name_f) + " AND table_schema='public')";
+	std::string query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name=" + db->conn.quote(table_name_f) + " AND table_schema='public')";
 	// execute query
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
 		try {
 			pqxx::result result = worker.exec(query.c_str());
-			pqxx::tuple row = result[0];
+			pqxx::tuple row = result.at(0);
 			pqxx::field field = row.at(0);
 			if(field.as<std::string>() == "t") {
 				return true;
@@ -41,19 +77,28 @@ bool db::check_exist::table(pqxx::connection *c, std::string table_name) {
 	@FUNCTION - Determines if specified username exists in database
 	@RETURNS - TRUE/FALSE
 */
-bool db::check_exist::username(pqxx::connection *c, std::string username) {
-	pqxx::work worker(*c); // create worker
+bool db::check_exist::username(std::shared_ptr<DatabaseClass> &db, std::string username) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
+	pqxx::work worker(db->conn); // create worker
 	// lowercase username
 	std::string username_f = to_lowercase(username);
 	// format query
-	std::string query = "SELECT EXISTS (SELECT 1 FROM dmv_users_t WHERE username=" + c->quote(username_f) + " )";
+	std::string query = "SELECT EXISTS (SELECT 1 FROM dmv_users_t WHERE username=" + db->conn.quote(username_f) + " )";
 	// execute query
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
 		try {
 			pqxx::result count = worker.exec(query.c_str());
 			pqxx::tuple row = count[0];
-			pqxx::field field = row[0];
+			pqxx::field field = row.at(0);
 			if(field.as<std::string>() == "t") {
 				return true;
 			} else {
@@ -77,19 +122,28 @@ bool db::check_exist::username(pqxx::connection *c, std::string username) {
 	@FUNCTION - Determines if email exists in database
 	@RETURNS - TRUE/FALSE
 */
-bool db::check_exist::email(pqxx::connection *c, std::string email) {
-	pqxx::work worker(*c); // create worker
+bool db::check_exist::email(std::shared_ptr<DatabaseClass> &db, std::string email) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
+	pqxx::work worker(db->conn); // create worker
 	// lowercase email
 	std::string email_f = to_lowercase(email);
 	// format query
-	std::string query = "SELECT EXISTS (SELECT 1 FROM dmv_users_t WHERE email=" + c->quote(email_f) + " OR secondary_email=" + c->quote(email_f) + ")";
+	std::string query = "SELECT EXISTS (SELECT 1 FROM dmv_users_t WHERE email=" + db->conn.quote(email_f) + " OR secondary_email=" + db->conn.quote(email_f) + ")";
 	// execute query
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
 		try {
 			pqxx::result count = worker.exec(query.c_str());
 			pqxx::tuple row = count[0];
-			pqxx::field field = row[0];
+			pqxx::field field = row.at(0);
 			if(field.as<std::string>() == "t") {
 				return true;
 			} else {
@@ -113,18 +167,27 @@ bool db::check_exist::email(pqxx::connection *c, std::string email) {
 	@FUNCTION - Determines if a specified forgot_token exists in database
 	@RETURNS - TRUE/FALSE
 */
-bool db::check_exist::forgot_token(pqxx::connection *c, std::string token) {
+bool db::check_exist::forgot_token(std::shared_ptr<DatabaseClass> &db, std::string token) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
 	// create worker
-	pqxx::work worker(*c);
+	pqxx::work worker(db->conn);
 	// prepare query
-	std::string query = "SELECT EXISTS ( SELECT 1 FROM dmv_users_t WHERE forgot_token=" + c->quote(token) + ")";
+	std::string query = "SELECT EXISTS ( SELECT 1 FROM dmv_users_t WHERE forgot_token=" + db->conn.quote(token) + ")";
 	// execute
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
 		try {
 			pqxx::result result = worker.exec(query.c_str());
-			pqxx::tuple row = result[0];
-			pqxx::field field = row[0];
+			pqxx::tuple row = result.at(0);
+			pqxx::field field = row.at(0);
 			if(field.as<std::string>() == "t") {
 				return true;
 			} else {
@@ -148,20 +211,29 @@ bool db::check_exist::forgot_token(pqxx::connection *c, std::string token) {
 	@FUNCTION - Determines if specified username & password is a valid combination in database
 	@RETURNS - TRUE/FALSE
 */
-bool db::try_login::with_username(pqxx::connection *c, std::string username, std::string password) {
-	pqxx::work worker(*c); // create worker
+bool db::try_login::with_username(std::shared_ptr<DatabaseClass> &db, std::string username, std::string password) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
+	pqxx::work worker(db->conn); // create worker
 	// lowercase username
 	std::string username_f = to_lowercase(username);
 	std::string password_f = crypto::gen_password::by_username(username, password);
 	// prepare query
-	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE username=" + c->quote(username_f) + " AND password=" + c->quote(password_f) + ")";
+	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE username=" + db->conn.quote(username_f) + " AND password=" + db->conn.quote(password_f) + ")";
 	// execute query
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
 		try {
 			pqxx::result result = worker.exec(query.c_str());
-			pqxx::tuple row = result[0];
-			pqxx::field field = row[0];
+			pqxx::tuple row = result.at(0);
+			pqxx::field field = row.at(0);
 			if(field.as<std::string>() == "t") {
 				return true;
 			} else {
@@ -186,25 +258,34 @@ bool db::try_login::with_username(pqxx::connection *c, std::string username, std
 	@FUNCTION - Determines if specified email & password is a valid combination in database
 	@RETURNS - TRUE/FALSE
 */
-bool db::try_login::with_email(pqxx::connection *c, std::string email, std::string password) {
+bool db::try_login::with_email(std::shared_ptr<DatabaseClass> &db, std::string email, std::string password) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
 	// lowercase email
 	std::string email_f = to_lowercase(email);
 	// get user account
-	std::map<std::string, std::string> user_account = db::get_user::by_email(c, email_f);
-	pqxx::work worker(*c); // create worker
+	std::map<std::string, std::string> user_account = db::get_user::by_email(db, email_f);
+	pqxx::work worker(db->conn); // create worker
 	if(user_account.empty()) {
 		return false;
 	}
-	std::string password_f = crypto::gen_password::by_email(c, email, password);
+	std::string password_f = crypto::gen_password::by_username(user_account["username"], password);
 	// prepare query
-	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE email=" + c->quote(email_f) + " AND password=" + c->quote(password_f) + ")";
+	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE email=" + db->conn.quote(email_f) + " AND password=" + db->conn.quote(password_f) + ")";
 	// execute query
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
 		try {
 			pqxx::result result = worker.exec(query.c_str());
-			pqxx::tuple row = result[0];
-			pqxx::field field = row[0];
+			pqxx::tuple row = result.at(0);
+			pqxx::field field = row.at(0);
 			if(field.as<std::string>() == "t") {
 				return true;
 			} else {
@@ -216,6 +297,90 @@ bool db::try_login::with_email(pqxx::connection *c, std::string email, std::stri
 				// report error to email
 				std::ostringstream ss;
 				ss << "Logging in with email :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
+		}
+	}
+	return false;
+}
+
+// already encrypted passwords
+bool db::try_login::with_username_enc(std::shared_ptr<DatabaseClass> &db, std::string username, std::string password) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
+	// lowercase email
+	std::string username_f = to_lowercase(username);
+	// create worker
+	pqxx::work worker(db->conn);
+	// prepare query
+	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE username=" + db->conn.quote(username_f) + " AND password=" + db->conn.quote(password) + ")";
+	// execute query
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result result = worker.exec(query.c_str());
+			pqxx::tuple row = result.at(0);
+			pqxx::field field = row.at(0);
+			if(field.as<std::string>() == "t") {
+				return true;
+			} else {
+				return false;
+			}
+			success = true;
+		} catch(std::exception &e) {
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Logging in with username & pre-encrypted pwd :: " << e.what();
+				error::send(ss.str());
+				throw; // bubble exception up
+			}
+		}
+	}
+	return false;
+}
+
+bool db::try_login::with_email_enc(std::shared_ptr<DatabaseClass> &db, std::string email, std::string password) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
+	// lowercase email
+	std::string email_f = to_lowercase(email);
+	pqxx::work worker(db->conn); // create worker
+	// prepare query
+	std::string query = "SELECT EXISTS (SELECT * FROM dmv_users_t WHERE email=" + db->conn.quote(email_f) + " AND password=" + db->conn.quote(password) + ")";
+	// execute query
+	bool success = false;
+	for(int try_count = 3; try_count > 0 && !success; --try_count) {
+		try {
+			pqxx::result result = worker.exec(query.c_str());
+			pqxx::tuple row = result.at(0);
+			pqxx::field field = row.at(0);
+			if(field.as<std::string>() == "t") {
+				return true;
+			} else {
+				return false;
+			}
+			success = true;
+		} catch(std::exception &e) {
+			if(try_count == 1) {
+				// report error to email
+				std::ostringstream ss;
+				ss << "Logging in with email & pre-encrypted pwd :: " << e.what();
 				error::send(ss.str());
 				throw; // bubble exception up
 			}
@@ -243,8 +408,17 @@ bool db::try_login::with_email(pqxx::connection *c, std::string email, std::stri
 		zipcode 		VARCHAR(5) 		5 Characters Length
 		timestamp 		INT 		 	Created in program std::time(0)
 */
-bool db::create_table::user(pqxx::connection *c) {
-	pqxx::work worker(*c); // create worker
+bool db::create_table::user(std::shared_ptr<DatabaseClass> &db) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
+	pqxx::work worker(db->conn); // create worker
 	// prepare query
 	std::string query = "CREATE TABLE dmv_users_t (id SERIAL PRIMARY KEY, firstname VARCHAR(32) NOT NULL, lastname VARCHAR(32) NOT NULL, username VARCHAR(16) UNIQUE NOT NULL, email VARCHAR(64) UNIQUE NOT NULL, secondary_email VARCHAR(64) UNIQUE DEFAULT '', password VARCHAR(256) NOT NULL, token VARCHAR(256) NOT NULL, zipcode INT NOT NULL, gender CHAR(1) NOT NULL, forgot_token VARCHAR(256) NOT NULL DEFAULT '', forgot_timestamp INT NOT NULL, timestamp INT NOT NULL)";
 	// execute query
@@ -272,11 +446,20 @@ bool db::create_table::user(pqxx::connection *c) {
 		If nothing was found an empty std::map is returned
 	@RETURNS - TRUE/FALSE
 */
-std::map<std::string, std::string> db::get_user::by_id(pqxx::connection *c, int id) {
+std::map<std::string, std::string> db::get_user::by_id(std::shared_ptr<DatabaseClass> &db, int id) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
 	std::map<std::string, std::string> info; // will contain the user info
-	pqxx::work worker(*c); // create worker
+	pqxx::work worker(db->conn); // create worker
 	// prepare query
-	std::string query = "SELECT * FROM dmv_users_t WHERE id=" + c->quote(id);
+	std::string query = "SELECT * FROM dmv_users_t WHERE id=" + db->conn.quote(id);
 	// execute query
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
@@ -387,13 +570,22 @@ std::map<std::string, std::string> db::get_user::by_id(pqxx::connection *c, int 
 		if no user is found an empty std::map is returned 
 	@RETURNS - std::map<std::string, std::string> - key,value pairs of user acc details
 */
-std::map<std::string, std::string> db::get_user::by_username(pqxx::connection *c, std::string username) {
+std::map<std::string, std::string> db::get_user::by_username(std::shared_ptr<DatabaseClass> &db, std::string username) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
 	std::map<std::string, std::string> info; // will contain the user info
-	pqxx::work worker(*c); // create worker
+	pqxx::work worker(db->conn); // create worker
 	// lowercase username
 	std::string username_f = to_lowercase(username);
 	// prepare query
-	std::string query = "SELECT * FROM dmv_users_t WHERE username=" + c->quote(username_f);
+	std::string query = "SELECT * FROM dmv_users_t WHERE username=" + db->conn.quote(username_f);
 	// execute query
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
@@ -504,13 +696,22 @@ std::map<std::string, std::string> db::get_user::by_username(pqxx::connection *c
 		if no user is found an empty std::map is returned
 	@RETURNS - std::map<std::string, std::string> - key,value pairs of user acc details
 */
-std::map<std::string, std::string> db::get_user::by_email(pqxx::connection *c, std::string email) {
+std::map<std::string, std::string> db::get_user::by_email(std::shared_ptr<DatabaseClass> &db, std::string email) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
 	std::map<std::string, std::string> info; // will contain the user info
-	pqxx::work worker(*c); // create worker
+	pqxx::work worker(db->conn); // create worker
 	// lowercase email
 	std::string email_f = to_lowercase(email);
 	// prepare query
-	std::string query = "SELECT * FROM dmv_users_t WHERE email=" + c->quote(email_f);
+	std::string query = "SELECT * FROM dmv_users_t WHERE email=" + db->conn.quote(email_f);
 	// execute query
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
@@ -616,11 +817,20 @@ std::map<std::string, std::string> db::get_user::by_email(pqxx::connection *c, s
 	return info;
 }
 
-std::map<std::string, std::string> db::get_user::by_forgot_token(pqxx::connection *c, std::string token) {
+std::map<std::string, std::string> db::get_user::by_forgot_token(std::shared_ptr<DatabaseClass> &db, std::string token) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
 	std::map<std::string, std::string> info; // will contain the user info
-	pqxx::work worker(*c); // create worker
+	pqxx::work worker(db->conn); // create worker
 	// prepare query
-	std::string query = "SELECT * FROM dmv_users_t WHERE forgot_token=" + c->quote(token);
+	std::string query = "SELECT * FROM dmv_users_t WHERE forgot_token=" + db->conn.quote(token);
 	// execute query
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
@@ -770,8 +980,8 @@ std::string crypto::generate(std::string username, std::string password) {
 
 // calls crypto::gen_password::by_username after recovering username from database
 // with specified identifier ( id in this case )
-std::string crypto::gen_password::by_id(pqxx::connection *dbconn, int id, std::string password) {
-	std::map<std::string, std::string> info = db::get_user::by_id(dbconn, id);
+std::string crypto::gen_password::by_id(std::shared_ptr<DatabaseClass> &db, int id, std::string password) {
+	std::map<std::string, std::string> info = db::get_user::by_id(db, id);
 	std::string password_f = "";
 	if(!info.empty()) {
 		password_f = crypto::gen_password::by_username(info["username"], password);
@@ -781,8 +991,8 @@ std::string crypto::gen_password::by_id(pqxx::connection *dbconn, int id, std::s
 
 // calls crypto::gen_password::by_username after recovering username from database
 // with specified identifier ( email in this case )
-std::string crypto::gen_password::by_email(pqxx::connection *dbconn, std::string email, std::string password) {
-	std::map<std::string, std::string> info = db::get_user::by_email(dbconn, email);
+std::string crypto::gen_password::by_email(std::shared_ptr<DatabaseClass> &db, std::string email, std::string password) {
+	std::map<std::string, std::string> info = db::get_user::by_email(db, email);
 	std::string password_f = "";
 	if(!info.empty()) {
 		password_f = crypto::gen_password::by_username(info["username"], password);
@@ -979,6 +1189,25 @@ void mail::external::notice_password(std::string email) {
 	return;
 }
 
+// notify specified email has been added to specified username's account
+void mail::external::notice_new_email(std::string email, std::string username) {
+	std::string email_f = to_lowercase(email);
+	std::string username_f = to_lowercase(username);
+	std::string subject = "Email Added!";
+	std::string message = "This email has been added as secondary email to user " + username_f;
+	std::string command = "echo '" + message + "' | mail -aContent-Type:text/html -aFrom:'DMV Exchange'\\<no-reply@dmv-exchange.com\\> -s '" + subject + "' " + email_f;
+	FILE *pHandle = popen(command.c_str(), "w");
+	if(!pHandle) {
+		std::string err = "Failed to send new email notice to " + email_f + " for user " + username_f;
+		// report error to email
+		error::send(err);
+		std::cerr << err << std::endl;
+		return;
+	}
+	pclose(pHandle);
+	return;
+}
+
 void error::send(std::string err_msg) {
 	std::string subject = "DMV Exchange :: Error";
 	std::string message = "<span style=\"color:#fa6400;\">A server error has occurred..</span><br>" + err_msg;
@@ -996,11 +1225,20 @@ void error::send(std::string err_msg) {
 // find user by id & update it's contents based on specified std::pair
 // std::pair data contains key,value pair specifying column name & new value
 // returns true/false on success/fail
-void db::update::user::by_id(pqxx::connection *c, int id, std::pair<std::string, std::string> data) {
+void db::update::user::by_id(std::shared_ptr<DatabaseClass> &db, int id, std::pair<std::string, std::string> data) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
 	// create worker
-	pqxx::work worker(*c);
+	pqxx::work worker(db->conn);
 	// prepare query
-	std::string query = "UPDATE dmv_users_t SET " + c->esc(data.first) + "=" + c->quote(data.second) + " WHERE id=" + c->quote(id);
+	std::string query = "UPDATE dmv_users_t SET " + db->conn.esc(data.first) + "=" + db->conn.quote(data.second) + " WHERE id=" + db->conn.quote(id);
 	// execute
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
@@ -1024,11 +1262,20 @@ void db::update::user::by_id(pqxx::connection *c, int id, std::pair<std::string,
 // find user by email & update it's contents based on specified std::pair
 // std::pair data contains key,value pair specifying column name & new value
 // returns true/false on success/fail
-void db::update::user::by_email(pqxx::connection *c, std::string email, std::pair<std::string, std::string> data) {
+void db::update::user::by_email(std::shared_ptr<DatabaseClass> &db, std::string email, std::pair<std::string, std::string> data) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
 	// create worker
-	pqxx::work worker(*c);
+	pqxx::work worker(db->conn);
 	// prepare query
-	std::string query = "UPDATE dmv_users_t SET " + c->esc(data.first) + "=" + c->quote(data.second) + " WHERE email=" + c->quote(email);
+	std::string query = "UPDATE dmv_users_t SET " + db->conn.esc(data.first) + "=" + db->conn.quote(data.second) + " WHERE email=" + db->conn.quote(email);
 	// execute
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
@@ -1052,11 +1299,20 @@ void db::update::user::by_email(pqxx::connection *c, std::string email, std::pai
 // find user by username & update it's contents based on specified std::pair
 // std::pair data contains key,value pair specifying column name & new value
 // returns true/false on success/fail
-void db::update::user::by_username(pqxx::connection *c, std::string username, std::pair<std::string, std::string> data) {
+void db::update::user::by_username(std::shared_ptr<DatabaseClass> &db, std::string username, std::pair<std::string, std::string> data) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
 	// create worker
-	pqxx::work worker(*c);
+	pqxx::work worker(db->conn);
 	// prepare query
-	std::string query = "UPDATE dmv_users_t SET " + c->esc(data.first) + "=" + c->quote(data.second) + " WHERE username=" + c->quote(username);
+	std::string query = "UPDATE dmv_users_t SET " + db->conn.esc(data.first) + "=" + db->conn.quote(data.second) + " WHERE username=" + db->conn.quote(username);
 	// execute
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
@@ -1078,11 +1334,20 @@ void db::update::user::by_username(pqxx::connection *c, std::string username, st
 }
 
 
-void db::update::user::by_id(pqxx::connection *c, int id, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2) {
+void db::update::user::by_id(std::shared_ptr<DatabaseClass> &db, int id, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
 	// create worker
-	pqxx::work worker(*c);
+	pqxx::work worker(db->conn);
 	// prepare query
-	std::string query = "UPDATE dmv_users_t SET " + c->esc(data1.first) + "=" + c->quote(data1.second) + ", " + c->esc(data2.first) + "=" + c->quote(data2.second) + " WHERE id=" + c->quote(id);
+	std::string query = "UPDATE dmv_users_t SET " + db->conn.esc(data1.first) + "=" + db->conn.quote(data1.second) + ", " + db->conn.esc(data2.first) + "=" + db->conn.quote(data2.second) + " WHERE id=" + db->conn.quote(id);
 	// execute
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
@@ -1104,11 +1369,20 @@ void db::update::user::by_id(pqxx::connection *c, int id, std::pair<std::string,
 }
 
 
-void db::update::user::by_username(pqxx::connection *c, std::string username, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2) {
+void db::update::user::by_username(std::shared_ptr<DatabaseClass> &db, std::string username, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
 	// create worker
-	pqxx::work worker(*c);
+	pqxx::work worker(db->conn);
 	// prepare query
-	std::string query = "UPDATE dmv_users_t SET " + c->esc(data1.first) + "=" + c->quote(data1.second) + ", " + c->esc(data2.first) + "=" + c->quote(data2.second) + " WHERE username=" + c->quote(username);
+	std::string query = "UPDATE dmv_users_t SET " + db->conn.esc(data1.first) + "=" + db->conn.quote(data1.second) + ", " + db->conn.esc(data2.first) + "=" + db->conn.quote(data2.second) + " WHERE username=" + db->conn.quote(username);
 	// execute
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
@@ -1130,11 +1404,20 @@ void db::update::user::by_username(pqxx::connection *c, std::string username, st
 }
 
 
-void db::update::user::by_email(pqxx::connection *c, std::string email, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2) {
+void db::update::user::by_email(std::shared_ptr<DatabaseClass> &db, std::string email, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			throw;
+		}
+	}
 	// create worker
-	pqxx::work worker(*c);
+	pqxx::work worker(db->conn);
 	// prepare query
-	std::string query = "UPDATE dmv_users_t SET " + c->esc(data1.first) + "=" + c->quote(data1.second) + ", " + c->esc(data2.first) + "=" + c->quote(data2.second) + " WHERE email=" + c->quote(email);
+	std::string query = "UPDATE dmv_users_t SET " + db->conn.esc(data1.first) + "=" + db->conn.quote(data1.second) + ", " + db->conn.esc(data2.first) + "=" + db->conn.quote(data2.second) + " WHERE email=" + db->conn.quote(email);
 	// execute
 	bool success = false;
 	for(int try_count = 3; try_count > 0 && !success; --try_count) {
@@ -1172,17 +1455,3 @@ std::string get_time() {
 	ss << timestamp;
 	return ss.str();
 }
-
-// Get register and login form cannot figure
-// out how to integrate as the request context is private
-/*
-std::map<std::string, std::string> form::get_register_form() {
-	std::map<std::string, std::string> form;
-	return form;
-}
-
-std::map<std::string, std::string> form::get_login_form() {
-	std::map<std::string, std::string> form;
-	return form;
-}
-*/

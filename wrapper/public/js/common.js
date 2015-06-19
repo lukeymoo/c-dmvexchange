@@ -59,7 +59,6 @@ $(function() {
 			if(isHeaderLoginFormOpen()) {
 				closeHeaderLoginForm();
 			}
-			closeAllPostActionMenus();
 		}
 	});
 

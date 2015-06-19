@@ -11,11 +11,11 @@ or to insert data about users
 #define MALE 500
 #define FEMALE 501
 
-#include "methods.hpp"
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <locale>
+#include "methods.hpp"
 
 #define ID_USERNAME 	500
 #define ID_EMAIL		501
@@ -23,6 +23,8 @@ or to insert data about users
 // Lowercase a string
 std::string to_lowercase(std::string word);
 std::string generate_token(std::string email);
+
+class DatabaseClass;
 
 class UserModel {
 	public:
@@ -42,7 +44,7 @@ class UserModel {
 		int zipcode;
 		std::string gender;
 
-		void save(pqxx::connection *c);
+		void save(std::shared_ptr<DatabaseClass> &db);
 };
 
 #endif

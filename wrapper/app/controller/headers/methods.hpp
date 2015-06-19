@@ -10,6 +10,21 @@
 #include "base64.hpp"
 #include <openssl/sha.h>
 
+
+class DatabaseClass {
+	public:
+		// open connection
+		DatabaseClass() : conn("dbname=dmvexchange user=db password=f9a548add9f0007ca4071e06f04e3f81 hostaddr=173.66.17.87 port=5432") {
+			std::cout << "[+] Connection opened" << std::endl;
+		}
+		~DatabaseClass(); // destroy connections
+
+		pqxx::connection conn;
+
+		void reconnect(); // reconnects inactive connection
+};
+
+
 std::string get_time(); // gets current unix epoch in ms
 
 namespace crypto {
@@ -19,8 +34,8 @@ namespace crypto {
 	namespace gen_password {
 		// gets user account & generates a password as usual
 		std::string by_username(std::string username, std::string password);
-		std::string by_email(pqxx::connection *dbconn, std::string email, std::string password);
-		std::string by_id(pqxx::connection *dbconn, int id, std::string password);
+		std::string by_email(std::shared_ptr<DatabaseClass> &db, std::string email, std::string password);
+		std::string by_id(std::shared_ptr<DatabaseClass> &db, int id, std::string password);
 	};
 };
 
@@ -47,7 +62,8 @@ namespace mail {
 		void send_registration(std::string email, std::string token); // activate account
 		void send_pwd_reset(std::string email, std::string token); // forgot password
 		void send_username(std::string email, std::string username); // forgot username
-		void notice_password(std::string email); // update password change
+		void notice_password(std::string email); // notify of password change
+		void notice_new_email(std::string email, std::string username); // notify secondary email added to specified username's account
 	};
 };
 
@@ -61,37 +77,42 @@ namespace db {
 	namespace update {
 		namespace user {
 			// Single key,value pairs
-			void by_id(pqxx::connection *c, int id, std::pair<std::string, std::string> data);
-			void by_username(pqxx::connection *c, std::string username, std::pair<std::string, std::string> data);
-			void by_email(pqxx::connection *c, std::string email, std::pair<std::string, std::string> data);
+			void by_id(std::shared_ptr<DatabaseClass> &db, int id, std::pair<std::string, std::string> data);
+			void by_username(std::shared_ptr<DatabaseClass> &db, std::string username, std::pair<std::string, std::string> data);
+			void by_email(std::shared_ptr<DatabaseClass> &db, std::string email, std::pair<std::string, std::string> data);
 			// double key,value pairs
-			void by_id(pqxx::connection *c, int id, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2);
-			void by_username(pqxx::connection *c, std::string username, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2);
-			void by_email(pqxx::connection *c, std::string email, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2);
+			void by_id(std::shared_ptr<DatabaseClass> &db, int id, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2);
+			void by_username(std::shared_ptr<DatabaseClass> &db, std::string username, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2);
+			void by_email(std::shared_ptr<DatabaseClass> &db, std::string email, std::pair<std::string, std::string> data1, std::pair<std::string, std::string> data2);
 		};
 	};
 
 	namespace get_user {
-		std::map<std::string, std::string> by_id(pqxx::connection *c, int id);
-		std::map<std::string, std::string> by_username(pqxx::connection *c, std::string username);
-		std::map<std::string, std::string> by_email(pqxx::connection *c, std::string email);
-		std::map<std::string, std::string> by_forgot_token(pqxx::connection *c, std::string token);
+		std::map<std::string, std::string> by_id(std::shared_ptr<DatabaseClass> &db, int id);
+		std::map<std::string, std::string> by_username(std::shared_ptr<DatabaseClass> &db, std::string username);
+		std::map<std::string, std::string> by_email(std::shared_ptr<DatabaseClass> &db, std::string email);
+		std::map<std::string, std::string> by_forgot_token(std::shared_ptr<DatabaseClass> &db, std::string token);
 	};
 
 	namespace check_exist {
-		bool table(pqxx::connection *c, std::string table_name);
-		bool username(pqxx::connection *c, std::string username);
-		bool email(pqxx::connection *c, std::string email);
-		bool forgot_token(pqxx::connection *c, std::string token);
+		bool table(std::shared_ptr<DatabaseClass> &db, std::string table_name);
+		bool username(std::shared_ptr<DatabaseClass> &db, std::string username);
+		bool email(std::shared_ptr<DatabaseClass> &db, std::string email);
+		bool forgot_token(std::shared_ptr<DatabaseClass> &db, std::string token);
 	};
 
 	namespace try_login {
-		bool with_username(pqxx::connection *c, std::string username, std::string password);
-		bool with_email(pqxx::connection *c, std::string email, std::string password);
+		// for use without pre-encrypted passwords
+		bool with_username(std::shared_ptr<DatabaseClass> &db, std::string username, std::string password);
+		bool with_email(std::shared_ptr<DatabaseClass> &db, std::string email, std::string password);
+
+		// already encrypted passwords
+		bool with_username_enc(std::shared_ptr<DatabaseClass> &db, std::string username, std::string password);
+		bool with_email_enc(std::shared_ptr<DatabaseClass> &db, std::string email, std::string password);
 	};
 
 	namespace create_table {
-		bool user(pqxx::connection *c);
+		bool user(std::shared_ptr<DatabaseClass> &db);
 	};
 
 };
