@@ -74,6 +74,11 @@ namespace error {
 // database related methods
 namespace db {
 
+	namespace block {
+		void by_id(std::shared_ptr<DatabaseClass> &db, int owner_id, std::string to_block);
+		void by_username(std::shared_ptr<DatabaseClass> &db, std::string owner_username, std::string to_block);
+	};
+
 	namespace update {
 		namespace user {
 			// Single key,value pairs
@@ -101,6 +106,20 @@ namespace db {
 		bool forgot_token(std::shared_ptr<DatabaseClass> &db, std::string token);
 	};
 
+	namespace check_in {
+		namespace blocked_list {
+			bool by_id(std::shared_ptr<DatabaseClass> &db, int owner_id, std::string blocked_username);
+			bool by_username(std::shared_ptr<DatabaseClass> &db, std::string owner_username, std::string blocked_username);
+		};
+	};
+
+	namespace get {
+		namespace blocked_list {
+			std::vector<std::string> by_id(std::shared_ptr<DatabaseClass> &db, int owner_id);
+			std::vector<std::string> by_username(std::shared_ptr<DatabaseClass> &db, std::string owner_username);
+		};
+	};
+
 	namespace try_login {
 		// for use without pre-encrypted passwords
 		bool with_username(std::shared_ptr<DatabaseClass> &db, std::string username, std::string password);
@@ -112,7 +131,8 @@ namespace db {
 	};
 
 	namespace create_table {
-		bool user(std::shared_ptr<DatabaseClass> &db);
+		void user(std::shared_ptr<DatabaseClass> &db);
+		void blocked_list(std::shared_ptr<DatabaseClass> &db);
 	};
 
 };

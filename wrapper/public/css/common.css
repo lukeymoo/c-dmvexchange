@@ -16,6 +16,69 @@ body {
 	margin-bottom: 5px;
 }
 
+
+
+
+
+
+
+
+
+#confirm-logout-container {
+	position: absolute;
+	top: 105px;
+	left: 340px;
+	border-radius: 2px;
+	border: 1px solid rgb(100, 100, 100);
+	background-color: rgb(230, 230, 230);
+	padding: 50px;
+}
+
+#confirm-logout-container label {
+	display: block;
+	font-family: GOOGLE;
+	font-size: .85em;
+}
+
+#confirm-logout-container button {
+	margin-top: 25px;
+	border: 1px solid rgba(0, 0, 0, 0.3);
+	background-color: rgb(210, 210, 210);
+	border-radius: 3px;
+	font-family: GOOGLE;
+	font-size: .85em;
+	padding: 5px 10px;
+}
+
+#confirm-logout-container #confirm-logout-no {
+	float: right;
+	color: rgb(240, 240, 240);
+	background-color: rgb(200, 0, 0);
+}
+
+#auto-logout {
+	position: absolute;
+	margin-top: 15px;
+	margin-left: 50px;
+	color: rgb(50, 50, 50);
+}
+
+#auto-logout span {
+	color: red;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 #background-blur {
 	position: fixed;
 	z-index: 1001;
@@ -1315,4 +1378,68 @@ body {
 
 #blocked-users-list .blocked-user[data-selected="true"] {
 	background-color: rgba(0, 150, 200, 0.5);
+}
+
+
+
+
+
+
+
+
+
+#block-user-form {
+	position: absolute;
+	z-index: 1002;
+	top: 125px;
+	left: 375px;
+	width: 245px;
+	height: 95px;
+	padding: 20px;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	background: rgb(230, 230, 230);
+}
+
+#block-user-form label {
+	display: block;
+	margin-top: -5px;
+	font-family: GOOGLE;
+	font-size: .9em;
+	font-weight: bold;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+
+#block-user-form input {
+	display: block;
+	margin-top: 5px;
+	padding-left: 2px;
+	width: 240px;
+	height: 24px;
+	font-size: .9em;
+}
+
+#block-user-form input:focus {
+	outline: none;
+}
+
+#block-user-form button {
+	margin-top: 5px;
+	font-family: GOOGLE;
+	font-size: .85em;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	background-color: rgb(200, 200, 200);
+	width: 75px;
+	height: 28px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+
+#block-user-add {
+}
+
+#block-user-cancel {
+	float: right;
 }

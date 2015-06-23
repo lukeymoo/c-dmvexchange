@@ -67,11 +67,55 @@ void api::settings_unlock() {
 	return;
 }
 
+void api::settings_block() {
+	// only allow POST
+	if(request().request_method() != "POST") {
+		json::send("DX-REJECTED", "http POST is only method allowed on this page", response().out());
+		return;
+	}
+
+	// ensure logged in
+	if(!Pages::logged_in(session())) {
+		json::send("DX-REJECTED", "Must be logged in!", response().out());
+	}
+
+	std::string username = to_lowercase(request().post("username"));
+
+	// ensure valid username specified
+	if(!form::validUsername(username)) {
+		json::send("DX-REJECTED", "Not a valid username", response().out());
+		return;
+	}
+
+	// ensure this is not the user's username
+	if(session().get("USERNAME") == username) {
+		json::send("DX-REJECTED", "Cannot block yourself", response().out());
+		return;
+	}
+
+	// if user already blocked send DX-OK
+	if(db::check_in::blocked_list::by_id(db, session().get<int>("USER_ID"), username)) {
+		json::send("DX-OK", "Already blocked", response().out());
+		return;
+	}
+
+	// Add to block list
+	db::block::by_id(db, session().get<int>("USER_ID"), username);
+	
+	json::send("DX-OK", "Blocked", response().out());
+	return;
+}
+
 void api::settings_unblock() {
 	// only allow POST
 	if(request().request_method() != "POST") {
 		json::send("DX-REJECTED", "http POST is only method allowed on this page", response().out());
 		return;
+	}
+
+	// ensure logged in
+	if(!Pages::logged_in(session())) {
+		json::send("DX-REJECTED", "Must be logged in!", response().out());
 	}
 	
 	std::string username = to_lowercase(request().post("username"));
@@ -81,14 +125,30 @@ void api::settings_unblock() {
 		json::send("DX-REJECTED", "Not a valid username", response().out());
 		return;
 	}
-	
-	// check if user exists
-	if(!db::check_exist::username(db, username)) {
-		json::send("DX-REJECTED", "Username doesn't exist", response().out());
+
+	// if user's username, skip to success
+	if(session().get("USERNAME") == username) {
+		json::send("DX-OK", "Unblocked", response().out());
 		return;
 	}
+	
+	// remove user from blocked list
 
-	json::send("DX-REJECTED", "Incomplete programming", response().out());
+	json::send("DX-OK", "Unblocked", response().out());
+	return;
+}
+
+void api::settings_blocked_list() {
+	std::vector<std::string> list = db::get::blocked_list::by_id(db, session().get<int>("USER_ID"));
+	// create string from vector of names
+	std::stringstream ss;
+	copy(list.begin(), list.end(), std::ostream_iterator<std::string>(ss, ","));
+	// remove last delimiter
+	std::string as_string = ss.str();
+	if(as_string.length() > 0) {
+		as_string.pop_back();
+	}
+	json::send("DX-OK", as_string, response().out()); // send to client
 	return;
 }
 
@@ -99,11 +159,13 @@ void api::settings_check_auth() {
 		json::send("DX-REJECTED", "http GET is only method allowed on this page", response().out());
 		return;
 	}
+
 	// if not logged in auto-fail
 	if(!Pages::logged_in(session())) {
 		json::send("DX-REJECTED", "Must be logged in", response().out());
 		return;
 	}
+
 	// send session SETTINGS
 	if(session().get("SETTINGS") == "true") {
 		json::send("DX-OK", "true", response().out());

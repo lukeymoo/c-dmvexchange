@@ -3,28 +3,53 @@
 var passwordSubmitted = false;
 var confirmingPassword = false;
 var addingEmail = false;
+var block_form_open = false;
+var blocking_user = false;
 
 $(function() {
 	// hide change password button until after checkAuth
 	$('#change-password-button').hide();
 
-	// check if user is already authenticated for page
-	checkAuth(function(res) {
-		// if already authenticated, replace the change password
-		// with the update password form
-		if(res.status == "DX-OK") {
-			if(res.message == "true") {
-				confirmingPassword = true;
-				showChangePasswordForm();
-			} else { // show change password button
-				$('#change-password-button').show();
+	if(getCurrentPage() == 'Account Settings') {
+		// check if user is already authenticated for page
+		checkAuth(function(res) {
+			// if already authenticated, replace the change password
+			// with the update password form
+			if(res.status == "DX-OK") {
+				if(res.message == "true") {
+					confirmingPassword = true;
+					showChangePasswordForm();
+				} else { // show change password button
+					$('#change-password-button').show();
+				}
+			} else if(res.status == "DX-REJECTED") { // not logged in || wrong http method
+				createAlert(res.message, 'medium');
+			} else { // server error, display error, leave page alone
+				createAlert(res.message, 'high');
 			}
-		} else if(res.status == "DX-REJECTED") { // not logged in || wrong http method
-			createAlert(res.message, 'medium');
-		} else { // server error, display error, leave page alone
-			createAlert(res.message, 'high');
-		}
-	});
+		});
+	} else if(getCurrentPage() == 'Blocked Users') {
+		var old_color = $(document).find('#account-view-label').css('color');
+		$(document).find('#account-view-label').html('Fetching blocked list........');
+		$(document).find('#account-view-label').css('color', 'red');
+		// Get blocked list
+		getBlockedList(function(res) {
+			$(document).find('#account-view-label').html('Blocked Users');
+			$(document).find('#account-view-label').css('color', old_color);
+			if(res.status == 'DX-OK') {
+				if(res.message.length) {
+					var list = res.message.split(",");
+					for(var name in list) {
+						generateBlockedUser(list[name]);
+					}
+				}
+			} else if(res.status == 'DX-REJECTED') {
+				createAlert(res.message, 'medium');
+			} else if(res.status == 'DX-FAILED') {
+				createAlert(res.message, 'high');
+			}
+		});
+	}
 
 	// submit new password form -- click
 	$(document).on('click', '#change-password-form-submit-button', function() {
@@ -250,6 +275,81 @@ $(function() {
 		}
 	});
 
+	// display block user form
+	$(document).on('click', '#blocked-users-controls #add-user', function() {
+		if(!block_form_open) {
+			showBlockUserForm();
+		}
+	});
+
+	// remove block user form -- click cancel
+	$(document).on('click', '#block-user-cancel', function() {
+		removeBlockUserForm();
+	});
+
+	// block user -- enter key
+	$(document).on('keypress', '#block-user-input', function(e) {
+		if(e.which == 13) {
+			if(!blocking_user) {
+				$('#block-user-add').click();
+			}
+		}
+	});
+
+	// block user -- click
+	$(document).on('click', '#block-user-add', function() {
+		if(!blocking_user) {
+			blocking_user = true;
+			var u_field = $('#block-user-input');
+			var username = $('#block-user-input').val();
+
+			// remove errors
+			$('#block-user-form').find('.form-error').each(function() {
+				$(this).remove();
+			});
+
+			// ensure not empty
+			if(username.length == 0) {
+				generateFormError('Cannot be empty', u_field);
+				blocking_user = false;
+				return false;
+			}
+
+			// ensure valid username
+			if(!validUsername(username)) {
+				generateFormError('Must be valid username', u_field);
+				blocking_user = false;
+				return false;
+			}
+
+			// ensure not already blocked
+			if(isBlocked(username)) {
+				generateFormError('Already blocking this user', u_field);
+				blocking_user = false;
+				return false;
+			}
+
+			// query server
+			blockUser(username, function(res) {
+				console.log(res);
+
+				// added user to blocked list
+				if(res.status == 'DX-OK') {
+					// place username into blocked list container
+					generateBlockedUser(username);
+					// remove form & background blur
+					removeBlockUserForm();
+				} else if(res.status == 'DX-REJECTED') {
+					generateFormError(res.message, u_field);
+				} else if(res.status == 'DX-FAILED') {
+					removeBlockUserForm();
+					createAlert(res.message, 'high');
+				}
+			});
+			blocking_user = false;
+		}
+	});
+
 	// unblock user
 	$(document).on('click', '#blocked-users-controls #remove-user', function() {
 		// check if a username is selected
@@ -381,10 +481,63 @@ function submitNewPassword(i, ia, callback) {
 	return;
 }
 
+function getBlockedList(callback) {
+	$.ajax({
+		type: 'GET',
+		url: '/api/settings/blocked_list',
+		error: function(err) {
+			var res = {
+				status: 'DX-FAILED',
+				message: 'Server error occurred'
+			};
+			if(err.status == 0) {
+				res.message = 'Server is currently down';
+			}
+			if(err.status == 404) {
+				res.message = 'Something is currently down';
+			}
+			callback(res);
+		}
+	}).done(function(res) {
+		res = JSON.parse(res);
+		callback(res);
+	});
+	return;
+}
+
 function blockedDeselect() {
 	$('.blocked-user').each(function() {
 		$(this).attr('data-selected', 'false');
 	});
+	return;
+}
+
+function showBlockUserForm() {
+	var DOM =
+	"<div id='background-blur'></div><div id='block-user-form'>" +
+		"<label>Enter a username to block</label>" +
+		"<input id='block-user-input' type='text' placeholder='Username...'>" +
+		"<button id='block-user-add'>Add</button><button id='block-user-cancel'>Cancel</button>" +
+	"</div>";
+	$(DOM).appendTo($('#wrapper'));
+	$(document).find('#block-user-input').focus();
+	block_form_open = true;
+	return;
+}
+
+function removeBlockUserForm() {
+	$(document).find('#background-blur').remove();
+	$(document).find('#block-user-form').remove();
+	block_form_open = false;
+	return;
+}
+
+function generateBlockedUser(username) {
+	// deselect all
+	blockedDeselect();
+	// append username with selected true
+	var HTML = "<span class='blocked-user' data-selected='true'>" + username + "</span>";
+	$(HTML).prependTo($('#blocked-users-list'));
 	return;
 }
 
@@ -402,6 +555,44 @@ function showChangePasswordForm() {
 	$('#background-blur').remove();
 	$('#change-password-button').replaceWith(DOM);
 	$(document).find('#change-password-form #new_password').focus();
+	return;
+}
+
+function isBlocked(username) {
+	var status = false;
+	$('.blocked-user').each(function() {
+		if($(this).html().toLowerCase() == username.toLowerCase()) {
+			status = true;
+		}
+	});
+	return status;
+}
+
+function blockUser(usrname, callback) {
+	// query server
+	$.ajax({
+		type: 'POST',
+		url: '/api/settings/block',
+		data: {
+			username: usrname
+		},
+		error: function(err) {
+			var res = {
+				status: 'DX-FAILED',
+				message: 'Server error occurred'
+			};
+			if(err.status == 0) {
+				res.message = 'Server is currently down';
+			}
+			if(err.status == 404) {
+				res.message = 'Something is badly programmed';
+			}
+			callback(res);
+		}
+	}).done(function(res) {
+		res = JSON.parse(res);
+		callback(res);
+	});
 	return;
 }
 

@@ -24,6 +24,23 @@ int main(int argc, char **argv) {
 		std::cout << "[+] Table dmv_users_t exists" << std::endl;
 	}
 
+	// if blocked_list table doesn't exist, create it
+	if(!db::check_exist::table(db, "dmv_blocked_list_t")) {
+		std::cout << "[-] Table dmv_blocked_list_t does not exist" << std::endl;
+		std::cout << "\t=> Creating table..." << std::endl;
+		// create blocked list table
+		try {
+			db::create_table::blocked_list(db);
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what();
+			exit(1);
+		}
+		// success
+		std::cout << "\t=> Table created!" << std::endl;
+	} else {
+		std::cout << "[+] Table dmv_blocked_list_t exists" << std::endl;
+	}
+	
 	// if product post table doesn't exist, create it
 	// if comment post table doesn't exist, create it
 

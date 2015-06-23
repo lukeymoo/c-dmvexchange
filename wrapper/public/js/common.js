@@ -6,6 +6,8 @@ var state = {
 	PAGE: null
 };
 
+var countdown; // for logout form, will hold interval
+
 $(function() {
 	var isLoginSubmitted = false;
 
@@ -126,6 +128,23 @@ $(function() {
 		togglePostActionMenu($(this));
 	});
 
+	// show logout confirmation
+	$(document).on('click', '#header-logout-button', function() {
+		confirmLogout();
+	});
+
+	// expedite logout
+	$(document).on('click', '#confirm-logout-yes', function() {
+		window.location.href = '/logout';
+	});
+
+	// cancel logout
+	$(document).on('click', '#confirm-logout-no', function() {
+		clearInterval(countdown);
+		countdown = null;
+		$(this).parents('#confirm-logout-container').remove();
+	});
+
 });
 
 
@@ -133,6 +152,42 @@ $(function() {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function confirmLogout() {
+	var timestamp = Date.now();
+	var DOM =
+	"<div id='confirm-logout-container'>" +
+		"<label id='confirm-logout-label'>Are you sure you want to logout?</label>" +
+		"<button id='confirm-logout-yes'>Logout</button><button id='confirm-logout-no'>Cancel</button>" +
+		"<label id='auto-logout'>Auto-logout in <span id='" + timestamp + "'>20</span>s</label>" +
+	"</div>";
+	$(DOM).appendTo($('#wrapper'));
+	countdown = setInterval(function() {
+		var currentT = parseInt($(document).find('#' + timestamp).html());
+		if(currentT > 1) { // count down
+			--currentT;
+			$(document).find('#' + timestamp).html(currentT);
+		} else { // logout
+			window.location.href = '/logout';
+		}
+	}, 1050);
+	return;
+}
 
 
 
@@ -254,7 +309,7 @@ function toggleHeaderLoginForm() {
 function openHeaderLoginForm() {
 	$('#header-login-button').attr('data-state', 'opened');
 	$('#header-login-container').show();
-	$('#header-login-container input').first().focus();
+	$('#header-login-form #username-or-email').focus();
 	return;
 }
 

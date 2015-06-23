@@ -20,7 +20,7 @@
 			<span class='header-menu-option'>Submit advice</span>
 			<% if (content.LOGGED_IN == "true") %>
 				<a href="/account"><span class='header-menu-option'>Account</span></a>
-				<a href="/logout"><span class="header-menu-option">Logout</span></a>
+				<span id='header-logout-button' class="header-menu-option">Logout</span>
 			<% else %>
 				<a href='/register'>
 					<span class='header-menu-option'>Sign up</span>
@@ -251,7 +251,7 @@
 		<span class='account-tab' data-selected='true'>Blocked</span>
 	</div>
 	<div id='account-view-container'>
-		<label id='account-view-label'>Blocked</label>
+		<label id='account-view-label'>Blocked Users</label>
 		<div id='blocked-users-container'>
 			<div id='blocked-users-controls'>
 				<div class='control-row'>

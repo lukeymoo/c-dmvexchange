@@ -50,7 +50,7 @@ namespace layout {
 				#line 24 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t<a href=\"/account\"><span class='header-menu-option'>Account</span></a>\n"
-					"\t\t\t\t<a href=\"/logout\"><span class=\"header-menu-option\">Logout</span></a>\n"
+					"\t\t\t\t<span id='header-logout-button' class=\"header-menu-option\">Logout</span>\n"
 					"\t\t\t";
 			#line 24 "app/tmpl_src/layout/layout.tmpl"
 			}else{
@@ -386,7 +386,7 @@ namespace layout {
 				"\t\t<span class='account-tab' data-selected='true'>Blocked</span>\n"
 				"\t</div>\n"
 				"\t<div id='account-view-container'>\n"
-				"\t\t<label id='account-view-label'>Blocked</label>\n"
+				"\t\t<label id='account-view-label'>Blocked Users</label>\n"
 				"\t\t<div id='blocked-users-container'>\n"
 				"\t\t\t<div id='blocked-users-controls'>\n"
 				"\t\t\t\t<div class='control-row'>\n"

@@ -25,7 +25,7 @@ class BaseController : public cppcms::application {
 			std::cout << "[+] Threaded..." << std::endl;
 
 			// Map api controller
-			attach(new api(srv, db, &context), "api", "/api/{1}", "/api(/(.*)(/(.*))?(/(.*)?))?", 1);
+			attach(new api(srv, db, &context), "api", "/api/{1}", "/api(.*)?", 1);
 
 			// @METHOD - GET
 			// @FUNCTION - Displays home page

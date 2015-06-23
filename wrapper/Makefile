@@ -13,7 +13,7 @@ MDL_CPP = $(SRC_M)/user.cpp
 MDL_HPP = $(M_H)/user.hpp
 INC = -I$(C_H) -I$(M_H)
 OBJ = $(OBJ_DIR)/main.o $(OBJ_DIR)/controller.o $(OBJ_DIR)/view.o $(OBJ_DIR)/methods.o $(OBJ_DIR)/user.o $(OBJ_DIR)/api.o $(OBJ_DIR)/base64.o $(OBJ_DIR)/layout.o
-FLAGS = -std=c++11 -Wall -lcppcms -lbooster -lboost_regex -lpqxx -lpq -lcrypto
+FLAGS = -O3 -std=c++11 -Wall -lcppcms -lbooster -lboost_regex -lpqxx -lpq -lcrypto
 
 all: main
 

@@ -497,8 +497,8 @@ void BaseController::reset_process() {
 			}
 
 			// ensure the token hasn't timed out
-			long int forgot_timestamp;
-			long int current_time;
+			long int forgot_timestamp = 0;
+			long int current_time = 0;
 			try {
 				forgot_timestamp = std::stoi(info["forgot_timestamp"], nullptr, 10);
 				current_time = static_cast<long int>(std::time(0));
@@ -668,6 +668,14 @@ void BaseController::debug_session() {
 }
 
 void BaseController::debug_page() {
-	response().out() << "Nothing to debug<br>";
+	// Get blocked list
+	std::vector<std::string> list = db::get::blocked_list::by_id(db, session().get<int>("USER_ID"));
+	for(auto i = list.begin(); i != list.end(); ++i) {
+		try {
+			response().out() << "=> " << *i << "<br>";
+		} catch(std::exception &e) {
+			response().out() << "Exception => " << e.what() << "<br>";
+		}
+	}
 	return;
 }

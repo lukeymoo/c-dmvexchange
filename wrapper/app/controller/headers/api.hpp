@@ -33,8 +33,14 @@ class api : public cppcms::application {
 			// Account page -- Process new password request
 			dispatcher().assign("/settings/change_password(/)?", &api::settings_change_password, this);
 
+			// Account page -- block user
+			dispatcher().assign("/settings/block(/)?", &api::settings_block, this);
+
 			// Account page -- unblock user
 			dispatcher().assign("/settings/unblock(/)?", &api::settings_unblock, this);
+
+			// Account page -- get blocked list for user
+			dispatcher().assign("/settings/blocked_list(/)?", &api::settings_blocked_list, this);
 
 			// Returns session values
 			dispatcher().assign("/session/state(/)?", &api::session_state, this);
@@ -54,8 +60,14 @@ class api : public cppcms::application {
 		// unlocks account settings page
 		void settings_unlock();
 
+		// block user
+		void settings_block();
+
 		// unblock user
 		void settings_unblock();
+
+		// return blocked list of user
+		void settings_blocked_list();
 
 		// checks if user has unlocked the settings page
 		void settings_check_auth();
