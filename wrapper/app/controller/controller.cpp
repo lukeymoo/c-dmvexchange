@@ -22,6 +22,74 @@ void BaseController::index_main() {
 	return;
 }
 
+// @METHOD - GET
+// @FUNCTION - Display tip form
+void BaseController::tips_main() {
+	session().load();
+	// only allow get
+	if(request().request_method() != "GET") {
+		response().status(404);
+		response().out() << "http GET is only method allowed on this page";
+		return;
+	}
+	Pages::set_page(&context, "TIPS_MAIN");
+	// ensure logged in
+	if(!Pages::logged_in(session())) {
+		response().set_redirect_header("/?err=need_login&next=/tips", 302);
+		return;
+	}
+	Pages::resolve_session(&context, session());
+	render("master", context);
+	return;
+}
+
+// @METHOD - POST
+// @FUNCTION - Process tip form
+void BaseController::tips_process() {
+	response().out() << "processing...";
+	return;
+}
+
+// @METHOD - GET
+// @FUNCTION - Process activation token
+void BaseController::activate_main() {
+	// only allow GET
+	if(request().request_method() != "GET") {
+		response().status(404);
+		response().out() << "http GET is only method allowed on this page";
+		return;
+	}
+	
+	// capture token
+	std::string token = request().get("token");
+
+	
+
+	// if no token, render empty token template
+	if(token == "") {
+		Pages::set_page(&context, "ACTIVATION_EMPTY");
+		Pages::resolve_session(&context, session());
+		render("master", context);
+		return;
+	}
+
+	// if token exists, render success
+	if(db::check_exist::activation_token(db, token)) {
+		// set activation token to empty -> token used(activated)
+		std::pair<std::string, std::string> data("token", "");
+		db::update::user::by_activation_token(db, token, data);
+
+		Pages::set_page(&context, "ACTIVATION_SUCCESS");
+		Pages::resolve_session(&context, session());
+		render("master", context);
+	} else { // if not, render failed
+		Pages::set_page(&context, "ACTIVATION_FAILED");
+		Pages::resolve_session(&context, session());
+		render("master", context);
+	}
+	return;
+}
+
 // @METHOD - Only GET method is allowed
 // @FUNCTION - Render register page gets session and sets context
 void BaseController::register_main() {
@@ -79,7 +147,7 @@ void BaseController::login_process() {
 			// valid username login - set session & redirect
 			if(db::try_login::with_username(db, request().post("u"), request().post("p"))) {
 				// grab user info from database for session
-				std::map<std::string, std::string> info = db::get_user::by_username(db, request().post("u"));
+				std::map<std::string, std::string> info = db::get::user::by_username(db, request().post("u"));
 				// set session then redirect
 				session().set("LOGGED_IN", "true");
 				session().set("USERNAME", info["username"]);
@@ -102,7 +170,7 @@ void BaseController::login_process() {
 		try {
 			if(db::try_login::with_email(db, request().post("u"), request().post("p"))) {
 				// grab user info from database for session
-				std::map<std::string, std::string> info = db::get_user::by_email(db, request().post("u"));
+				std::map<std::string, std::string> info = db::get::user::by_email(db, request().post("u"));
 				// set session then redirect
 				session().set("LOGGED_IN", "true");
 				session().set("USERNAME", info["username"]);
@@ -261,9 +329,9 @@ void BaseController::register_process() {
 
 	// grab the user from database to get the generated id
 	try {
-		std::map<std::string, std::string> info = db::get_user::by_email(db, form["e"]);
+		std::map<std::string, std::string> info = db::get::user::by_email(db, form["e"]);
 		if(info.empty()) {
-			info = db::get_user::by_username(db, form["u"]);
+			info = db::get::user::by_username(db, form["u"]);
 			if(info.empty()) {
 				// redirect to home page with session values
 				response().set_redirect_header("/", 302);
@@ -277,6 +345,9 @@ void BaseController::register_process() {
 		session().set("SECONDARY_EMAIL", "");
 		session().set("USER_ID", info["id"]);
 		session().set("SETTINGS", "false");
+
+		// create block list for user
+		db::create::block_list(db, std::stoi(info["id"], nullptr, 10));
 	} catch(std::exception &e) {
 		// capture get user error
 		response().out() << "Server error => " << e.what() << "<br>";
@@ -347,7 +418,7 @@ void BaseController::forgot_process() {
 			return;
 		}
 		// try to grab account info by email
-		std::map<std::string, std::string> info = db::get_user::by_email(db, request().post("id"));
+		std::map<std::string, std::string> info = db::get::user::by_email(db, request().post("id"));
 		// if account information was retrieved send the username
 		if(!info.empty()) {
 			mail::external::send_username(request().post("id"), info["username"]);
@@ -361,7 +432,7 @@ void BaseController::forgot_process() {
 				return;
 			} else { // if valid email was specified
 				// try to grab account info by email
-				std::map<std::string, std::string> info = db::get_user::by_email(db, request().post("id"));
+				std::map<std::string, std::string> info = db::get::user::by_email(db, request().post("id"));
 				// if account with specified email exists
 				if(!info.empty()) {
 					// generate password reset token
@@ -378,7 +449,7 @@ void BaseController::forgot_process() {
 			}
 		} else { // valid username
 			// try to grab account info by username
-			std::map<std::string, std::string> info = db::get_user::by_username(db, request().post("id"));
+			std::map<std::string, std::string> info = db::get::user::by_username(db, request().post("id"));
 			if(!info.empty()) {
 				// generate password reset token
 				std::string token = mail::generate_token(info["email"]);
@@ -481,7 +552,7 @@ void BaseController::reset_process() {
 	std::string token_f = cppcms::util::urldecode(request().post("token"));
 
 	// check if password is the same as the existing one
-	std::map<std::string, std::string> info = db::get_user::by_forgot_token(db, token_f);
+	std::map<std::string, std::string> info = db::get::user::by_forgot_token(db, token_f);
 	std::string password_f = crypto::gen_password::by_username(info["username"], request().post("np"));
 	if(!info.empty()) { // if found with token
 		// if passwords match, return with error same_password
@@ -561,6 +632,76 @@ void BaseController::p_new() {
 	Pages::set_page(&context, "CREATEPOST");
 	Pages::resolve_session(&context, session());
 	render("master", context);
+	return;
+}
+
+void BaseController::p_process() {
+	// allow only POST
+	if(request().request_method() != "POST") {
+		response().status(404);
+		response().out() << "http POST is only method allowed on this page";
+		return;
+	}
+	
+	// Ensure logged in
+	if(!Pages::logged_in(session())) {
+		response().set_redirect_header("/?err=need_login&next=/p/new", 302);
+		return;
+	}
+
+	// capture all fields
+	std::map<std::string, std::string> form;
+	form["type"] = request().post("posttype");
+	form["description"] = request().post("postdescription");
+
+	// Ensure type is either sale or general
+	if(form["type"] != "sale" && form["type"] != "general") {
+		response().set_redirect_header("/p/new?err=invalid_type&desc=" + cppcms::util::urlencode(form["description"]));
+		return;
+	}
+
+	// Ensure description is at least 10 characters
+	if(form["description"].length() <= 9) {
+		response().set_redirect_header("/p/new?err=invalid_desc&type=" + form["type"] + "&desc=" + cppcms::util::urlencode(form["description"]));
+		return;
+	}
+
+
+	// will contain path to saved photo's
+	std::vector<std::string> photos;
+	// get uploaded files
+	std::vector<booster::shared_ptr<cppcms::http::file>> files = request().files();
+	for(auto file : files) {
+		// if mime is valid, save file to verify further..
+		if(file::valid_image(file->mime())) {
+			// generate random name
+			std::string full_name = "public/cdn/product/" + crypto::random();
+			// save file
+			file->save_to(full_name);
+			// if valid save file path
+			if(file::valid_image(file::get_mime(full_name))) {
+				photos.push_back(full_name);
+			} else { // if not valid redirect and notify user
+				response().set_redirect_header("/p/new?err=invalid_image&type=" + form["type"] + "&desc=" + cppcms::util::urlencode(form["description"]));
+				return;
+			}
+		}
+	}
+
+	// ensure at least one image is selected for sale type
+	if(form["type"] == "sale") {
+		if(photos.size() < 1) { // if sale post doesn't have at least 1 image, redirect
+			response().set_redirect_header("/p/new?err=need_image&type=" + form["type"] + "&desc=" + cppcms::util::urlencode(form["description"]));
+			return;
+		}
+	}
+
+	// If passed so far, save the product
+	ProductModel product(session().get<int>("USER_ID"), form["type"], session().get("ZIPCODE"), form["description"]);
+	product.save(db);
+
+	// redirect to main page
+	response().set_redirect_header("/", 302);
 	return;
 }
 
@@ -668,14 +809,10 @@ void BaseController::debug_session() {
 }
 
 void BaseController::debug_page() {
-	// Get blocked list
-	std::vector<std::string> list = db::get::blocked_list::by_id(db, session().get<int>("USER_ID"));
-	for(auto i = list.begin(); i != list.end(); ++i) {
-		try {
-			response().out() << "=> " << *i << "<br>";
-		} catch(std::exception &e) {
-			response().out() << "Exception => " << e.what() << "<br>";
-		}
+	if(Pages::logged_in(session())) {
+		response().out() << "Logged in";
+	} else {
+		response().out() << "Not logged in";
 	}
 	return;
 }

@@ -21,6 +21,7 @@ namespace Pages {
 			std::string SECONDARY_EMAIL;
 			std::string USER_ID;
 			std::string SETTINGS;
+			std::string ZIPCODE;
 			int LAST_ACTIVITY;
 	};
 

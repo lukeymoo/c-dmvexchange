@@ -2,6 +2,28 @@
 
 $(function() {
 
+	// Error handling on /p/new
+	if(getParam('err')) {
+		// select post type
+		if(getParam('type') == 'general') {
+			changePostType($('#post-type-right'));
+		}
+		switch(getParam('err')) {
+			case 'need_image':
+				$('#post-form-description').val(getParam('desc'));
+				createAlert('Sale post\'s need at least one valid image', 'high');
+				break;
+			case 'invalid_image':
+				$('#post-form-description').val(getParam('desc'));
+				createAlert('A selected file was not a valid image', 'high');
+				break;
+			case 'invalid_desc':
+				$('#post-form-description').val(getParam('desc'));
+				createAlert('Description must be at least 10 characters', 'high');
+				break;
+		}
+	}
+
 	/** First post-action-menu coloring on hover **/
 	$(document).on({
 		mouseenter: function() {
@@ -365,13 +387,6 @@ function validImageExt(filename) {
 
 
 /**** INCOMPLETE ****/
-
-
-/** Displays post form to upload product **/
-function createPostForm() {
-	var DOM = "";
-	return;
-}
 
 
 

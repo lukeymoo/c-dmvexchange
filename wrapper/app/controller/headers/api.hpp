@@ -21,8 +21,14 @@ class api : public cppcms::application {
 		api(cppcms::service &srv, std::shared_ptr<DatabaseClass> db_ptr, Pages::Context *context_ptr) : cppcms::application(srv) {
 			db = db_ptr;
 			context = context_ptr;
+			// Tips processing -- Process submitted tip
+			dispatcher().assign("/tips/process(/)?", &api::tips_process, this);
+
 			// Account page -- Add new email
 			dispatcher().assign("/settings/add_email(/)?", &api::settings_add_email, this);
+
+			// Account page -- Remove secondary email
+			dispatcher().assign("/settings/remove_email(/)?", &api::settings_remove_email, this);
 
 			// Account page -- Unlocks settings page
 			dispatcher().assign("/settings/unlock(/)?", &api::settings_unlock, this);
@@ -51,11 +57,17 @@ class api : public cppcms::application {
 
 		std::shared_ptr<DatabaseClass> db;
 
+		// submit tip
+		void tips_process();
+
 		// returns session values
 		void session_state();
 
 		// add new email
 		void settings_add_email();
+
+		// remove secondary email
+		void settings_remove_email();
 
 		// unlocks account settings page
 		void settings_unlock();

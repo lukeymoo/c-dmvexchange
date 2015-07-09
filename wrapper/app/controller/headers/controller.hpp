@@ -7,9 +7,8 @@
 #include <cppcms/http_response.h>
 #include <cppcms/url_dispatcher.h>
 #include <cppcms/url_mapper.h>
+#include <cppcms/http_file.h>
 #include <sstream>
-#include "view.hpp"
-#include "user.hpp"
 #include "api.hpp"
 
 //#include "static.h" . - Not used, nginx serves static files
@@ -33,8 +32,24 @@ class BaseController : public cppcms::application {
 			mapper().assign("");
 
 			// @METHOD - GET
+			// @FUNCTION - Displays tip form
+			dispatcher().assign("/tips(/)?", &BaseController::tips_main, this);
+
+			// @METHOD - POST
+			// @FUNCTION - Process tip form
+			dispatcher().assign("/tips/process(/)?", &BaseController::tips_process, this);
+
+			// @METHOD - GET
+			// @FUNCTION - Processes activation token & activates an account
+			dispatcher().assign("/activate(/)?", &BaseController::activate_main, this);
+
+			// @METHOD - GET
 			// @FUNCTION - Create new post
 			dispatcher().assign("/p/new(/)?", &BaseController::p_new, this);
+
+			// @METHOD - POST
+			// @FUNCTION - Process submitted post form
+			dispatcher().assign("/p/process(/)?", &BaseController::p_process, this);
 
 			// @METHOD - GET
 			// @FUNCTION - Displays register page where user can register
@@ -106,6 +121,9 @@ class BaseController : public cppcms::application {
 		std::shared_ptr<DatabaseClass> db;
 
 		void index_main();
+		void tips_main();
+		void tips_process();
+		void activate_main();
 		void register_main();
 		void login_process();
 		void register_process();
@@ -116,6 +134,7 @@ class BaseController : public cppcms::application {
 		void reset_process();
 		void reset_success();
 		void p_new();
+		void p_process();
 		void account_main();
 		void account_filters();
 		void logout();

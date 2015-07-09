@@ -4,6 +4,33 @@ api::~api() {
 	return;
 }
 
+// process submitted tip
+void api::tips_process() {
+	// only allow post
+	if(request().request_method() != "POST") {
+		json::send("DX-REJECTED", "http POST is only method allowed on this page", response().out());
+		return;
+	}
+	// ensure logged in
+	if(!Pages::logged_in(session())) {
+		json::send("DX-REJECTED", "Must be logged in to submit a tip", response().out());
+		return;
+	}
+	// ensure tip field not empty
+	std::string tip = db->conn.esc(to_lowercase(request().post("tip")));
+
+	if(tip == "") {
+		json::send("DX-REJECTED", "Cannot submit empty tip", response().out());
+		return;
+	}
+
+	// submit tip
+	mail::tip(tip);
+
+	json::send("DX-OK", "Tip submitted", response().out());
+	return;
+}
+
 // Add new email
 void api::settings_add_email() {
 	session().load();
@@ -46,7 +73,37 @@ void api::settings_add_email() {
 	return;
 }
 
+void api::settings_remove_email() {
+	session().load();
+	// only allow post
+	if(request().request_method() != "POST") {
+		json::send("DX-REJECTED", "http POST is only method allowed", response().out());
+		return;
+	}
+	// ensure logged in
+	if(!Pages::logged_in(session())) {
+		json::send("DX-REJECTED", "Must be logged in!", response().out());
+		return;
+	}
+	// get email
+	std::map<std::string, std::string> acc = db::get::user::by_id(db, session().get<int>("USER_ID"));
+	
+	// if no secondary email
+	if(acc["secondary_email"] == "") {
+		json::send("DX-REJECTED", "No secondary email set", response().out());
+		return;
+	} else { // send removal notice, clear db entry & session entry
+		mail::external::notice_remove_email(acc["secondary_email"], acc["username"]);
+		std::pair<std::string, std::string> data("secondary_email", "");
+		db::update::user::by_id(db, session().get<int>("USER_ID"), data);
+		session().set("SECONDARY_EMAIL", "");
+	}
+	json::send("DX-OK", "Email removed", response().out());
+	return;
+}
+
 void api::settings_unlock() {
+	session().load();
 	// only allow POST
 	if(request().request_method() != "POST") {
 		json::send("DX-REJECTED", "http POST is only method allowed", response().out());
@@ -68,6 +125,7 @@ void api::settings_unlock() {
 }
 
 void api::settings_block() {
+	session().load();
 	// only allow POST
 	if(request().request_method() != "POST") {
 		json::send("DX-REJECTED", "http POST is only method allowed on this page", response().out());
@@ -107,6 +165,7 @@ void api::settings_block() {
 }
 
 void api::settings_unblock() {
+	session().load();
 	// only allow POST
 	if(request().request_method() != "POST") {
 		json::send("DX-REJECTED", "http POST is only method allowed on this page", response().out());
@@ -133,13 +192,20 @@ void api::settings_unblock() {
 	}
 	
 	// remove user from blocked list
+	db::unblock::by_id(db, session().get<int>("USER_ID"), username);
 
 	json::send("DX-OK", "Unblocked", response().out());
 	return;
 }
 
 void api::settings_blocked_list() {
+	session().load();
 	std::vector<std::string> list = db::get::blocked_list::by_id(db, session().get<int>("USER_ID"));
+	// if empty, return nothing
+	if(list.empty()) {
+		json::send("DX-OK", "", response().out());
+		return;
+	}
 	// create string from vector of names
 	std::stringstream ss;
 	copy(list.begin(), list.end(), std::ostream_iterator<std::string>(ss, ","));
@@ -206,7 +272,9 @@ void api::settings_change_password() {
 	} else {
 		// set new password
 		std::pair<std::string, std::string> data1("password", password);
-		//db::update::user::by_username(db, session().get("USERNAME"), data1);
+		db::update::user::by_id(db, session().get<int>("USER_ID"), data1);
+		// notify user
+		mail::external::notice_password(session().get("EMAIL"));
 		json::send("DX-OK", "Password updated", response().out());
 	}
 	return;

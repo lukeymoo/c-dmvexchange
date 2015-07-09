@@ -143,6 +143,7 @@ $(function() {
 		clearInterval(countdown);
 		countdown = null;
 		$(this).parents('#confirm-logout-container').remove();
+		$(document).find('#background-blur').remove();
 	});
 
 });
@@ -171,7 +172,7 @@ $(function() {
 function confirmLogout() {
 	var timestamp = Date.now();
 	var DOM =
-	"<div id='confirm-logout-container'>" +
+	"<div id='background-blur'></div><div id='confirm-logout-container'>" +
 		"<label id='confirm-logout-label'>Are you sure you want to logout?</label>" +
 		"<button id='confirm-logout-yes'>Logout</button><button id='confirm-logout-no'>Cancel</button>" +
 		"<label id='auto-logout'>Auto-logout in <span id='" + timestamp + "'>20</span>s</label>" +

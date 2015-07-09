@@ -33,8 +33,38 @@ void DatabaseClass::reconnect() {
 
 
 
-
-
+// Ensure all users have a block list
+void db::validate(std::shared_ptr<DatabaseClass> &db) {
+	// ensure connection is active
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::ostringstream ss;
+			ss << "Ensuring connection is open => " << db->conn.quote(e.what());
+			error::send(ss.str());
+			throw; // bubble exception up
+		}
+	}
+	// get list of ids
+	std::vector<std::string> id_list = db::get::user::id_list(db);
+	// iterate each id
+	int id_int = 0;
+	for(auto id : id_list) {
+		// convert string id to integer
+		id_int = std::stoi(id, nullptr, 10);
+		// check exist
+		if(db::check_exist::block_list(db, id_int)) {
+			// do nothing
+			std::cout << "\t[+] Block list for ID :: " << id << " exists" << std::endl;
+		} else {
+			// create list
+			std::cout << "\t[+] Creating block list for ID :: " << id << std::endl;
+			db::create::block_list(db, id_int);
+		}
+	}
+	return;
+}
 
 
 
@@ -55,9 +85,9 @@ void db::block::by_id(std::shared_ptr<DatabaseClass> &db, int owner_id, std::str
 	// create worker
 	pqxx::work worker(db->conn);
 	// format specified username
-	std::string target_f = "{" + to_lowercase(target_username) + "}";
+	std::string target_f = to_lowercase(target_username);
 	// format query
-	std::string query = "INSERT INTO dmv_blocked_list_t (owner_id, b_username) VALUES (" + db->conn.quote(owner_id) + ", " + db->conn.quote(target_f) + ")";
+	std::string query = "UPDATE dmv_blocked_list_t SET b_username=(SELECT array_append((SELECT b_username FROM dmv_blocked_list_t WHERE owner_id=" + db->conn.quote(owner_id) + "), " + db->conn.quote(target_f) + ")) WHERE owner_id=" + db->conn.quote(owner_id);
 	// execute
 	try {
 		pqxx::result result = worker.exec(query.c_str());
@@ -83,13 +113,22 @@ void db::block::by_id(std::shared_ptr<DatabaseClass> &db, int owner_id, std::str
 
 
 
+
+
+
+
+
+
+
+
+
 // @FUNCTION - Puts specified username into block list owned by another specified username
 // @RETURNS - Nothing
 void db::block::by_username(std::shared_ptr<DatabaseClass> &db, std::string owner_username, std::string target_username) {
 	// grab account info and pass to by_id variation
 	std::map<std::string, std::string> acc;
 	try {
-		acc = db::get_user::by_username(db, owner_username);
+		acc = db::get::user::by_username(db, owner_username);
 	} catch(std::exception &e) {
 		// report error to email
 		std::ostringstream ss;
@@ -101,6 +140,118 @@ void db::block::by_username(std::shared_ptr<DatabaseClass> &db, std::string owne
 	db::block::by_id(db, owner_id, target_username);
 	return;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// @FUNCTION - Remove specified username from block list owned by user specified by id
+// @RETURNS - NOTHING
+bool db::unblock::by_id(std::shared_ptr<DatabaseClass> &db, int owner_id, std::string to_unblock) {
+	// ensure connection open
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::ostringstream ss;
+			ss << "Ensuring connection is open => " << db->conn.esc(e.what());
+			error::send(ss.str());
+			throw; // bubble exception up
+		}
+	}
+
+	// format username
+	std::string target_f = to_lowercase(to_unblock);
+
+	// fetch blocked list
+	std::vector<std::string> block_list = db::get::blocked_list::by_id(db, owner_id);
+
+	// search for specified username
+	bool in_list = false;
+	for(std::vector<std::string>::iterator it = block_list.begin(); it != block_list.end(); ++it) {
+		// if the username is in the list, remove it & update status variable
+		if(*it == target_f) {
+			in_list = true;
+			block_list.erase(it);
+			break;
+		}
+	}
+
+	// if not found return false to notify higher up of invalid specified username
+	if(!in_list) {
+		return false;
+	}
+
+	// perform update block_list query with modified vector
+	db::update::block_list::by_id(db, owner_id, block_list);
+	return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// @FUNCTION - Fetch user id of account specified by username, invoke by_id variation using specified target
+// @RETURNS - TRUE/FALSE
+bool db::unblock::by_username(std::shared_ptr<DatabaseClass> &db, std::string owner_username, std::string target) {
+	return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -166,50 +317,26 @@ bool db::check_in::blocked_list::by_id(std::shared_ptr<DatabaseClass> &db, int o
 // @FUNCTION - Checks if specified username is in specified users blocked list
 // @RETURNS - TRUE/FALSE
 bool db::check_in::blocked_list::by_username(std::shared_ptr<DatabaseClass> &db, std::string owner_username, std::string blocked_username) {
-	// ensure connection is active
-	if(!db->conn.is_open()) {
-		try {
-			db->reconnect();
-		} catch(std::exception &e) {
-			std::ostringstream ss;
-			ss << "Ensuring connection is open => " << db->conn.esc(e.what());
-			error::send(ss.str());
-			throw; // bubble exception up
-		}
-	}
-	// create worker
-	pqxx::work worker(db->conn);
-	// format inputs
-	std::string owner_f = to_lowercase(owner_username);
-	std::string blocked_f = "{" + to_lowercase(blocked_username) + "}";
-	std::map<std::string, std::string> acc; // prepare account container
-	// get owner id
+	std::map<std::string, std::string> acc;
 	try {
-		acc = db::get_user::by_username(db, owner_f);
+		acc = db::get::user::by_username(db, owner_username);
 	} catch(std::exception &e) {
 		std::ostringstream ss;
-		ss << "Getting user info to check if blocked by username => " << db->conn.esc(e.what());
+		ss << "Ensuring connection is open => " << db->conn.esc(e.what());
 		error::send(ss.str());
-		throw; // bubble up exception
+		throw; // bubble exception up
 	}
-	// format query
-	std::string query = "SELECT EXISTS ( SELECT 1 FROM dmv_blocked_list_t WHERE owner_id=" + db->conn.quote(acc["id"]) + " AND b_username=" + db->conn.quote(blocked_f) + " )";
-	// execute
-	try {
-		pqxx::result result = worker.exec(query.c_str());
-		pqxx::tuple tuple = result.at(0);
-		pqxx::field field = tuple.at(0);
-		if(field.as<std::string>() == "t") {
-			return true;
-		} else {
-			return false;
-		}
-	} catch(std::exception &e) {
-		// report error to email
-		std::ostringstream ss;
-		ss << "Checking if blocked by username => " << db->conn.esc(e.what());
-		error::send(ss.str());
-		throw; // bubble up exception
+
+	int id = -1;
+	
+	if(acc["id"] != "") {
+		id = std::stoi(acc["id"]);
+	}
+
+	if(db::check_in::blocked_list::by_id(db, id, blocked_username)) {
+		return true;
+	} else {
+		return false;
 	}
 	return false;
 }
@@ -264,6 +391,63 @@ bool db::check_exist::table(std::shared_ptr<DatabaseClass> &db, std::string tabl
 	}
 	return false;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+// @FUNCTION - Checks if activation token exists
+// @RETURNS - TRUE/FALSE
+bool db::check_exist::activation_token(std::shared_ptr<DatabaseClass> &db, std::string token) {
+	// ensure connection open
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::ostringstream ss;
+			ss << "Ensuring connection is open => " << db->conn.esc(e.what());
+			error::send(ss.str());
+			throw; // bubble exception up
+		}
+	}
+	// create worker
+	pqxx::work worker(db->conn);
+	// prepare query
+	std::string query = "SELECT EXISTS ( SELECT 1 FROM dmv_users_t WHERE token=" + db->conn.quote(token) + " )";
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		pqxx::tuple row = result.at(0);
+		pqxx::field field = row.at(0);
+		if(field.as<std::string>() == "t") {
+			return true;
+		} else {
+			return false;
+		}
+	} catch(std::exception &e) {
+		std::ostringstream ss;
+		ss << "Checking if activation token exists :: " << db->conn.esc(e.what());
+		error::send(ss.str());
+		throw; // bubble exception up
+	}
+	return false;
+}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -439,6 +623,57 @@ bool db::check_exist::forgot_token(std::shared_ptr<DatabaseClass> &db, std::stri
 
 
 
+bool db::check_exist::block_list(std::shared_ptr<DatabaseClass> &db, int owner_id) {
+	// ensure connection open
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::ostringstream ss;
+			ss << "Ensuring connection is open => " << db->conn.esc(e.what());
+			error::send(ss.str());
+			throw; // bubble exception up
+		}
+	}
+	// create worker
+	pqxx::work worker(db->conn);
+	// prepare query
+	std::string query = "SELECT EXISTS ( SELECT 1 FROM dmv_blocked_list_t WHERE owner_id=" + db->conn.quote(owner_id) + " )";
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		pqxx::tuple row = result.at(0);
+		pqxx::field field = row.at(0);
+		if(field.as<std::string>() == "t") {
+			return true;
+		} else {
+			return false;
+		}
+	} catch(std::exception &e) {
+		std::ostringstream ss;
+		ss << "Checking if block_list exists for id => " << owner_id << " :: " << db->conn.esc(e.what());
+		error::send(ss.str());
+		throw; // bubble exception up
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -523,7 +758,7 @@ bool db::try_login::with_email(std::shared_ptr<DatabaseClass> &db, std::string e
 	// lowercase email
 	std::string email_f = to_lowercase(email);
 	// get user account
-	std::map<std::string, std::string> user_account = db::get_user::by_email(db, email_f);
+	std::map<std::string, std::string> user_account = db::get::user::by_email(db, email_f);
 	pqxx::work worker(db->conn); // create worker
 	if(user_account.empty()) {
 		return false;
@@ -676,6 +911,66 @@ bool db::try_login::with_email_enc(std::shared_ptr<DatabaseClass> &db, std::stri
 
 
 
+
+
+
+
+
+
+
+
+void db::create::block_list(std::shared_ptr<DatabaseClass> &db, int user_id) {
+	// ensure connection
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::ostringstream ss;
+			ss << "Ensuring connection is open => " << db->conn.esc(e.what());
+			error::send(ss.str());
+			throw; // bubble exception up
+		}
+	}
+	// create worker
+	pqxx::work worker(db->conn);
+	// prepare query
+	std::string query = "INSERT INTO dmv_blocked_list_t (owner_id) VALUES (" + db->conn.quote(user_id) + ")";
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		worker.commit();
+	} catch(std::exception &e) {
+		std::ostringstream ss;
+		ss << "Creating blocked list for user id => " << user_id << " :: " << db->conn.esc(e.what());
+		error::send(ss.str());
+		throw; // bubble exception up
+	}
+	return;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // @FUNCTION - Creates a user table ( contains user account info )
 // @RETURNS - TRUE/FALSE
 // @MISC - 
@@ -693,7 +988,7 @@ bool db::try_login::with_email_enc(std::shared_ptr<DatabaseClass> &db, std::stri
 //	token	 		VARCHAR(32) 	32 Character hash ( if empty, user is activated )
 //	zipcode 		VARCHAR(5) 		5 Characters Length
 //	timestamp 		INT 		 	Created in program std::time(0)
-void db::create_table::user(std::shared_ptr<DatabaseClass> &db) {
+void db::create::table::users(std::shared_ptr<DatabaseClass> &db) {
 	// ensure connection is active
 	if(!db->conn.is_open()) {
 		try {
@@ -740,7 +1035,7 @@ void db::create_table::user(std::shared_ptr<DatabaseClass> &db) {
 
 // @FUNCTION - Create blocked list table in database
 // @RETURNS - NOTHING
-void db::create_table::blocked_list(std::shared_ptr<DatabaseClass> &db) {
+void db::create::table::block_list(std::shared_ptr<DatabaseClass> &db) {
 	// ensure connection is active
 	if(!db->conn.is_open()) {
 		try {
@@ -755,7 +1050,7 @@ void db::create_table::blocked_list(std::shared_ptr<DatabaseClass> &db) {
 	// create worker
 	pqxx::work worker(db->conn);
 	// prepare query
-	std::string query = "CREATE TABLE dmv_blocked_list_t (owner_id INT REFERENCES dmv_users_t(id), b_username VARCHAR(32)[])";
+	std::string query = "CREATE TABLE dmv_blocked_list_t (owner_id INT NOT NULL UNIQUE, b_username VARCHAR(32)[])";
 	// execute query
 	try {
 		pqxx::result result = worker.exec(query.c_str());
@@ -779,6 +1074,89 @@ void db::create_table::blocked_list(std::shared_ptr<DatabaseClass> &db) {
 
 
 
+void db::create::table::products(std::shared_ptr<DatabaseClass> &db) {
+	// Ensure connection is open
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::ostringstream ss;
+			ss << "Ensuring connection is open => " << db->conn.esc(e.what());
+			error::send(ss.str());
+			throw; // bubble exception up
+		}
+	}
+	// create worker
+	pqxx::work worker(db->conn);
+	// prepare query
+	std::string query = "CREATE TABLE dmv_products_t (id SERIAL PRIMARY KEY, owner_id INT NOT NULL, zipcode CHAR(5) NOT NULL, priority INT NOT NULL DEFAULT '3', post_type VARCHAR(12) NOT NULL, product_type VARCHAR(64) NOT NULL DEFAULT '', description VARCHAR(1024) NOT NULL)";
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		worker.commit();
+	} catch(std::exception &e) {
+		std::ostringstream ss;
+		ss << "Creating product table :: " << db->conn.esc(e.what());
+		error::send(ss.str());
+		throw; // bubble exception up
+	}
+	return;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// @FUNCTION - Returns list of all ids in database
+// @RETURNS - std::vector<std::string> with all ids
+std::vector<std::string> db::get::user::id_list(std::shared_ptr<DatabaseClass> &db) {
+	// ensure active connection
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::ostringstream ss;
+			ss << "Ensuring connection is open => " << db->conn.esc(e.what());
+			error::send(ss.str());
+			throw; // bubble exception up
+		}
+	}
+	// Create vector container for std::string of returned ID's
+	std::vector<std::string> list;
+	// create worker
+	pqxx::work worker(db->conn);
+	// prepare query
+	std::string query = "SELECT id FROM dmv_users_t";
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		// iterate results print
+		for(pqxx::result::const_iterator row = result.begin(); row != result.end(); ++row) {
+			for(pqxx::tuple::const_iterator field = row.begin(); field != row.end(); ++field) {
+				list.push_back(field.as<std::string>());
+			}
+		}
+	} catch(std::exception &e) {
+		std::ostringstream ss;
+		ss << "Getting all user ids :: " << db->conn.esc(e.what());
+		error::send(ss.str());
+		throw; // bubble exception up
+	}
+	return list;
+}
 
 
 
@@ -792,7 +1170,7 @@ void db::create_table::blocked_list(std::shared_ptr<DatabaseClass> &db) {
 //				info is returned into std::map If nothing was found an empty
 // 				std::map is returned
 // @RETURNS - TRUE/FALSE
-std::map<std::string, std::string> db::get_user::by_id(std::shared_ptr<DatabaseClass> &db, int id) {
+std::map<std::string, std::string> db::get::user::by_id(std::shared_ptr<DatabaseClass> &db, int id) {
 	// ensure connection is active
 	if(!db->conn.is_open()) {
 		try {
@@ -927,7 +1305,7 @@ std::map<std::string, std::string> db::get_user::by_id(std::shared_ptr<DatabaseC
 // @FUNCTION - Retreives user account details specified by username which is unique
 // 				if no user is found an empty std::map is returned 
 // @RETURNS - std::map<std::string, std::string> - key,value pairs of user acc details
-std::map<std::string, std::string> db::get_user::by_username(std::shared_ptr<DatabaseClass> &db, std::string username) {
+std::map<std::string, std::string> db::get::user::by_username(std::shared_ptr<DatabaseClass> &db, std::string username) {
 	// ensure connection is active
 	if(!db->conn.is_open()) {
 		try {
@@ -1069,7 +1447,7 @@ std::map<std::string, std::string> db::get_user::by_username(std::shared_ptr<Dat
 // @FUNCTION - Retreives user account details specified by email address which is unique
 // 				if no user is found an empty std::map is returned
 // @RETURNS - std::map<std::string, std::string> - key,value pairs of user acc details
-std::map<std::string, std::string> db::get_user::by_email(std::shared_ptr<DatabaseClass> &db, std::string email) {
+std::map<std::string, std::string> db::get::user::by_email(std::shared_ptr<DatabaseClass> &db, std::string email) {
 	// ensure connection is active
 	if(!db->conn.is_open()) {
 		try {
@@ -1202,7 +1580,7 @@ std::map<std::string, std::string> db::get_user::by_email(std::shared_ptr<Databa
 
 // @FUNCTION - Find and retrieve user by forgot_token
 // @RETURNS - std::map<string, std> containing user information
-std::map<std::string, std::string> db::get_user::by_forgot_token(std::shared_ptr<DatabaseClass> &db, std::string token) {
+std::map<std::string, std::string> db::get::user::by_forgot_token(std::shared_ptr<DatabaseClass> &db, std::string token) {
 	// ensure connection is active
 	if(!db->conn.is_open()) {
 		try {
@@ -1332,6 +1710,70 @@ std::map<std::string, std::string> db::get_user::by_forgot_token(std::shared_ptr
 
 
 
+// @FUNCTION - Generate random string
+// @RETURNS - Random string in base64 encryption
+std::string crypto::random() {
+	std::stringstream ss;
+	std::string epoch = get_time();
+	int time_r_f = std::rand();
+	int time_r_s = std::rand();
+	int time_r_t = std::rand();
+	ss << epoch << time_r_f << time_r_s << time_r_t;
+	std::string final = crypto::sha512_hex(ss.str());
+	return final;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// @FUNCTION - sha512 a specified string & return it encoded in hex
+// @RETURNS - hex encoded sha512 encrypted string in std::string
+std::string crypto::sha512_hex(std::string input_s) {
+	std::stringstream ss;
+	ss << std::hex << std::setfill('0');
+	unsigned char obuf[64];
+	memset(obuf, 0, 64);
+	SHA512(reinterpret_cast<const unsigned char*>(input_s.c_str()), input_s.length(), obuf); // encrypt
+	// loop and convert to hex
+	for(auto c : obuf) {
+		ss << std::setw(2) << static_cast<unsigned>(c);
+	}
+	return ss.str();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1414,7 +1856,7 @@ std::string crypto::generate(std::string username, std::string password) {
 // @FUNCTION - Get user's username by id then generate password by_username
 // @RETURNS - std::string of base64 encrypted password
 std::string crypto::gen_password::by_id(std::shared_ptr<DatabaseClass> &db, int id, std::string password) {
-	std::map<std::string, std::string> info = db::get_user::by_id(db, id);
+	std::map<std::string, std::string> info = db::get::user::by_id(db, id);
 	std::string password_f = "";
 	if(!info.empty()) {
 		password_f = crypto::gen_password::by_username(info["username"], password);
@@ -1436,7 +1878,7 @@ std::string crypto::gen_password::by_id(std::shared_ptr<DatabaseClass> &db, int 
 // @FUNCTION - Get user's username by email then generate password by_username
 // @RETURNS - base64 encrypted password of type std::string
 std::string crypto::gen_password::by_email(std::shared_ptr<DatabaseClass> &db, std::string email, std::string password) {
-	std::map<std::string, std::string> info = db::get_user::by_email(db, email);
+	std::map<std::string, std::string> info = db::get::user::by_email(db, email);
 	std::string password_f = "";
 	if(!info.empty()) {
 		password_f = crypto::gen_password::by_username(info["username"], password);
@@ -1829,7 +2271,7 @@ void mail::external::notice_new_email(std::string email, std::string username) {
 	std::string email_f = to_lowercase(email);
 	std::string username_f = to_lowercase(username);
 	std::string subject = "Email Added!";
-	std::string message = "This email has been added as secondary email to user " + username_f;
+	std::string message = "This email has been added as secondary email to user " + username_f + "<br>Go to the <a href='http://dmv-exchange.com'>dmv-exchange</a>";
 	std::string command = "echo '" + message + "' | mail -aContent-Type:text/html -aFrom:'DMV Exchange'\\<no-reply@dmv-exchange.com\\> -s '" + subject + "' " + email_f;
 	FILE *pHandle = popen(command.c_str(), "w");
 	if(!pHandle) {
@@ -1848,6 +2290,29 @@ void mail::external::notice_new_email(std::string email, std::string username) {
 
 
 
+
+
+
+
+// @FUNCTION - sends notice to specified email it's been removed from account
+// @RETURNS - NOTHING
+void mail::external::notice_remove_email(std::string email, std::string username) {
+	std::string email_f = to_lowercase(email);
+	std::string username_f = to_lowercase(username);
+	std::string subject = "Email Removed!";
+	std::string message = "This secondary email has been removed from user " + username_f + "<br>Go to the <a href='http://dmv-exchange.com'>dmv-exchange</a>";
+	std::string command = "echo '" + message + "' | mail -aContent-Type:text/html -aFrom:'DMV Exchange'\\<no-reply@dmv-exchange.com\\> -s '" + subject + "' " + email_f;
+	FILE *pHandle = popen(command.c_str(), "w");
+	if(!pHandle) {
+		std::string err = "Failed to send remove email notice to " + email_f + " for user " + username_f;
+		// report error to email
+		error::send(err);
+		std::cerr << err << std::endl;
+		return;
+	}
+	pclose(pHandle);
+	return;
+}
 
 
 
@@ -2044,7 +2509,34 @@ void db::update::user::by_username(std::shared_ptr<DatabaseClass> &db, std::stri
 
 
 
-
+void db::update::user::by_activation_token(std::shared_ptr<DatabaseClass> &db, std::string token, std::pair<std::string, std::string> data) {
+	// ensure connection open
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::ostringstream ss;
+			ss << "Ensuring connection is open => " << db->conn.esc(e.what());
+			error::send(ss.str());
+			throw; // bubble exception up
+		}
+	}
+	// create worker
+	pqxx::work worker(db->conn);
+	// prepare query
+	std::string query = "UPDATE dmv_users_t SET " + db->conn.esc(data.first) + "=" + db->conn.quote(data.second) + " WHERE token=" + db->conn.quote(token);
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		worker.commit();
+	} catch(std::exception &e) {
+		std::ostringstream ss;
+		ss << "Updating user by activation token :: " << db->conn.esc(e.what());
+		error::send(ss.str());
+		throw; // bubble exception up
+	}
+	return;
+}
 
 
 
@@ -2211,6 +2703,75 @@ void db::update::user::by_email(std::shared_ptr<DatabaseClass> &db, std::string 
 
 
 
+void db::update::block_list::by_id(std::shared_ptr<DatabaseClass> &db, int owner_id, std::vector<std::string> list) {
+	// ensure connection is open
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::ostringstream ss;
+			ss << "Ensuring connection is open => " << db->conn.esc(e.what());
+			error::send(ss.str());
+			throw; // bubble exception up
+		}
+	}
+
+	// create worker
+	pqxx::work worker(db->conn);
+	
+	// format list to string
+	std::string list_f = "{";
+	for(std::vector<std::string>::iterator it = list.begin(); it != list.end(); ++it) {
+		list_f += to_lowercase(*it) + ",";
+	}
+
+	// remove last comma & append closing bracket `}`
+	if(list_f != "{") {
+		list_f.pop_back();
+	}
+
+	// close array
+	list_f += "}";
+
+	// update block list in database
+	// prepare query
+	std::string query = "UPDATE dmv_blocked_list_t SET b_username=" + db->conn.quote(list_f) + " WHERE owner_id=" + db->conn.quote(owner_id);
+
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		worker.commit();
+	} catch(std::exception &e) {
+		std::ostringstream ss;
+		ss << "Updating block list for user id => " << owner_id << " with list => " << list_f << " :: " << db->conn.esc(e.what());
+		error::send(ss.str());
+		throw; // bubble exception up
+	}
+	return;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // @FUNCTION - Gets blocked list of specified id
 // @RETURNS - Vector of usernames of type std::string within std::vector<std::string>
@@ -2237,7 +2798,22 @@ std::vector<std::string> db::get::blocked_list::by_id(std::shared_ptr<DatabaseCl
 		pqxx::result result = worker.exec(query.c_str());
 		for(pqxx::result::const_iterator row = result.begin(); row != result.end(); ++row) {
 			for(pqxx::tuple::const_iterator field = row->begin(); field != row->end(); ++field) {
-				list.push_back(field->as<std::string>());
+				if(!field->is_null()) {
+					// split string
+					std::string string_array = field->as<std::string>();
+					std::string temp; // container for substring
+					while(string_array.find(",", 0) != std::string::npos) {
+						size_t pos = string_array.find(",", 0); // grab delimiter pos
+						temp = string_array.substr(0, pos); // grab token
+						string_array.erase(0, pos + 1); // remove delimiter + token from original string
+						list.push_back(temp); // place token into vector
+					}
+
+					if(string_array != "") {
+						// add last part of string to vector as well
+						list.push_back(string_array);
+					}
+				}
 			}
 		}
 	} catch(std::exception &e) {
@@ -2314,6 +2890,39 @@ std::string mail::generate_token(std::string email) {
 
 
 
+// @FUNCTION - Emails me user submitted tip
+// @RETURNS - NOTHING
+void mail::tip(std::string tip) {
+	std::string subject = "DMV Exchange :: Tip";
+	std::string message = "<span style=\"color:#fa6400;\">User submitted tip</span><br>" + tip;
+	std::string command = "echo '" + message + "' | mail -aContent-Type:text/html -aFrom:'DMV Exchange - Tip'\\<tip@dmv-exchange.com\\> -s '" + subject + "' termiosx@gmail.com";
+	FILE *pHandle = popen(command.c_str(), "w");
+	if(!pHandle) {
+		std::string err = "Failed to submit tip";
+		error::send(err);
+		return;
+	}
+	pclose(pHandle);
+	return;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2325,5 +2934,101 @@ std::string get_time() {
 	std::time_t timestamp = std::time(0);
 	std::ostringstream ss;
 	ss << timestamp;
+	return ss.str();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// @FUNCTION - Check file mime type
+// @RETURNS - Mime Type in std::string format
+std::string file::get_mime(std::string filename) {
+	std::stringstream ss;
+	char line[256];
+	memset(line, 0, 80);
+	std::string command = "file --mime-type " + filename;
+	FILE *pHandle = popen(command.c_str(), "r");
+	if(!pHandle) {
+		std::string err = "Failed to submit tip";
+		error::send(err);
+		return "";
+	}
+	// Write return to console
+	fgets(line, 256, pHandle);
+	ss << line;
+	std::string final = ss.str();
+	// Remove filename, colon and space after colon
+	final.erase(0, filename.length()+2);
+	// Remove last character(\n)
+	final.pop_back();
+	pclose(pHandle);
+	return final;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// @FUNCTION - Checks if specified mime type is a valid image
+// @RETURNS - TRUE/FALSE
+bool file::valid_image(std::string mime_type) {
+	if(mime_type == "image/jpeg") {
+		return true;
+	}
+	if(mime_type == "image/png") {
+		return true;
+	}
+	if(mime_type == "image/bmp") {
+		return true;
+	}
+	if(mime_type == "image/gif") {
+		return true;
+	}
+	if(mime_type == "image/jpg") {
+		return true;
+	}
+	return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// @FUNCTION - Return specified string in lowercase format
+std::string to_lowercase(std::string word) {
+	std::locale loc;
+	std::stringstream ss;
+	for(std::string::size_type i = 0; i < word.length(); i++) {
+		ss << std::tolower(word[i], loc);
+	}
 	return ss.str();
 }

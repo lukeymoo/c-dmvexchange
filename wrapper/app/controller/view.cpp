@@ -6,6 +6,18 @@ void Pages::set_page(Context *context, std::string page_id) {
 	if(context->PAGE == "HOME") {
 		context->TITLE = "Home";
 	}
+	if(context->PAGE == "TIPS_MAIN") {
+		context->TITLE = "Tip Submission";
+	}
+	if(context->PAGE == "ACTIVATION_SUCCESS") {
+		context->TITLE = "Account Activated!";
+	}
+	if(context->PAGE == "ACTIVATION_EMPTY") {
+		context->TITLE = "Missing token";
+	}
+	if(context->PAGE == "ACTIVATION_FAILED") {
+		context->TITLE = "Invalid Token";
+	}
 	if(context->PAGE == "REGISTER") {
 		context->TITLE = "Register";
 	}
@@ -47,6 +59,7 @@ bool Pages::logged_in(cppcms::session_interface &interface) {
 		interface.set("USER_ID", "");
 		interface.set("SETTINGS", "false");
 		interface.set("LAST_ACTIVITY", 0);
+		interface.set("ZIPCODE", "");
 		interface.save();
 		return false;
 	}
@@ -69,7 +82,7 @@ bool Pages::resolve_session(Context *context, cppcms::session_interface &interfa
 		try {
 			context->USERNAME = interface.get("USERNAME");
 		} catch(std::exception &e) {
-			std::cerr << "[-] Error resolving session => " << std::endl << e.what() << std::endl << "\t=> Setting to default" << std::endl;
+			std::cerr << "[-] Error resolving session => " << e.what() << std::endl << "\t=> Setting to default" << std::endl;
 			interface.set("USERNAME", "");
 			context->USERNAME = "";
 		}
@@ -77,7 +90,7 @@ bool Pages::resolve_session(Context *context, cppcms::session_interface &interfa
 		try {
 			context->EMAIL = interface.get("EMAIL");
 		} catch(std::exception &e) {
-			std::cerr << "[-] Error resolving session => " << std::endl << e.what() << std::endl << "\t=> Setting to default" << std::endl;
+			std::cerr << "[-] Error resolving session => " << e.what() << std::endl << "\t=> Setting to default" << std::endl;
 			interface.set("EMAIL", "");
 			context->EMAIL = "";
 		}
@@ -85,7 +98,7 @@ bool Pages::resolve_session(Context *context, cppcms::session_interface &interfa
 		try {
 			context->SECONDARY_EMAIL = interface.get("SECONDARY_EMAIL");
 		} catch(std::exception &e) {
-			std::cerr << "[-] Error resolving session => " << std::endl << e.what() << std::endl << "\t=> Setting to default" << std::endl;
+			std::cerr << "[-] Error resolving session => " << e.what() << std::endl << "\t=> Setting to default" << std::endl;
 			interface.set("SECONDARY_EMAIL", "");
 			context->SECONDARY_EMAIL = "";
 		}
@@ -93,16 +106,24 @@ bool Pages::resolve_session(Context *context, cppcms::session_interface &interfa
 		try {
 			context->USER_ID = interface.get("USER_ID");
 		} catch(std::exception &e) {
-			std::cerr << "[-] Error resolving session => " << std::endl << e.what() << std::endl << "\t=> Setting to default" << std::endl;
+			std::cerr << "[-] Error resolving session => " << e.what() << std::endl << "\t=> Setting to default" << std::endl;
 			interface.set("USER_ID", "");
 			context->USER_ID = "";
+		}
+
+		try {
+			context->ZIPCODE = interface.get("ZIPCODE");
+		} catch(std::exception &e) {
+			std::cerr << "[-] Error resolving session => " << e.what() << std::endl << "\t=> Setting to default" << std::endl;
+			interface.set("ZIPCODE", "");
+			context->ZIPCODE = "";
 		}
 
 		if(context->PAGE == "ACCOUNT_MAIN") {
 			try {
 				context->SETTINGS = interface.get("SETTINGS");
 			} catch(std::exception &e) {
-				std::cerr << "[-] Error resolving session => " << std::endl << e.what() << std::endl << "\t=> Setting to default" << std::endl;
+				std::cerr << "[-] Error resolving session => " << e.what() << std::endl << "\t=> Setting to default" << std::endl;
 				interface.set("SETTINGS", "false");
 				context->SETTINGS = "false";
 			}
@@ -114,7 +135,7 @@ bool Pages::resolve_session(Context *context, cppcms::session_interface &interfa
 		try {
 			context->LAST_ACTIVITY = interface.get<int>("LAST_ACTIVITY");
 		} catch(std::exception &e) {
-			std::cerr << "[-] Error resolving session => " << std::endl << e.what() << std::endl << "\t=> Setting to default" << std::endl;
+			std::cerr << "[-] Error resolving session => " << e.what() << std::endl << "\t=> Setting to default" << std::endl;
 			interface.set("LAST_ACTIVITY", "0");
 			context->LAST_ACTIVITY = 0;
 		}
@@ -127,6 +148,7 @@ bool Pages::resolve_session(Context *context, cppcms::session_interface &interfa
 		context->USER_ID = "";
 		context->SETTINGS = "false";
 		context->LAST_ACTIVITY = 0;
+		context->ZIPCODE = "";
 	}
 	return false;
 }

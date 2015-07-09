@@ -51,6 +51,20 @@ $(function() {
 		});
 	}
 
+	// remove secondary email -- click
+	$(document).on('click', '#remove-secondary-email', function() {
+		removeSecondaryEmail(function(res) {
+			console.log(res);
+			if(res.status == 'DX-OK') {
+				window.location.href = '/account';
+			} else if(res.status == 'DX-REJECTED') {
+				createAlert(res.message, 'medium');
+			} else if(res.status == 'DX-FAILED') {
+				createAlert(res.message, 'high');
+			}
+		});
+	});
+
 	// submit new password form -- click
 	$(document).on('click', '#change-password-form-submit-button', function() {
 		
@@ -151,6 +165,8 @@ $(function() {
 
 	// submit confirm password -- click
 	$(document).on('click', '#confirm-password-form #submit-button', function() {
+		// remove errors
+		$(document).find('#confirm-password-form .form-error').remove();
 		if(!confirmingPassword) {
 			confirmingPassword = true;
 
@@ -566,6 +582,30 @@ function isBlocked(username) {
 		}
 	});
 	return status;
+}
+
+function removeSecondaryEmail(callback) {
+	$.ajax({
+		type: 'POST',
+		url: '/api/settings/remove_email',
+		error: function(err) {
+			var res = {
+				status: 'DX-FAILED',
+				message: 'Server error'
+			};
+			if(err.status == 0) {
+				res.message = 'Server is currently down';
+			}
+			if(err.status == 404) {
+				res.message = 'Something is badly programmed';
+			}
+			callback(res);
+		}
+	}).done(function(res) {
+		res = JSON.parse(res);
+		callback(res);
+	});
+	return;
 }
 
 function blockUser(usrname, callback) {

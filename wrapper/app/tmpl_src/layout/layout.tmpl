@@ -17,7 +17,11 @@
 			<a href='/'>
 				<span class='header-menu-option'>Home</span>
 			</a>
-			<span class='header-menu-option'>Submit advice</span>
+			<% if (content.LOGGED_IN == "true") %>
+				<a href='/tips'>
+					<span class='header-menu-option'>Submit advice</span>
+				</a>
+			<% end %>
 			<% if (content.LOGGED_IN == "true") %>
 				<a href="/account"><span class='header-menu-option'>Account</span></a>
 				<span id='header-logout-button' class="header-menu-option">Logout</span>
@@ -230,7 +234,7 @@
 			<% else %>
 				<div id='secondary-email-row'>
 					<span id='secondary-email-label'></span>
-					<span class='email filled'><%= SECONDARY_EMAIL %></span>
+					<span class='email filled'><%= SECONDARY_EMAIL %></span><span id='remove-secondary-email'>Remove</span>
 				</div>
 			<% end %>
 		</div>
@@ -269,6 +273,29 @@
 	</div>
 <% end template %>
 
+<% template activation_success() %>
+	<span id='activation-success'>Your account has been activated!</span>
+	<a id='forgot-return' href='/'>Click here to return home</a>
+<% end template %>
+
+<% template activation_empty() %>
+	<span id='activation-empty'>No activation token specified!</span>
+	<a id='forgot-return' href='/'>Click here to return home</a>
+<% end template %>
+
+<% template activation_failed() %>
+	<span id='activation-failed'>Invalid or already used token specified!</span>
+	<a id='forgot-return' href='/'>Click here to return home</a>
+<% end template %>
+
+<% template tips_main() %>
+	<span id='tips-header'>Enter your suggestion below</span>
+	<div id='tips-container'>
+		<textarea id='tips-content'></textarea>
+		<button>Submit tip</button>
+	</div>
+<% end template %>
+
 <% template render() %>
 <!doctype html>
 <html>
@@ -287,7 +314,28 @@
 		<% include header() %>
 		<div id='body-wrapper'>
 			<% if (content.PAGE == "HOME") %>
+				<!-- Products Start -->
+				<div id='products-container'>
+				</div>
+				<!-- End Products -->
 			<% end %>
+
+			<% if (content.PAGE == "ACTIVATION_SUCCESS") %>
+				<% include activation_success() %>
+			<% end %>
+			
+			<% if (content.PAGE == "ACTIVATION_EMPTY") %>
+				<% include activation_empty() %>
+			<% end %>
+
+			<% if (content.PAGE == "ACTIVATION_FAILED") %>
+				<% include activation_failed() %>
+			<% end %>
+			
+			<% if (content.PAGE == "TIPS_MAIN") %>
+				<% include tips_main() %>
+			<% end if %>
+
 			<% if (content.PAGE == "CREATEPOST") %>
 				<% if (content.LOGGED_IN == "true") %>
 					<% include create_post_form() %>
@@ -336,6 +384,9 @@
 	<% end %>
 	<% if (content.PAGE == "ACCOUNT_MAIN" || content.PAGE == "ACCOUNT_FILTERS") %>
 		<script src='/js/account.js'></script>
+	<% end %>
+	<% if (content.PAGE == "TIPS_MAIN") %>
+		<script src='/js/tips.js'></script>
 	<% end %>
 </body>
 </html>

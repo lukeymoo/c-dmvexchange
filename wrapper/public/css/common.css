@@ -1,5 +1,5 @@
 body {
-	background-color: rgb(241, 241, 241);
+	background-color: rgb(236, 236, 234);
 }
 
 #body-wrapper {
@@ -26,6 +26,7 @@ body {
 
 #confirm-logout-container {
 	position: absolute;
+	z-index: 2000;
 	top: 105px;
 	left: 340px;
 	border-radius: 2px;
@@ -1094,6 +1095,26 @@ body {
 	width: 170px;
 }
 
+#remove-secondary-email {
+	display: inline-block;
+	font-size: .8em;
+	font-weight: bold;
+	color: rgb(150, 150, 150);
+	float: right;
+	height: 28px;
+	line-height: 28px;
+	border-left: 1px solid rgba(0, 0, 0, 0.2);
+	border-right: 1px solid rgba(0, 0, 0, 0.2);
+	padding: 0px 10px;
+	background-color: rgba(255, 255, 255, 0.3);
+	cursor: pointer;
+	pointer: hand;
+}
+
+#remove-secondary-email:hover {
+	color: black;
+}
+
 #password-label {
 	float: left;
 	width: 170px;
@@ -1442,4 +1463,66 @@ body {
 
 #block-user-cancel {
 	float: right;
+}
+
+#activation-success,
+#activation-empty,
+#activation-failed {
+	display: block;
+	text-align: center;
+	margin-top: 20px;
+	margin-left: -25px;
+	font-size: 1.15em;
+	font-family: GOOGLE;
+}
+
+#activation-success {
+	color: rgb(0, 175, 200);
+}
+
+#activation-failed {
+	color: rgb(241, 0, 0);
+}
+
+
+#tips-container {
+	position: absolute;
+	top: 100px;
+	left: 270px;
+}
+
+#tips-header {
+	position: absolute;
+	top: 75px;
+	left: 271px;
+	font-size: .8em;
+	font-weight: bold;
+	font-family: GOOGLE;
+}
+
+#tips-header.success {
+	margin-left: 100px;
+	font-size: 1em;
+}
+
+#tips-container textarea {
+	width: 400px;
+	height: 110px;
+	font-family: GOOGLE;
+	font-size: .9em;
+}
+
+#tips-container textarea:focus {
+	outline: none;
+}
+
+#tips-container button {
+	display: block;
+	width: 100px;
+	height: 28px;
+	font-size: .8em;
+	font-weight: bold;
+	font-family: GOOGLE;
+	border: 1px solid rgba(100, 100, 100, 0.5);
+	background-color: rgb(200, 200, 200);
 }

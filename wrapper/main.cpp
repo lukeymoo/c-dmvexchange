@@ -7,13 +7,15 @@ int main(int argc, char **argv) {
 	// Connect to database
 	std::shared_ptr<DatabaseClass> db(new DatabaseClass);
 
-	// if the user table doesn't exist create it
+	// -- TABLES --
+
+	// User Table
 	if(!db::check_exist::table(db, "dmv_users_t")) {
 		std::cout << "[-] Table dmv_users_t does not exist" << std::endl;
 		std::cout << "\t=> Creating table..." << std::endl;
 		// Create user table
 		try {
-			db::create_table::user(db);
+			db::create::table::users(db);
 		} catch(std::exception &e) {
 			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
 			exit(1);
@@ -24,25 +26,37 @@ int main(int argc, char **argv) {
 		std::cout << "[+] Table dmv_users_t exists" << std::endl;
 	}
 
-	// if blocked_list table doesn't exist, create it
+	// Blocked List Table
 	if(!db::check_exist::table(db, "dmv_blocked_list_t")) {
 		std::cout << "[-] Table dmv_blocked_list_t does not exist" << std::endl;
 		std::cout << "\t=> Creating table..." << std::endl;
-		// create blocked list table
 		try {
-			db::create_table::blocked_list(db);
+			db::create::table::block_list(db);
 		} catch(std::exception &e) {
-			std::cerr << "[-] Exception occurred => " << e.what();
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
 			exit(1);
 		}
-		// success
-		std::cout << "\t=> Table created!" << std::endl;
 	} else {
 		std::cout << "[+] Table dmv_blocked_list_t exists" << std::endl;
 	}
+	// Create block lists for all users
+	db::validate(db);
 	
-	// if product post table doesn't exist, create it
-	// if comment post table doesn't exist, create it
+	// Product Table
+	if(!db::check_exist::table(db, "dmv_products_t")) {
+		std::cout << "[-] Table dmv_products_t does not exist" << std::endl;
+		std::cout << "\t=> Creating table..." << std::endl;
+		try {
+			db::create::table::products(db);
+		} catch(std::exception &e) {
+			std::cerr << "[-] Exception occurred => " << e.what() << std::endl;
+			exit(1);
+		}
+	} else {
+		std::cout << "[+] Table dmv_products_t exists" << std::endl;
+	}
+
+	// Comments Table
 
 	// Free connection
 	db.reset(); // remove connection

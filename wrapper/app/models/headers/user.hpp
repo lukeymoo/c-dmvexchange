@@ -20,10 +20,6 @@ or to insert data about users
 #define ID_USERNAME 	500
 #define ID_EMAIL		501
 
-// Lowercase a string
-std::string to_lowercase(std::string word);
-std::string generate_token(std::string email);
-
 class DatabaseClass;
 
 class UserModel {
