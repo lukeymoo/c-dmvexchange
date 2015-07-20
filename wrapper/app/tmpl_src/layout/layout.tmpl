@@ -77,6 +77,7 @@
 	<div data-visible='true' id='post-form-container'>
 		<form action='/p/process' method='POST' enctype='multipart/form-data' name='postform' id='post-form' data-type='sale' data-valid='false'>
 			<img id='post-form-validator' src='/img/cross.png'>
+			<input type='text' name='producttype' class='hidden-input' value='shoe'>
 			<input type='text' name='posttype' class='hidden-input' value='sale'>
 			<label>What kind of post is this?</label>
 			<div id='post-type-container'>
@@ -296,6 +297,31 @@
 	</div>
 <% end template %>
 
+<% template market_block() %>
+	<% if (content.LOGGED_IN == "true") %>
+		<div id='left-panel'>
+			<div id='search-container'>
+				<input id='text' type='text' placeholder='Search posts...'><button>Search</button>
+			</div>
+			<label id='views-label'>Filters</label>
+			<div id='view-container'>
+				<span id='all' class='view' data-selected='true'>All</span>
+				<span id='sale' class='view' data-selected='false'>For Sale</span>
+				<span id='general' class='view' data-selected='false'>General</span>
+			</div>
+			<label id='controls-label'>Controls</label>
+			<div id='controls-container'>
+				<span class='control'>My Store</span>
+				<span class='control'>My Posts</span>
+				<span class='control'>Settings</span>
+			</div>
+		</div>
+		<div class='auth' id='center-feed'><span style='display:block;text-align:center;font-family:GOOGLE;font-size:1.025em;'>Loading products...</span></div>
+	<% else %>
+		<div class='unauth' id='center-feed'><span style='display:block;text-align:center;font-family:GOOGLE;font-size:1.025em;'>Loading products...</span></div>
+	<% end %>
+<% end template %>
+
 <% template render() %>
 <!doctype html>
 <html>
@@ -315,8 +341,7 @@
 		<div id='body-wrapper'>
 			<% if (content.PAGE == "HOME") %>
 				<!-- Products Start -->
-				<div id='products-container'>
-				</div>
+				<% include market_block() %>
 				<!-- End Products -->
 			<% end %>
 

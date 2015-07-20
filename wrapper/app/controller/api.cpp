@@ -4,6 +4,38 @@ api::~api() {
 	return;
 }
 
+// Get products, with or without a specified timestamp
+void api::products_main() {
+	// allow only GET request
+	if(request().request_method() != "GET") {
+		json::send("DX-REJECTED", "http GET is only method allowed on this page", response().out());
+		return;
+	}
+	// if timestamp was set, check if before or after
+	std::string product_id = request().get("timestamp");
+	std::string order = request().get("order");
+	cppcms::json::array products_json;
+
+	if(product_id != "") { // product id is specified
+		if(order == "" || order == "before") { // fetch products with lower ids than specified
+		} else if(order == "after") { // fetch products with greater ids than specified
+		}
+	} else { // if no product id specified, fetch last 10 (called on page load)
+		std::vector<std::map<std::string, std::string>> products;
+		try {
+			products = db::get::products::recent(db);
+			products_json = product_list_to_array(products);
+		} catch(std::exception &e) {
+			json::send("DX-FAILED", "Server error occurred", response().out());
+			std::ostringstream ss;
+			ss << "Getting recent products main page :: " << db->conn.esc(e.what());
+			error::send(ss.str());
+		}
+	}
+	json::send_products("DX-OK", products_json, response().out());
+	return;
+}
+
 // process submitted tip
 void api::tips_process() {
 	// only allow post
@@ -301,6 +333,14 @@ void api::session_state() {
 }
 
 void json::send(std::string status, std::string message, std::ostream &stream) {
+	cppcms::json::value jres;
+	jres["status"] = status;
+	jres["message"] = message;
+	jres.save(stream, cppcms::json::compact);
+	return;
+}
+
+void json::send_products(std::string status, cppcms::json::value message, std::ostream &stream) {
 	cppcms::json::value jres;
 	jres["status"] = status;
 	jres["message"] = message;

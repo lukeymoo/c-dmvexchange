@@ -3,25 +3,45 @@
 $(function() {
 
 	// Error handling on /p/new
-	if(getParam('err')) {
-		// select post type
-		if(getParam('type') == 'general') {
-			changePostType($('#post-type-right'));
+	if(state.PAGE == 'Create Post') {
+		// give focus to description
+		$('#post-form-description').focus();
+		if(getParam('err')) {
+			// select post type
+			if(getParam('type') == 'general') {
+				changePostType($('#post-type-right'));
+			}
+			switch(getParam('err')) {
+				case 'need_image':
+					$('#post-form-description').val(getParam('desc'));
+					createAlert('Sale post\'s need at least one valid image', 'high');
+					break;
+				case 'invalid_image':
+					$('#post-form-description').val(getParam('desc'));
+					createAlert('A selected file was not a valid image', 'high');
+					break;
+				case 'invalid_desc':
+					$('#post-form-description').val(getParam('desc'));
+					createAlert('Description must be at least 10 characters', 'high');
+					break;
+			}
 		}
-		switch(getParam('err')) {
-			case 'need_image':
-				$('#post-form-description').val(getParam('desc'));
-				createAlert('Sale post\'s need at least one valid image', 'high');
-				break;
-			case 'invalid_image':
-				$('#post-form-description').val(getParam('desc'));
-				createAlert('A selected file was not a valid image', 'high');
-				break;
-			case 'invalid_desc':
-				$('#post-form-description').val(getParam('desc'));
-				createAlert('Description must be at least 10 characters', 'high');
-				break;
-		}
+	} else if(state.PAGE == 'Home') { // Home page, fetch products
+		getProductsMain(function(res) {
+			$('#center-feed').html('');
+			if(res.status == 'DX-OK') {
+				if(res.message.length) {
+					// turn into post
+					for(var product in res.message) {
+						generateProduct(res.message[product]);
+					}
+				} else { // empty product list
+					$('#center-feed').html('<span style="display:block;text-align:center;font-family:GOOGLE;font-size:1.025em;">No products to load...</span>');
+				}
+			} else if(res.status == 'DX-REJECTED') {
+			} else if(res.status == 'DX-FAILED') {
+			}
+		});
 	}
 
 	/** First post-action-menu coloring on hover **/
@@ -162,6 +182,91 @@ $(function() {
 	});
 
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+<div class="center-col">
+	<div class='feed-post'>
+		<div class='post-hidden-info'>
+			<span class='info-post-id'>some-post-id</span>
+			<span class='info-post-timestamp'>some-timestamp</span>
+			<span class='info-post-owner'>some-username</span>
+			<span class='info-post-owner-id'>some-user-id</span>
+		</div>
+		<div class='inner-post-top'>
+			<span class='post-owner'>some-username</span>
+			<span class='post-timestamp'>some-timestamp</span>
+			<span class='post-description'>
+				This is a post description, this is for sale at low cost
+				hmu for more info
+			</span>
+			<div class='post-image-container'>
+				<img class='post-image primary-image' src='/img/landing_bg.jpg'>
+			</div>
+		</div>
+		<div class='post-action-bar'>
+			<span class='want-this'>Upvote</span>
+			<div class='post-action-menu-container'>
+				<img class='post-action-menu-button' src='/img/gear.png'>
+				<ul class='post-action-menu-list'>
+					<li>Subscribe</li>
+					<li>Mark suspect</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+*/
+function generateProduct(productObj) {
+	var DOM =
+	"<div class='feed-post'>" +
+		"<div class='post-hidden-info'>" +
+			"<span class='info-post-id'>" + productObj["id"] + "</span>" +
+			"<span class='info-post-owner-id'>" + productObj["owner_id"] + "</span>" +
+		"</div>" +
+		"<div class='inner-post-top'>" +
+			"<span class='post-owner'>" + productObj["owner_username"] + "</span>" +
+			"<span class='post-description'>" +
+				productObj["description"] +
+			"</span>" +
+			"<div class='post-image-container'>" +
+				"<img class='post-image primary-image' src='/" + productObj["photos"] + "'>" +
+			"</div>" +
+		"</div>" +
+		"<div class='post-action-bar'>" +
+			"<span class='upvotes'>" + productObj["upvotes"] + "</span>" +
+			"<span class='upvote-button'><img src='/img/thumb_up.png' alt='upvote button'></span>" +
+			"<span class='downvote-button'><img src='/img/thumb_down.png' alt='downvote button'></span>" +
+			"<span class='downvotes'>" + productObj["downvotes"] + "</span>" +
+			"<div class='post-action-menu-container'>" +
+				"<img class='post-action-menu-button' src='/img/gear.png'>" +
+				"<ul class='post-action-menu-list'>" +
+					"<li>Subscribe</li>" +
+					"<li>Mark suspect</li>" +
+				"</ul>" +
+			"</div>" +
+		"</div>" +
+	"</div>";
+	$(DOM).prependTo($('#center-feed'));
+	return;
+}
+
+
+
+
 
 function changePostType(button) {
 	// Deselect all post-types
@@ -452,5 +557,29 @@ function uncolorPostActionMenuItem(item) {
 	if($(item).hasClass('hover')) {
 		$(item).removeClass('hover');
 	}
+	return;
+}
+
+function getProductsMain(callback) {
+	$.ajax({
+		type: 'GET',
+		url: '/api/products',
+		error: function(res) {
+			var res = {
+				status: 'DX-FAILED',
+				message: 'Server error'
+			};
+			if(err.status == 0) {
+				res.message = 'Server is currently down';
+			}
+			if(err.status == 404) {
+				res.message = 'Something is badly programmed';
+			}
+			callback(res);
+		}
+	}).done(function(res) {
+		res = JSON.parse(res);
+		callback(res);
+	});
 	return;
 }

@@ -3,6 +3,7 @@
 
 #include <cppcms/util.h>
 #include <iostream>
+#include <string>
 #include <iomanip>
 #include <cstdlib>
 #include <pqxx/pqxx>
@@ -14,7 +15,7 @@
 #include "base64.hpp"
 #include <openssl/sha.h>
 
-
+#define PRODUCT_LIST_SIZE "10"
 
 class DatabaseClass {
 	public:
@@ -33,6 +34,9 @@ class DatabaseClass {
 std::string to_lowercase(std::string word);
 std::string generate_token(std::string email);
 std::string get_time(); // gets current unix epoch in ms
+
+cppcms::json::array product_list_to_array(std::vector<std::map<std::string, std::string>> list);
+std::string product_list_to_string(std::vector<std::map<std::string, std::string>> list);
 
 namespace file {
 	std::string get_mime(std::string filename); // returns file mime type
@@ -139,6 +143,12 @@ namespace db {
 	};
 
 	namespace get {
+		namespace products {
+			std::vector<std::map<std::string, std::string>> recent(std::shared_ptr<DatabaseClass> &db);
+			std::vector<std::map<std::string, std::string>> before(std::shared_ptr<DatabaseClass> &db, int product_id);
+			std::vector<std::map<std::string, std::string>> after(std::shared_ptr<DatabaseClass> &db, int product_id);
+		};
+
 		namespace user {
 			// returns all user ids in database
 			std::vector<std::string> id_list(std::shared_ptr<DatabaseClass> &db);

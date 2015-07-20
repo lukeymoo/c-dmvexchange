@@ -28,9 +28,47 @@ void DatabaseClass::reconnect() {
 }
 
 
+cppcms::json::array product_list_to_array(std::vector<std::map<std::string, std::string>> list) {
+	cppcms::json::array array;
+	// create product from each element in specified vector
+	for(auto product : list) {
+		cppcms::json::value post;
+		for(auto property : product) {
+			post[property.first] = property.second;
+		}
+		// push cppcms::json::value >> into >> cppcms::json::array
+		array.push_back(post);
+	}
+	return array;
+}
 
 
 
+std::string product_list_to_string(std::vector<std::map<std::string, std::string>> list) {
+	std::string array = "[";
+	for(auto product : list) {
+		if(array.substr(array.length() - 1) == "}") {
+			array += ", ";
+		}
+		for(auto p : product) {
+			// create object open bracket
+			if(array == "[" || array.substr(array.length() - 2) == "}," || array.substr(array.length() - 3) == "}, ") {
+				array += "{";
+			}
+			if(array.substr(array.length() - 1) == "'") {
+				array += ", ";
+			}
+			// add property
+			array += "'" + p.first + "'" + ": " + "'" + p.second + "'";
+		}
+		// close object with close bracket
+		if(array.substr(array.length() - 1) == "'") {
+			array += "}";
+		}
+	}
+	array += "]";
+	return array;
+}
 
 
 // Ensure all users have a block list
@@ -1089,7 +1127,7 @@ void db::create::table::products(std::shared_ptr<DatabaseClass> &db) {
 	// create worker
 	pqxx::work worker(db->conn);
 	// prepare query
-	std::string query = "CREATE TABLE dmv_products_t (id SERIAL PRIMARY KEY, owner_id INT NOT NULL, zipcode CHAR(5) NOT NULL, priority INT NOT NULL DEFAULT '3', post_type VARCHAR(12) NOT NULL, product_type VARCHAR(64) NOT NULL DEFAULT '', description VARCHAR(1024) NOT NULL)";
+	std::string query = "CREATE TABLE dmv_products_t (id SERIAL PRIMARY KEY, owner_id INT NOT NULL, owner_username VARCHAR(32) NOT NULL, zipcode CHAR(5) NOT NULL DEFAULT '', priority INT NOT NULL DEFAULT '3', post_type VARCHAR(12) NOT NULL, product_type VARCHAR(64) NOT NULL DEFAULT '', description VARCHAR(1024) NOT NULL, photos VARCHAR(512)[], view_count INT NOT NULL DEFAULT '0', upvotes INT NOT NULL DEFAULT '0', downvotes INT NOT NULL DEFAULT '0')";
 	// execute
 	try {
 		pqxx::result result = worker.exec(query.c_str());
@@ -1102,6 +1140,122 @@ void db::create::table::products(std::shared_ptr<DatabaseClass> &db) {
 	}
 	return;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+// @FUNCTION - Returns list of products most recently added to database
+// @RETURNS - List of products & their properties in std::map<std::string, std::string>
+std::vector<std::map<std::string, std::string>> db::get::products::recent(std::shared_ptr<DatabaseClass> &db) {
+	// ensure connected
+	if(!db->conn.is_open()) {
+		try {
+			db->reconnect();
+		} catch(std::exception &e) {
+			std::ostringstream ss;
+			ss << "Ensuring connection is open => " << db->conn.esc(e.what());
+			error::send(ss.str());
+			throw; // bubble exception up
+		}
+	}
+	// Create worker
+	pqxx::work worker(db->conn);
+	// create product container
+	std::vector<std::map<std::string, std::string>> list;
+	// prepare query
+	std::string query = "SELECT * FROM dmv_products_t ORDER BY id DESC LIMIT " + db->conn.esc(PRODUCT_LIST_SIZE);
+	// execute
+	try {
+		pqxx::result result = worker.exec(query.c_str());
+		// iterate
+		for(pqxx::result::const_iterator row = result.begin(); row != result.end(); ++row) {
+			// product container
+			std::map<std::string, std::string> product;
+			// iterator
+			pqxx::tuple::const_iterator field = row.begin();
+
+			product["id"] = field->c_str(); // FIELD[0]
+			++field;
+			product["owner_id"] = field->c_str(); // FIELD[1]
+			++field;
+			product["owner_username"] = field->c_str(); // FIELD[2];
+			++field;
+			product["zipcode"] = field->c_str(); // FIELD[3]
+			++field;
+			product["priority"] = field->c_str(); // FIELD[4]
+			++field;
+			product["post_type"] = field->c_str(); // FIELD[5]
+			++field;
+			product["product_type"] = field->c_str(); // FIELD[6]
+			++field;
+			product["description"] = field->c_str(); // FIELD[7]
+			++field;
+			std::string temp = field->c_str(); // FIELD[8]
+			// prepare photos
+			product["photos"] = temp.substr(1, temp.length() - 2);
+			++field;
+			product["view_count"] = field->c_str(); // FIELD[9]
+			++field;
+			product["upvotes"] = field->c_str(); // FIELD[10]
+			++field;
+			product["downvotes"] = field->c_str(); // FIELD[11]
+			list.push_back(product);
+		}
+	} catch(std::exception &e) {
+		std::ostringstream ss;
+		ss << "Fetching last " << PRODUCT_LIST_SIZE << " records from product list :: " << db->conn.esc(e.what());
+		error::send(ss.str());
+		throw; // bubble exception up
+	}
+	return list;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// @FUNCTION - Returns list of recently added products BEFORE specified product_id
+// @RETURNS - List of products & their properties in std::map<std::string, std::string>
+std::vector<std::map<std::string, std::string>> db::get::products::before(std::shared_ptr<DatabaseClass> &db, int product_id) {
+	std::vector<std::map<std::string, std::string>> list;
+	return list;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// @FUNCTION - Returns list of recently added products AFTER specified product_id
+// @RETURNS - List of products & their properties in std::map<std::string, std::string>
+std::vector<std::map<std::string, std::string>> db::get::products::after(std::shared_ptr<DatabaseClass> &db, int product_id) {
+	std::vector<std::map<std::string, std::string>> list;
+	return list;
+}
+
+
 
 
 

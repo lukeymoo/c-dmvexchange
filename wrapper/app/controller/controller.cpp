@@ -155,6 +155,7 @@ void BaseController::login_process() {
 				session().set("SECONDARY_EMAIL", info["secondary_email"]);
 				session().set("USER_ID", info["id"]);
 				session().set("SETTINGS", "false");
+				session().set("ZIPCODE", info["zipcode"]);
 				json::send("DX-OK", "Logged in", response().out());
 				return;
 			} else { // invalid username login
@@ -178,6 +179,7 @@ void BaseController::login_process() {
 				session().set("SECONDARY_EMAIL", info["secondary_email"]);
 				session().set("USER_ID", info["id"]);
 				session().set("SETTINGS", "false");
+				session().set("ZIPCODE", info["zipcode"]);
 				json::send("DX-OK", "Logged in", response().out());
 				return;
 			} else { // invalid email login
@@ -345,6 +347,7 @@ void BaseController::register_process() {
 		session().set("SECONDARY_EMAIL", "");
 		session().set("USER_ID", info["id"]);
 		session().set("SETTINGS", "false");
+		session().set("ZIPCODE", info["zipcode"]);
 
 		// create block list for user
 		db::create::block_list(db, std::stoi(info["id"], nullptr, 10));
@@ -651,18 +654,19 @@ void BaseController::p_process() {
 
 	// capture all fields
 	std::map<std::string, std::string> form;
-	form["type"] = request().post("posttype");
+	form["product_type"] = request().post("producttype");
+	form["post_type"] = request().post("posttype");
 	form["description"] = request().post("postdescription");
 
 	// Ensure type is either sale or general
-	if(form["type"] != "sale" && form["type"] != "general") {
+	if(form["post_type"] != "sale" && form["post_type"] != "general") {
 		response().set_redirect_header("/p/new?err=invalid_type&desc=" + cppcms::util::urlencode(form["description"]));
 		return;
 	}
 
 	// Ensure description is at least 10 characters
 	if(form["description"].length() <= 9) {
-		response().set_redirect_header("/p/new?err=invalid_desc&type=" + form["type"] + "&desc=" + cppcms::util::urlencode(form["description"]));
+		response().set_redirect_header("/p/new?err=invalid_desc&product_type=" + form["product_type"] + "&post_type=" + form["post_type"] + "&desc=" + cppcms::util::urlencode(form["description"]));
 		return;
 	}
 
@@ -675,29 +679,31 @@ void BaseController::p_process() {
 		// if mime is valid, save file to verify further..
 		if(file::valid_image(file->mime())) {
 			// generate random name
-			std::string full_name = "public/cdn/product/" + crypto::random();
+			std::string full_name = "cdn/product/" + crypto::random() + ".img";
 			// save file
-			file->save_to(full_name);
+			file->save_to("public/" + full_name);
 			// if valid save file path
-			if(file::valid_image(file::get_mime(full_name))) {
+			if(file::valid_image(file::get_mime("public/" + full_name))) {
 				photos.push_back(full_name);
 			} else { // if not valid redirect and notify user
-				response().set_redirect_header("/p/new?err=invalid_image&type=" + form["type"] + "&desc=" + cppcms::util::urlencode(form["description"]));
+				response().set_redirect_header("/p/new?err=invalid_image&product_type=" + form["product_type"] + "&post_type=" + form["post_type"] + "&desc=" + cppcms::util::urlencode(form["description"]));
 				return;
 			}
 		}
 	}
 
 	// ensure at least one image is selected for sale type
-	if(form["type"] == "sale") {
+	if(form["post_type"] == "sale") {
 		if(photos.size() < 1) { // if sale post doesn't have at least 1 image, redirect
-			response().set_redirect_header("/p/new?err=need_image&type=" + form["type"] + "&desc=" + cppcms::util::urlencode(form["description"]));
+			response().set_redirect_header("/p/new?err=need_image&product_type=" + form["product_type"] + "&post_type=" + form["post_type"] + "&desc=" + cppcms::util::urlencode(form["description"]));
 			return;
 		}
 	}
 
-	// If passed so far, save the product
-	ProductModel product(session().get<int>("USER_ID"), form["type"], session().get("ZIPCODE"), form["description"]);
+	// add basic info about product
+	ProductModel product(session().get<int>("USER_ID"), session().get("USERNAME"), form["product_type"], form["post_type"], session().get("ZIPCODE"), form["description"]);
+	// add photos to product
+	product.photos = photos;
 	product.save(db);
 
 	// redirect to main page
@@ -804,15 +810,22 @@ void BaseController::debug_session() {
 	jres["SECONDARY_EMAIL"] = context.SECONDARY_EMAIL;
 	jres["USER_ID"] = context.USER_ID;
 	jres["LAST_ACTIVITY"] = context.LAST_ACTIVITY;
+	jres["ZIPCODE"] = context.ZIPCODE;
 	jres.save(response().out(), cppcms::json::readable);
 	return;
 }
 
 void BaseController::debug_page() {
-	if(Pages::logged_in(session())) {
-		response().out() << "Logged in";
-	} else {
-		response().out() << "Not logged in";
+	std::vector<std::map<std::string, std::string>> products;
+	cppcms::json::value jres;
+	jres["status"] = "DX-OK";
+	try {
+		products = db::get::products::recent(db);
+		cppcms::json::array array = product_list_to_array(products);
+		jres["message"] = array;
+		jres.save(response().out(), cppcms::json::readable);
+	} catch(std::exception &e) {
+		response().out() << "Error >> " << e.what();
 	}
 	return;
 }

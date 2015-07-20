@@ -14,6 +14,7 @@
 
 namespace json {
 	void send(std::string status, std::string message, std::ostream &stream);
+	void send_products(std::string status, cppcms::json::value array, std::ostream &stream);
 };
 
 class api : public cppcms::application {
@@ -21,6 +22,10 @@ class api : public cppcms::application {
 		api(cppcms::service &srv, std::shared_ptr<DatabaseClass> db_ptr, Pages::Context *context_ptr) : cppcms::application(srv) {
 			db = db_ptr;
 			context = context_ptr;
+
+			// Main page -- Get Products
+			dispatcher().assign("/products(/)?", &api::products_main, this);
+
 			// Tips processing -- Process submitted tip
 			dispatcher().assign("/tips/process(/)?", &api::tips_process, this);
 
@@ -56,6 +61,9 @@ class api : public cppcms::application {
 		Pages::Context *context;
 
 		std::shared_ptr<DatabaseClass> db;
+
+		// get products
+		void products_main();
 
 		// submit tip
 		void tips_process();

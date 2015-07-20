@@ -11,12 +11,14 @@ class DatabaseClass;
 
 class ProductModel {
 	public:
-		ProductModel(int i_owner_id, std::string i_type, std::string i_zipcode, std::string i_description);
+		ProductModel(int i_owner_id, std::string i_owner_username, std::string i_product_type, std::string i_post_type, std::string i_zipcode, std::string i_description);
 		~ProductModel();
 
 		// Meta
 		int owner_id;
-		std::string type;
+		std::string owner_username;
+		std::string post_type;
+		std::string product_type;
 		std::string zipcode;
 
 		// Photo locations
