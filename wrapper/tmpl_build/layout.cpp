@@ -46,107 +46,105 @@ namespace layout {
 				"\t\t\t";
 			#line 20 "app/tmpl_src/layout/layout.tmpl"
 			if(content.LOGGED_IN == "true") {
-				#line 24 "app/tmpl_src/layout/layout.tmpl"
+				#line 22 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
-					"\t\t\t\t<a href='/tips'>\n"
-					"\t\t\t\t\t<span class='header-menu-option'>Submit advice</span>\n"
-					"\t\t\t\t</a>\n"
+					"\t\t\t<span id='header-submit-advice' class='header-menu-option'>Submit advice</span>\n"
 					"\t\t\t";
-			#line 24 "app/tmpl_src/layout/layout.tmpl"
+			#line 22 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 25 "app/tmpl_src/layout/layout.tmpl"
+			#line 23 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t\t\t";
-			#line 25 "app/tmpl_src/layout/layout.tmpl"
+			#line 23 "app/tmpl_src/layout/layout.tmpl"
 			if(content.LOGGED_IN == "true") {
-				#line 28 "app/tmpl_src/layout/layout.tmpl"
+				#line 26 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t<a href=\"/account\"><span class='header-menu-option'>Account</span></a>\n"
 					"\t\t\t\t<span id='header-logout-button' class=\"header-menu-option\">Logout</span>\n"
 					"\t\t\t";
-			#line 28 "app/tmpl_src/layout/layout.tmpl"
+			#line 26 "app/tmpl_src/layout/layout.tmpl"
 			}else{
-				#line 32 "app/tmpl_src/layout/layout.tmpl"
+				#line 30 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t<a href='/register'>\n"
 					"\t\t\t\t\t<span class='header-menu-option'>Sign up</span>\n"
 					"\t\t\t\t</a>\n"
 					"\t\t\t";
-			#line 32 "app/tmpl_src/layout/layout.tmpl"
+			#line 30 "app/tmpl_src/layout/layout.tmpl"
 			}
-			#line 35 "app/tmpl_src/layout/layout.tmpl"
+			#line 33 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t\t</div>\n"
 				"\t\t<!-- Header controls -->\n"
 				"\t\t";
-			#line 35 "app/tmpl_src/layout/layout.tmpl"
+			#line 33 "app/tmpl_src/layout/layout.tmpl"
 			if(content.LOGGED_IN == "true") {
-				#line 37 "app/tmpl_src/layout/layout.tmpl"
+				#line 35 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t<div id='header-controls'>\n"
 					"\t\t\t\t";
-				#line 37 "app/tmpl_src/layout/layout.tmpl"
+				#line 35 "app/tmpl_src/layout/layout.tmpl"
 				if(content.PAGE == "CREATEPOST") {
-					#line 39 "app/tmpl_src/layout/layout.tmpl"
+					#line 37 "app/tmpl_src/layout/layout.tmpl"
 					out()<<"\n"
 						"\t\t\t\t\t<span data-active='true' id='header-create-post-button' class='header-control-button'>Create Post</span>\n"
 						"\t\t\t\t";
-				#line 39 "app/tmpl_src/layout/layout.tmpl"
+				#line 37 "app/tmpl_src/layout/layout.tmpl"
 				}else{
-					#line 41 "app/tmpl_src/layout/layout.tmpl"
+					#line 39 "app/tmpl_src/layout/layout.tmpl"
 					out()<<"\n"
 						"\t\t\t\t\t<a href='/p/new'><span data-active='false' id='header-create-post-button' class='header-control-button'>Create Post</span></a>\n"
 						"\t\t\t\t";
-				#line 41 "app/tmpl_src/layout/layout.tmpl"
+				#line 39 "app/tmpl_src/layout/layout.tmpl"
 				}
-				#line 44 "app/tmpl_src/layout/layout.tmpl"
+				#line 42 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\n"
 					"\t\t\t\t<span data-active='false' id='header-notifications-button' class='header-control-button'>Notifications</span>\n"
 					"\t\t\t\t<span data-active='false' id='header-profile-button' class='header-control-button'>";
-				#line 44 "app/tmpl_src/layout/layout.tmpl"
+				#line 42 "app/tmpl_src/layout/layout.tmpl"
 				out()<<cppcms::filters::escape(content.USERNAME);
-				#line 46 "app/tmpl_src/layout/layout.tmpl"
+				#line 44 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"</span>\n"
 					"\t\t\t</div>\n"
 					"\t\t";
-			#line 46 "app/tmpl_src/layout/layout.tmpl"
+			#line 44 "app/tmpl_src/layout/layout.tmpl"
 			}else{
-				#line 50 "app/tmpl_src/layout/layout.tmpl"
+				#line 48 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<div id='header-controls'>\n"
 					"\t\t\t<span id='header-login-button' data-active='false' class='header-control-button' data-state='closed'>Log in</span>\n"
 					"\t\t\t<a href='/register'>\n"
 					"\t\t\t\t";
-				#line 50 "app/tmpl_src/layout/layout.tmpl"
+				#line 48 "app/tmpl_src/layout/layout.tmpl"
 				if(content.PAGE == "REGISTER") {
-					#line 52 "app/tmpl_src/layout/layout.tmpl"
+					#line 50 "app/tmpl_src/layout/layout.tmpl"
 					out()<<"\n"
 						"\t\t\t\t\t<span data-active='true' class='header-control-button'>Register</span>\n"
 						"\t\t\t\t";
-				#line 52 "app/tmpl_src/layout/layout.tmpl"
+				#line 50 "app/tmpl_src/layout/layout.tmpl"
 				}else{
-					#line 54 "app/tmpl_src/layout/layout.tmpl"
+					#line 52 "app/tmpl_src/layout/layout.tmpl"
 					out()<<"\n"
 						"\t\t\t\t\t<span data-active='false' class='header-control-button'>Register</span>\n"
 						"\t\t\t\t";
-				#line 54 "app/tmpl_src/layout/layout.tmpl"
+				#line 52 "app/tmpl_src/layout/layout.tmpl"
 				}
-				#line 57 "app/tmpl_src/layout/layout.tmpl"
+				#line 55 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t</a>\n"
 					"\t\t</div>\n"
 					"\t\t";
-			#line 57 "app/tmpl_src/layout/layout.tmpl"
+			#line 55 "app/tmpl_src/layout/layout.tmpl"
 			}
-			#line 60 "app/tmpl_src/layout/layout.tmpl"
+			#line 58 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t\t<!-- End header controls -->\n"
 				"\t\t<!-- Login form -->\n"
 				"\t\t";
-			#line 60 "app/tmpl_src/layout/layout.tmpl"
+			#line 58 "app/tmpl_src/layout/layout.tmpl"
 			if(content.LOGGED_IN == "false") {
-				#line 70 "app/tmpl_src/layout/layout.tmpl"
+				#line 68 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t<div id='header-login-container'>\n"
 					"\t\t\t\t<form id='header-login-form'>\n"
@@ -158,25 +156,38 @@ namespace layout {
 					"\t\t\t\t<button id='header-login-form-button'>Log in</button>\n"
 					"\t\t\t</div>\n"
 					"\t\t";
-			#line 70 "app/tmpl_src/layout/layout.tmpl"
+			#line 68 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 74 "app/tmpl_src/layout/layout.tmpl"
+			#line 72 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t\t<!-- End login form -->\n"
 				"\t</div>\n"
 				"\t<div id='notification-container'></div>\n"
 				"";
-		#line 74 "app/tmpl_src/layout/layout.tmpl"
+		#line 72 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template header
-		#line 76 "app/tmpl_src/layout/layout.tmpl"
+		#line 74 "app/tmpl_src/layout/layout.tmpl"
+		virtual void footer() {
+			#line 81 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"\t<div id='footer-container'>\n"
+				"\t\t<div id='footer-logo-container'>\n"
+				"\t\t\t<span id='footer-logo' class='logo-no-login'> DMV EXCHANGE </span>\n"
+				"\t\t\t<span id='footer-beta-logo' class='beta-no-login'>*BETA</span>\n"
+				"\t\t</div>\n"
+				"\t</div>\n"
+				"";
+		#line 81 "app/tmpl_src/layout/layout.tmpl"
+		} // end of template footer
+		#line 83 "app/tmpl_src/layout/layout.tmpl"
 		virtual void create_post_form() {
-			#line 120 "app/tmpl_src/layout/layout.tmpl"
+			#line 127 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t<div data-visible='true' id='post-form-container'>\n"
 				"\t\t<form action='/p/process' method='POST' enctype='multipart/form-data' name='postform' id='post-form' data-type='sale' data-valid='false'>\n"
 				"\t\t\t<img id='post-form-validator' src='/img/cross.png'>\n"
-				"\t\t\t<input type='text' name='producttype' class='hidden-input' value='shoe'>\n"
-				"\t\t\t<input type='text' name='posttype' class='hidden-input' value='sale'>\n"
+				"\t\t\t<input type='text' name='producttype' class='hidden-input' value='shoe' id='producttype'>\n"
+				"\t\t\t<input type='text' name='posttype' class='hidden-input' value='sale' id='posttype'>\n"
 				"\t\t\t<label>What kind of post is this?</label>\n"
 				"\t\t\t<div id='post-type-container'>\n"
 				"\t\t\t\t<span data-selected='true' data-value='sale' id='post-type-left' class='post-type'>Sale</span>\n"
@@ -216,11 +227,11 @@ namespace layout {
 				"\t\t<button id='post-form-button'>Create Post</button>\n"
 				"\t</div>\n"
 				"";
-		#line 120 "app/tmpl_src/layout/layout.tmpl"
+		#line 127 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template create_post_form
-		#line 123 "app/tmpl_src/layout/layout.tmpl"
+		#line 130 "app/tmpl_src/layout/layout.tmpl"
 		virtual void register_form() {
-			#line 174 "app/tmpl_src/layout/layout.tmpl"
+			#line 181 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t<span id='banner'>Create an account to get started</span>\n"
 				"\t<div id='signup-why'>\n"
@@ -273,11 +284,11 @@ namespace layout {
 				"\t\t</div>\n"
 				"\t</div>\n"
 				"";
-		#line 174 "app/tmpl_src/layout/layout.tmpl"
+		#line 181 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template register_form
-		#line 178 "app/tmpl_src/layout/layout.tmpl"
+		#line 185 "app/tmpl_src/layout/layout.tmpl"
 		virtual void forgot_initial() {
-			#line 191 "app/tmpl_src/layout/layout.tmpl"
+			#line 198 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t<span id='forgot-header'>Select what you've forgotten...</span><br>\n"
 				"\t<div id='forgot-container'>\n"
@@ -292,20 +303,20 @@ namespace layout {
 				"\t\t<button id='forgot-button'>Submit Request</button>\n"
 				"\t</div>\n"
 				"";
-		#line 191 "app/tmpl_src/layout/layout.tmpl"
+		#line 198 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template forgot_initial
-		#line 193 "app/tmpl_src/layout/layout.tmpl"
+		#line 200 "app/tmpl_src/layout/layout.tmpl"
 		virtual void forgot_success() {
-			#line 196 "app/tmpl_src/layout/layout.tmpl"
+			#line 203 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t<span id='forgot-landing-header'>An email has been sent with further information</span>\n"
 				"\t<a id='forgot-return' href='/'>Click here to return home</a>\n"
 				"";
-		#line 196 "app/tmpl_src/layout/layout.tmpl"
+		#line 203 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template forgot_success
-		#line 198 "app/tmpl_src/layout/layout.tmpl"
+		#line 205 "app/tmpl_src/layout/layout.tmpl"
 		virtual void reset_password() {
-			#line 208 "app/tmpl_src/layout/layout.tmpl"
+			#line 215 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t<span id='password-reset-header'>Password reset form</span>\n"
 				"\t<form id='password-reset-form' method='post' action='/reset/process'>\n"
@@ -317,20 +328,20 @@ namespace layout {
 				"\t</form>\n"
 				"\t<button id='reset-button'>Set new password</button>\n"
 				"";
-		#line 208 "app/tmpl_src/layout/layout.tmpl"
+		#line 215 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template reset_password
-		#line 210 "app/tmpl_src/layout/layout.tmpl"
+		#line 217 "app/tmpl_src/layout/layout.tmpl"
 		virtual void reset_success() {
-			#line 213 "app/tmpl_src/layout/layout.tmpl"
+			#line 220 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t<span id='reset-landing-header'>Your password has been reset!</span>\n"
 				"\t<a id='forgot-return' href='/'>Click here to return home</a>\n"
 				"";
-		#line 213 "app/tmpl_src/layout/layout.tmpl"
+		#line 220 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template reset_success
-		#line 215 "app/tmpl_src/layout/layout.tmpl"
+		#line 222 "app/tmpl_src/layout/layout.tmpl"
 		virtual void account_main() {
-			#line 228 "app/tmpl_src/layout/layout.tmpl"
+			#line 235 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t<div id='account-tabs-container'>\n"
 				"\t\t<label id='account-tabs-label'>Settings</label>\n"
@@ -345,37 +356,37 @@ namespace layout {
 				"\t\t\t<div id='primary-email-row'>\n"
 				"\t\t\t\t<span id='primary-email-label'>Primary Email</span>\n"
 				"\t\t\t\t<span class='email'>";
-			#line 228 "app/tmpl_src/layout/layout.tmpl"
+			#line 235 "app/tmpl_src/layout/layout.tmpl"
 			out()<<cppcms::filters::escape(content.EMAIL);
-			#line 230 "app/tmpl_src/layout/layout.tmpl"
+			#line 237 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"</span>\n"
 				"\t\t\t</div>\n"
 				"\t\t\t";
-			#line 230 "app/tmpl_src/layout/layout.tmpl"
+			#line 237 "app/tmpl_src/layout/layout.tmpl"
 			if(content.SECONDARY_EMAIL == "") {
-				#line 235 "app/tmpl_src/layout/layout.tmpl"
+				#line 242 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t<div id='secondary-email-row'>\n"
 					"\t\t\t\t\t<span id='secondary-email-label'></span>\n"
 					"\t\t\t\t\t<span class='email add-new-button'>Add new email</span>\n"
 					"\t\t\t\t</div>\n"
 					"\t\t\t";
-			#line 235 "app/tmpl_src/layout/layout.tmpl"
+			#line 242 "app/tmpl_src/layout/layout.tmpl"
 			}else{
-				#line 238 "app/tmpl_src/layout/layout.tmpl"
+				#line 245 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t<div id='secondary-email-row'>\n"
 					"\t\t\t\t\t<span id='secondary-email-label'></span>\n"
 					"\t\t\t\t\t<span class='email filled'>";
-				#line 238 "app/tmpl_src/layout/layout.tmpl"
+				#line 245 "app/tmpl_src/layout/layout.tmpl"
 				out()<<cppcms::filters::escape(content.SECONDARY_EMAIL);
-				#line 240 "app/tmpl_src/layout/layout.tmpl"
+				#line 247 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"</span><span id='remove-secondary-email'>Remove</span>\n"
 					"\t\t\t\t</div>\n"
 					"\t\t\t";
-			#line 240 "app/tmpl_src/layout/layout.tmpl"
+			#line 247 "app/tmpl_src/layout/layout.tmpl"
 			}
-			#line 248 "app/tmpl_src/layout/layout.tmpl"
+			#line 255 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t\t</div>\n"
 				"\t\t<div id='password-view-container'>\n"
@@ -385,11 +396,11 @@ namespace layout {
 				"\t\t<!-- Connect Social Accounts TBAH(To be added here) -->\n"
 				"\t</div>\n"
 				"";
-		#line 248 "app/tmpl_src/layout/layout.tmpl"
+		#line 255 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template account_main
-		#line 250 "app/tmpl_src/layout/layout.tmpl"
+		#line 257 "app/tmpl_src/layout/layout.tmpl"
 		virtual void account_filters() {
-			#line 275 "app/tmpl_src/layout/layout.tmpl"
+			#line 282 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t<div id='account-tabs-container'>\n"
 				"\t\t<label id='account-tabs-label'>Settings</label>\n"
@@ -416,38 +427,38 @@ namespace layout {
 				"\t\t</div>\n"
 				"\t</div>\n"
 				"";
-		#line 275 "app/tmpl_src/layout/layout.tmpl"
+		#line 282 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template account_filters
-		#line 277 "app/tmpl_src/layout/layout.tmpl"
+		#line 284 "app/tmpl_src/layout/layout.tmpl"
 		virtual void activation_success() {
-			#line 280 "app/tmpl_src/layout/layout.tmpl"
+			#line 287 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t<span id='activation-success'>Your account has been activated!</span>\n"
 				"\t<a id='forgot-return' href='/'>Click here to return home</a>\n"
 				"";
-		#line 280 "app/tmpl_src/layout/layout.tmpl"
+		#line 287 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template activation_success
-		#line 282 "app/tmpl_src/layout/layout.tmpl"
+		#line 289 "app/tmpl_src/layout/layout.tmpl"
 		virtual void activation_empty() {
-			#line 285 "app/tmpl_src/layout/layout.tmpl"
+			#line 292 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t<span id='activation-empty'>No activation token specified!</span>\n"
 				"\t<a id='forgot-return' href='/'>Click here to return home</a>\n"
 				"";
-		#line 285 "app/tmpl_src/layout/layout.tmpl"
+		#line 292 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template activation_empty
-		#line 287 "app/tmpl_src/layout/layout.tmpl"
+		#line 294 "app/tmpl_src/layout/layout.tmpl"
 		virtual void activation_failed() {
-			#line 290 "app/tmpl_src/layout/layout.tmpl"
+			#line 297 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t<span id='activation-failed'>Invalid or already used token specified!</span>\n"
 				"\t<a id='forgot-return' href='/'>Click here to return home</a>\n"
 				"";
-		#line 290 "app/tmpl_src/layout/layout.tmpl"
+		#line 297 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template activation_failed
-		#line 292 "app/tmpl_src/layout/layout.tmpl"
+		#line 299 "app/tmpl_src/layout/layout.tmpl"
 		virtual void tips_main() {
-			#line 298 "app/tmpl_src/layout/layout.tmpl"
+			#line 305 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t<span id='tips-header'>Enter your suggestion below</span>\n"
 				"\t<div id='tips-container'>\n"
@@ -455,16 +466,16 @@ namespace layout {
 				"\t\t<button>Submit tip</button>\n"
 				"\t</div>\n"
 				"";
-		#line 298 "app/tmpl_src/layout/layout.tmpl"
+		#line 305 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template tips_main
-		#line 300 "app/tmpl_src/layout/layout.tmpl"
+		#line 307 "app/tmpl_src/layout/layout.tmpl"
 		virtual void market_block() {
-			#line 301 "app/tmpl_src/layout/layout.tmpl"
+			#line 308 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t";
-			#line 301 "app/tmpl_src/layout/layout.tmpl"
+			#line 308 "app/tmpl_src/layout/layout.tmpl"
 			if(content.LOGGED_IN == "true") {
-				#line 320 "app/tmpl_src/layout/layout.tmpl"
+				#line 326 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<div id='left-panel'>\n"
 					"\t\t\t<div id='search-container'>\n"
@@ -483,268 +494,278 @@ namespace layout {
 					"\t\t\t\t<span class='control'>Settings</span>\n"
 					"\t\t\t</div>\n"
 					"\t\t</div>\n"
-					"\t\t<div class='auth' id='center-feed'><span style='display:block;text-align:center;font-family:GOOGLE;font-size:1.025em;'>Loading products...</span></div>\n"
 					"\t";
-			#line 320 "app/tmpl_src/layout/layout.tmpl"
+			#line 326 "app/tmpl_src/layout/layout.tmpl"
 			}else{
-				#line 322 "app/tmpl_src/layout/layout.tmpl"
+				#line 338 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
-					"\t\t<div class='unauth' id='center-feed'><span style='display:block;text-align:center;font-family:GOOGLE;font-size:1.025em;'>Loading products...</span></div>\n"
+					"\t\t<div id='left-panel' class='unauth'>\n"
+					"\t\t\t<div id='search-container'>\n"
+					"\t\t\t\t<input id='text' type='text' placeholder='Search posts...'><button>Search</button>\n"
+					"\t\t\t</div>\n"
+					"\t\t\t<label id='views-label'>Filters</label>\n"
+					"\t\t\t<div id='view-container'>\n"
+					"\t\t\t\t<span id='all' class='view' data-selected='true'>All</span>\n"
+					"\t\t\t\t<span id='sale' class='view' data-selected='false'>For Sale</span>\n"
+					"\t\t\t\t<span id='general' class='view' data-selected='false'>General</span>\n"
+					"\t\t\t</div>\n"
+					"\t\t</div>\n"
 					"\t";
-			#line 322 "app/tmpl_src/layout/layout.tmpl"
+			#line 338 "app/tmpl_src/layout/layout.tmpl"
 			}
-			#line 323 "app/tmpl_src/layout/layout.tmpl"
+			#line 340 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
+				"\t<div class='auth' id='center-feed'><span style='display:block;text-align:center;font-family:GOOGLE;font-size:1.025em;'>Loading products...</span></div>\n"
 				"";
-		#line 323 "app/tmpl_src/layout/layout.tmpl"
+		#line 340 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template market_block
-		#line 325 "app/tmpl_src/layout/layout.tmpl"
+		#line 342 "app/tmpl_src/layout/layout.tmpl"
 		virtual void render() {
-			#line 329 "app/tmpl_src/layout/layout.tmpl"
+			#line 346 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"<!doctype html>\n"
 				"<html>\n"
 				"<head>\n"
 				"\t<title>DX &#8212; ";
-			#line 329 "app/tmpl_src/layout/layout.tmpl"
+			#line 346 "app/tmpl_src/layout/layout.tmpl"
 			out()<<cppcms::filters::escape(content.TITLE);
-			#line 334 "app/tmpl_src/layout/layout.tmpl"
+			#line 351 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"</title>\n"
 				"\t<meta name=\"viewport\" session=\"width=device-width, initial-scale=1\">\n"
 				"\t<link rel='stylesheet' type='text/css' href='/css/main.css?v=1'>\n"
 				"\t<link rel='stylesheet' type='text/css' href='/css/normalize.css?v=1'>\n"
 				"\t<link rel='stylesheet' type='text/css' href='/css/common.css?v=1'>\n"
 				"\t";
-			#line 334 "app/tmpl_src/layout/layout.tmpl"
+			#line 351 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "REGISTER") {
-				#line 336 "app/tmpl_src/layout/layout.tmpl"
+				#line 353 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<link rel='stylesheet' type='text/css' href='/css/register.css?v=1'>\n"
 					"\t";
-			#line 336 "app/tmpl_src/layout/layout.tmpl"
+			#line 353 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 340 "app/tmpl_src/layout/layout.tmpl"
+			#line 357 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"</head>\n"
 				"<body>\n"
 				"\t<div id='wrapper'>\n"
 				"\t\t";
-			#line 340 "app/tmpl_src/layout/layout.tmpl"
+			#line 357 "app/tmpl_src/layout/layout.tmpl"
 			header();
-			#line 342 "app/tmpl_src/layout/layout.tmpl"
+			#line 359 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t\t<div id='body-wrapper'>\n"
 				"\t\t\t";
-			#line 342 "app/tmpl_src/layout/layout.tmpl"
+			#line 359 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "HOME") {
-				#line 344 "app/tmpl_src/layout/layout.tmpl"
+				#line 361 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t<!-- Products Start -->\n"
 					"\t\t\t\t";
-				#line 344 "app/tmpl_src/layout/layout.tmpl"
+				#line 361 "app/tmpl_src/layout/layout.tmpl"
 				market_block();
-				#line 346 "app/tmpl_src/layout/layout.tmpl"
+				#line 363 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t<!-- End Products -->\n"
 					"\t\t\t";
-			#line 346 "app/tmpl_src/layout/layout.tmpl"
+			#line 363 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 348 "app/tmpl_src/layout/layout.tmpl"
+			#line 365 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\n"
 				"\t\t\t";
-			#line 348 "app/tmpl_src/layout/layout.tmpl"
+			#line 365 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "ACTIVATION_SUCCESS") {
-				#line 349 "app/tmpl_src/layout/layout.tmpl"
+				#line 366 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t";
-				#line 349 "app/tmpl_src/layout/layout.tmpl"
+				#line 366 "app/tmpl_src/layout/layout.tmpl"
 				activation_success();
-				#line 350 "app/tmpl_src/layout/layout.tmpl"
-				out()<<"\n"
-					"\t\t\t";
-			#line 350 "app/tmpl_src/layout/layout.tmpl"
-			} // endif
-			#line 352 "app/tmpl_src/layout/layout.tmpl"
-			out()<<"\n"
-				"\t\t\t\n"
-				"\t\t\t";
-			#line 352 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE == "ACTIVATION_EMPTY") {
-				#line 353 "app/tmpl_src/layout/layout.tmpl"
-				out()<<"\n"
-					"\t\t\t\t";
-				#line 353 "app/tmpl_src/layout/layout.tmpl"
-				activation_empty();
-				#line 354 "app/tmpl_src/layout/layout.tmpl"
-				out()<<"\n"
-					"\t\t\t";
-			#line 354 "app/tmpl_src/layout/layout.tmpl"
-			} // endif
-			#line 356 "app/tmpl_src/layout/layout.tmpl"
-			out()<<"\n"
-				"\n"
-				"\t\t\t";
-			#line 356 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE == "ACTIVATION_FAILED") {
-				#line 357 "app/tmpl_src/layout/layout.tmpl"
-				out()<<"\n"
-					"\t\t\t\t";
-				#line 357 "app/tmpl_src/layout/layout.tmpl"
-				activation_failed();
-				#line 358 "app/tmpl_src/layout/layout.tmpl"
-				out()<<"\n"
-					"\t\t\t";
-			#line 358 "app/tmpl_src/layout/layout.tmpl"
-			} // endif
-			#line 360 "app/tmpl_src/layout/layout.tmpl"
-			out()<<"\n"
-				"\t\t\t\n"
-				"\t\t\t";
-			#line 360 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE == "TIPS_MAIN") {
-				#line 361 "app/tmpl_src/layout/layout.tmpl"
-				out()<<"\n"
-					"\t\t\t\t";
-				#line 361 "app/tmpl_src/layout/layout.tmpl"
-				tips_main();
-				#line 362 "app/tmpl_src/layout/layout.tmpl"
-				out()<<"\n"
-					"\t\t\t";
-			#line 362 "app/tmpl_src/layout/layout.tmpl"
-			} // endif
-			#line 364 "app/tmpl_src/layout/layout.tmpl"
-			out()<<"\n"
-				"\n"
-				"\t\t\t";
-			#line 364 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE == "CREATEPOST") {
-				#line 365 "app/tmpl_src/layout/layout.tmpl"
-				out()<<"\n"
-					"\t\t\t\t";
-				#line 365 "app/tmpl_src/layout/layout.tmpl"
-				if(content.LOGGED_IN == "true") {
-					#line 366 "app/tmpl_src/layout/layout.tmpl"
-					out()<<"\n"
-						"\t\t\t\t\t";
-					#line 366 "app/tmpl_src/layout/layout.tmpl"
-					create_post_form();
-					#line 367 "app/tmpl_src/layout/layout.tmpl"
-					out()<<"\n"
-						"\t\t\t\t";
 				#line 367 "app/tmpl_src/layout/layout.tmpl"
-				} // endif
-				#line 368 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t";
-			#line 368 "app/tmpl_src/layout/layout.tmpl"
+			#line 367 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
 			#line 369 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
+				"\t\t\t\n"
 				"\t\t\t";
 			#line 369 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE == "REGISTER") {
+			if(content.PAGE == "ACTIVATION_EMPTY") {
 				#line 370 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t";
 				#line 370 "app/tmpl_src/layout/layout.tmpl"
-				register_form();
+				activation_empty();
 				#line 371 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t";
 			#line 371 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 372 "app/tmpl_src/layout/layout.tmpl"
+			#line 373 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
+				"\n"
 				"\t\t\t";
-			#line 372 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE == "FORGOT_INITIAL") {
-				#line 373 "app/tmpl_src/layout/layout.tmpl"
-				out()<<"\n"
-					"\t\t\t\t";
-				#line 373 "app/tmpl_src/layout/layout.tmpl"
-				forgot_initial();
+			#line 373 "app/tmpl_src/layout/layout.tmpl"
+			if(content.PAGE == "ACTIVATION_FAILED") {
 				#line 374 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
-					"\t\t\t";
-			#line 374 "app/tmpl_src/layout/layout.tmpl"
-			} // endif
-			#line 375 "app/tmpl_src/layout/layout.tmpl"
-			out()<<"\n"
-				"\t\t\t";
-			#line 375 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE == "FORGOT_SUCCESS") {
-				#line 376 "app/tmpl_src/layout/layout.tmpl"
-				out()<<"\n"
 					"\t\t\t\t";
-				#line 376 "app/tmpl_src/layout/layout.tmpl"
-				forgot_success();
-				#line 377 "app/tmpl_src/layout/layout.tmpl"
+				#line 374 "app/tmpl_src/layout/layout.tmpl"
+				activation_failed();
+				#line 375 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t";
+			#line 375 "app/tmpl_src/layout/layout.tmpl"
+			} // endif
 			#line 377 "app/tmpl_src/layout/layout.tmpl"
-			} // endif
-			#line 378 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
+				"\t\t\t\n"
 				"\t\t\t";
-			#line 378 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE == "PASSWORD_RESET") {
-				#line 379 "app/tmpl_src/layout/layout.tmpl"
+			#line 377 "app/tmpl_src/layout/layout.tmpl"
+			if(content.PAGE == "TIPS_MAIN") {
+				#line 378 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t";
+				#line 378 "app/tmpl_src/layout/layout.tmpl"
+				tips_main();
 				#line 379 "app/tmpl_src/layout/layout.tmpl"
-				reset_password();
-				#line 380 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t";
-			#line 380 "app/tmpl_src/layout/layout.tmpl"
+			#line 379 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
 			#line 381 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
+				"\n"
 				"\t\t\t";
 			#line 381 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE == "RESET_SUCCESS") {
+			if(content.PAGE == "CREATEPOST") {
 				#line 382 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t";
 				#line 382 "app/tmpl_src/layout/layout.tmpl"
-				reset_success();
-				#line 383 "app/tmpl_src/layout/layout.tmpl"
+				if(content.LOGGED_IN == "true") {
+					#line 383 "app/tmpl_src/layout/layout.tmpl"
+					out()<<"\n"
+						"\t\t\t\t\t";
+					#line 383 "app/tmpl_src/layout/layout.tmpl"
+					create_post_form();
+					#line 384 "app/tmpl_src/layout/layout.tmpl"
+					out()<<"\n"
+						"\t\t\t\t";
+				#line 384 "app/tmpl_src/layout/layout.tmpl"
+				} // endif
+				#line 385 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t";
-			#line 383 "app/tmpl_src/layout/layout.tmpl"
+			#line 385 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 384 "app/tmpl_src/layout/layout.tmpl"
-			out()<<"\n"
-				"\t\t\t";
-			#line 384 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE == "ACCOUNT_MAIN") {
-				#line 385 "app/tmpl_src/layout/layout.tmpl"
-				out()<<"\n"
-					"\t\t\t\t";
-				#line 385 "app/tmpl_src/layout/layout.tmpl"
-				account_main();
-				#line 386 "app/tmpl_src/layout/layout.tmpl"
-				out()<<"\n"
-					"\t\t\t";
 			#line 386 "app/tmpl_src/layout/layout.tmpl"
-			} // endif
-			#line 387 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t\t\t";
-			#line 387 "app/tmpl_src/layout/layout.tmpl"
-			if(content.PAGE == "ACCOUNT_FILTERS") {
-				#line 388 "app/tmpl_src/layout/layout.tmpl"
+			#line 386 "app/tmpl_src/layout/layout.tmpl"
+			if(content.PAGE == "REGISTER") {
+				#line 387 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t\t";
+				#line 387 "app/tmpl_src/layout/layout.tmpl"
+				register_form();
 				#line 388 "app/tmpl_src/layout/layout.tmpl"
-				account_filters();
-				#line 389 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t\t";
+			#line 388 "app/tmpl_src/layout/layout.tmpl"
+			} // endif
 			#line 389 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"\t\t\t";
+			#line 389 "app/tmpl_src/layout/layout.tmpl"
+			if(content.PAGE == "FORGOT_INITIAL") {
+				#line 390 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t\t";
+				#line 390 "app/tmpl_src/layout/layout.tmpl"
+				forgot_initial();
+				#line 391 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t";
+			#line 391 "app/tmpl_src/layout/layout.tmpl"
+			} // endif
+			#line 392 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"\t\t\t";
+			#line 392 "app/tmpl_src/layout/layout.tmpl"
+			if(content.PAGE == "FORGOT_SUCCESS") {
+				#line 393 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t\t";
+				#line 393 "app/tmpl_src/layout/layout.tmpl"
+				forgot_success();
+				#line 394 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t";
+			#line 394 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
 			#line 395 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"\t\t\t";
+			#line 395 "app/tmpl_src/layout/layout.tmpl"
+			if(content.PAGE == "PASSWORD_RESET") {
+				#line 396 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t\t";
+				#line 396 "app/tmpl_src/layout/layout.tmpl"
+				reset_password();
+				#line 397 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t";
+			#line 397 "app/tmpl_src/layout/layout.tmpl"
+			} // endif
+			#line 398 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"\t\t\t";
+			#line 398 "app/tmpl_src/layout/layout.tmpl"
+			if(content.PAGE == "RESET_SUCCESS") {
+				#line 399 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t\t";
+				#line 399 "app/tmpl_src/layout/layout.tmpl"
+				reset_success();
+				#line 400 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t";
+			#line 400 "app/tmpl_src/layout/layout.tmpl"
+			} // endif
+			#line 401 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"\t\t\t";
+			#line 401 "app/tmpl_src/layout/layout.tmpl"
+			if(content.PAGE == "ACCOUNT_MAIN") {
+				#line 402 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t\t";
+				#line 402 "app/tmpl_src/layout/layout.tmpl"
+				account_main();
+				#line 403 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t";
+			#line 403 "app/tmpl_src/layout/layout.tmpl"
+			} // endif
+			#line 404 "app/tmpl_src/layout/layout.tmpl"
+			out()<<"\n"
+				"\t\t\t";
+			#line 404 "app/tmpl_src/layout/layout.tmpl"
+			if(content.PAGE == "ACCOUNT_FILTERS") {
+				#line 405 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t\t";
+				#line 405 "app/tmpl_src/layout/layout.tmpl"
+				account_filters();
+				#line 406 "app/tmpl_src/layout/layout.tmpl"
+				out()<<"\n"
+					"\t\t\t";
+			#line 406 "app/tmpl_src/layout/layout.tmpl"
+			} // endif
+			#line 412 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t\t</div>\n"
 				"\t</div>\n"
@@ -752,110 +773,110 @@ namespace layout {
 				"\t<script src='/js/jquery.min.js'></script>\n"
 				"\t<script src='/js/common.js'></script>\n"
 				"\t";
-			#line 395 "app/tmpl_src/layout/layout.tmpl"
+			#line 412 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "HOME") {
-				#line 397 "app/tmpl_src/layout/layout.tmpl"
+				#line 414 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<script src='/js/market.js'></script>\n"
 					"\t";
-			#line 397 "app/tmpl_src/layout/layout.tmpl"
+			#line 414 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 398 "app/tmpl_src/layout/layout.tmpl"
+			#line 415 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t";
-			#line 398 "app/tmpl_src/layout/layout.tmpl"
+			#line 415 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "CREATEPOST") {
-				#line 400 "app/tmpl_src/layout/layout.tmpl"
+				#line 417 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<script src='/js/market.js'></script>\n"
 					"\t";
-			#line 400 "app/tmpl_src/layout/layout.tmpl"
+			#line 417 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 401 "app/tmpl_src/layout/layout.tmpl"
+			#line 418 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t";
-			#line 401 "app/tmpl_src/layout/layout.tmpl"
+			#line 418 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "REGISTER") {
-				#line 403 "app/tmpl_src/layout/layout.tmpl"
+				#line 420 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<script src='/js/register.js'></script>\n"
 					"\t";
-			#line 403 "app/tmpl_src/layout/layout.tmpl"
+			#line 420 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 404 "app/tmpl_src/layout/layout.tmpl"
+			#line 421 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t";
-			#line 404 "app/tmpl_src/layout/layout.tmpl"
+			#line 421 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "FORGOT_INITIAL") {
-				#line 406 "app/tmpl_src/layout/layout.tmpl"
+				#line 423 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<script src='/js/forgot.js'></script>\n"
 					"\t";
-			#line 406 "app/tmpl_src/layout/layout.tmpl"
+			#line 423 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 407 "app/tmpl_src/layout/layout.tmpl"
+			#line 424 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t";
-			#line 407 "app/tmpl_src/layout/layout.tmpl"
+			#line 424 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "PASSWORD_RESET") {
-				#line 409 "app/tmpl_src/layout/layout.tmpl"
+				#line 426 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<script src='/js/reset.js'></script>\n"
 					"\t";
-			#line 409 "app/tmpl_src/layout/layout.tmpl"
+			#line 426 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 410 "app/tmpl_src/layout/layout.tmpl"
+			#line 427 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t";
-			#line 410 "app/tmpl_src/layout/layout.tmpl"
+			#line 427 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "ACCOUNT_MAIN" || content.PAGE == "ACCOUNT_FILTERS") {
-				#line 412 "app/tmpl_src/layout/layout.tmpl"
+				#line 429 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<script src='/js/account.js'></script>\n"
 					"\t";
-			#line 412 "app/tmpl_src/layout/layout.tmpl"
+			#line 429 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 413 "app/tmpl_src/layout/layout.tmpl"
+			#line 430 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"\t";
-			#line 413 "app/tmpl_src/layout/layout.tmpl"
+			#line 430 "app/tmpl_src/layout/layout.tmpl"
 			if(content.PAGE == "TIPS_MAIN") {
-				#line 415 "app/tmpl_src/layout/layout.tmpl"
+				#line 432 "app/tmpl_src/layout/layout.tmpl"
 				out()<<"\n"
 					"\t\t<script src='/js/tips.js'></script>\n"
 					"\t";
-			#line 415 "app/tmpl_src/layout/layout.tmpl"
+			#line 432 "app/tmpl_src/layout/layout.tmpl"
 			} // endif
-			#line 418 "app/tmpl_src/layout/layout.tmpl"
+			#line 435 "app/tmpl_src/layout/layout.tmpl"
 			out()<<"\n"
 				"</body>\n"
 				"</html>\n"
 				"";
-		#line 418 "app/tmpl_src/layout/layout.tmpl"
+		#line 435 "app/tmpl_src/layout/layout.tmpl"
 		} // end of template render
-	#line 420 "app/tmpl_src/layout/layout.tmpl"
+	#line 437 "app/tmpl_src/layout/layout.tmpl"
 	}; // end of class master
-#line 421 "app/tmpl_src/layout/layout.tmpl"
+#line 438 "app/tmpl_src/layout/layout.tmpl"
 } // end of namespace layout
-#line 421 "app/tmpl_src/layout/layout.tmpl"
+#line 438 "app/tmpl_src/layout/layout.tmpl"
 namespace {
-#line 421 "app/tmpl_src/layout/layout.tmpl"
+#line 438 "app/tmpl_src/layout/layout.tmpl"
  cppcms::views::generator my_generator; 
-#line 421 "app/tmpl_src/layout/layout.tmpl"
+#line 438 "app/tmpl_src/layout/layout.tmpl"
  struct loader { 
-#line 421 "app/tmpl_src/layout/layout.tmpl"
+#line 438 "app/tmpl_src/layout/layout.tmpl"
   loader() { 
-#line 421 "app/tmpl_src/layout/layout.tmpl"
+#line 438 "app/tmpl_src/layout/layout.tmpl"
    my_generator.name("layout");
-#line 421 "app/tmpl_src/layout/layout.tmpl"
+#line 438 "app/tmpl_src/layout/layout.tmpl"
    my_generator.add_view<layout::master,Pages::Context>("master",true);
-#line 421 "app/tmpl_src/layout/layout.tmpl"
+#line 438 "app/tmpl_src/layout/layout.tmpl"
     cppcms::views::pool::instance().add(my_generator);
-#line 421 "app/tmpl_src/layout/layout.tmpl"
+#line 438 "app/tmpl_src/layout/layout.tmpl"
  }
-#line 421 "app/tmpl_src/layout/layout.tmpl"
+#line 438 "app/tmpl_src/layout/layout.tmpl"
  ~loader() {  cppcms::views::pool::instance().remove(my_generator); }
-#line 421 "app/tmpl_src/layout/layout.tmpl"
+#line 438 "app/tmpl_src/layout/layout.tmpl"
 } a_loader;
-#line 421 "app/tmpl_src/layout/layout.tmpl"
+#line 438 "app/tmpl_src/layout/layout.tmpl"
 } // anon 

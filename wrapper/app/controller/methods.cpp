@@ -1127,7 +1127,7 @@ void db::create::table::products(std::shared_ptr<DatabaseClass> &db) {
 	// create worker
 	pqxx::work worker(db->conn);
 	// prepare query
-	std::string query = "CREATE TABLE dmv_products_t (id SERIAL PRIMARY KEY, owner_id INT NOT NULL, owner_username VARCHAR(32) NOT NULL, zipcode CHAR(5) NOT NULL DEFAULT '', priority INT NOT NULL DEFAULT '3', post_type VARCHAR(12) NOT NULL, product_type VARCHAR(64) NOT NULL DEFAULT '', description VARCHAR(1024) NOT NULL, photos VARCHAR(512)[], view_count INT NOT NULL DEFAULT '0', upvotes INT NOT NULL DEFAULT '0', downvotes INT NOT NULL DEFAULT '0')";
+	std::string query = "CREATE TABLE dmv_products_t (id SERIAL PRIMARY KEY, owner_id INT NOT NULL, owner_username VARCHAR(32) NOT NULL, zipcode CHAR(5) NOT NULL DEFAULT '', priority INT NOT NULL DEFAULT '3', post_type VARCHAR(12) NOT NULL, product_type VARCHAR(64) NOT NULL DEFAULT '', description VARCHAR(5020) NOT NULL, photos VARCHAR(512)[], view_count INT NOT NULL DEFAULT '0', upvotes INT NOT NULL DEFAULT '0', downvotes INT NOT NULL DEFAULT '0', timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
 	// execute
 	try {
 		pqxx::result result = worker.exec(query.c_str());
@@ -1207,6 +1207,8 @@ std::vector<std::map<std::string, std::string>> db::get::products::recent(std::s
 			product["upvotes"] = field->c_str(); // FIELD[10]
 			++field;
 			product["downvotes"] = field->c_str(); // FIELD[11]
+			++field;
+			product["timestamp"] = field->c_str(); // FIELD[12]
 			list.push_back(product);
 		}
 	} catch(std::exception &e) {

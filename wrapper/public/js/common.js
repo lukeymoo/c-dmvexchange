@@ -36,6 +36,39 @@ $(function() {
 		val: $('#header-login-form #password').val()
 	};
 
+	/** Open advice dialog box **/
+	$(document).on('click', '#header-submit-advice', function() {
+		var DOM = 
+		"<div id='background-blur'></div>" +
+		"<div id='tips-container'>" +
+			"<span id='tips-header'>Enter your suggestion below</span>" +
+			"<textarea id='tips-content'></textarea>" +
+			"<div class='tips-buttons-container'>" +
+				"<button class='good'>Submit tip</button><button class='bad'>Cancel</button>" +
+			"</div>" +
+		"</div>";
+		$(DOM).appendTo($('#wrapper'));
+	});
+
+	/** Close advice dialog box **/
+	$(document).on('click', '#tips-container button.bad', function() {
+		$(document).find('#tips-container').remove();
+		$(document).find('#background-blur').remove();
+	});
+
+	/** Process tip dialog box **/
+	$(document).on('click', '#tips-container button.good', function() {
+		// remove all errors
+		$(this).parents('#tips-container').find('.form-error').remove();
+		// get text field as object and contents
+		var text = $(this).parents('#tips-container').find('#tips-content').val();
+		var textField = $(this).parents('#tips-container').find('#tips-content');
+		// ensure not empty and at least 10 characters
+		if(text.length < 10) {
+			generateFormError('Tip is too short! Must be at least 10 characters', textField);
+		}
+	});
+
 	/** Toggle header menu on click **/
 	$(document).on('click', '#header-menu-button', function() {
 		toggleHeaderMenu();
@@ -74,6 +107,7 @@ $(function() {
 			}
 			if(isHeaderLoginFormOpen()) {
 				if(!$(e.target).is($('#header-login-button'))
+					&& !$(e.target).is($('.need-login-menu-item'))
 					&& !$(e.target).closest($('#header-login-container')).length) {
 					closeHeaderLoginForm();
 				}
@@ -121,11 +155,6 @@ $(function() {
 				});
 			}
 		}
-	});
-
-	/** Open menu on click **/
-	$(document).on('click', '.post-action-menu-button', function() {
-		togglePostActionMenu($(this));
 	});
 
 	// show logout confirmation

@@ -18,9 +18,7 @@
 				<span class='header-menu-option'>Home</span>
 			</a>
 			<% if (content.LOGGED_IN == "true") %>
-				<a href='/tips'>
-					<span class='header-menu-option'>Submit advice</span>
-				</a>
+			<span id='header-submit-advice' class='header-menu-option'>Submit advice</span>
 			<% end %>
 			<% if (content.LOGGED_IN == "true") %>
 				<a href="/account"><span class='header-menu-option'>Account</span></a>
@@ -73,12 +71,21 @@
 	<div id='notification-container'></div>
 <% end template %>
 
+<% template footer() %>
+	<div id='footer-container'>
+		<div id='footer-logo-container'>
+			<span id='footer-logo' class='logo-no-login'> DMV EXCHANGE </span>
+			<span id='footer-beta-logo' class='beta-no-login'>*BETA</span>
+		</div>
+	</div>
+<% end template %>
+
 <% template create_post_form() %>
 	<div data-visible='true' id='post-form-container'>
 		<form action='/p/process' method='POST' enctype='multipart/form-data' name='postform' id='post-form' data-type='sale' data-valid='false'>
 			<img id='post-form-validator' src='/img/cross.png'>
-			<input type='text' name='producttype' class='hidden-input' value='shoe'>
-			<input type='text' name='posttype' class='hidden-input' value='sale'>
+			<input type='text' name='producttype' class='hidden-input' value='shoe' id='producttype'>
+			<input type='text' name='posttype' class='hidden-input' value='sale' id='posttype'>
 			<label>What kind of post is this?</label>
 			<div id='post-type-container'>
 				<span data-selected='true' data-value='sale' id='post-type-left' class='post-type'>Sale</span>
@@ -316,10 +323,20 @@
 				<span class='control'>Settings</span>
 			</div>
 		</div>
-		<div class='auth' id='center-feed'><span style='display:block;text-align:center;font-family:GOOGLE;font-size:1.025em;'>Loading products...</span></div>
 	<% else %>
-		<div class='unauth' id='center-feed'><span style='display:block;text-align:center;font-family:GOOGLE;font-size:1.025em;'>Loading products...</span></div>
+		<div id='left-panel' class='unauth'>
+			<div id='search-container'>
+				<input id='text' type='text' placeholder='Search posts...'><button>Search</button>
+			</div>
+			<label id='views-label'>Filters</label>
+			<div id='view-container'>
+				<span id='all' class='view' data-selected='true'>All</span>
+				<span id='sale' class='view' data-selected='false'>For Sale</span>
+				<span id='general' class='view' data-selected='false'>General</span>
+			</div>
+		</div>
 	<% end %>
+	<div class='auth' id='center-feed'><span style='display:block;text-align:center;font-family:GOOGLE;font-size:1.025em;'>Loading products...</span></div>
 <% end template %>
 
 <% template render() %>

@@ -312,6 +312,12 @@ void api::settings_change_password() {
 	return;
 }
 
+// process product comment
+void api::comment_process() {
+	json::send("DX-OK", "working", response().out());
+	return;
+}
+
 void api::session_state() {
 	session().load();
 	// only allow get

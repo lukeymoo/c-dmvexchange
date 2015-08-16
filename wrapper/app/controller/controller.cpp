@@ -23,34 +23,6 @@ void BaseController::index_main() {
 }
 
 // @METHOD - GET
-// @FUNCTION - Display tip form
-void BaseController::tips_main() {
-	session().load();
-	// only allow get
-	if(request().request_method() != "GET") {
-		response().status(404);
-		response().out() << "http GET is only method allowed on this page";
-		return;
-	}
-	Pages::set_page(&context, "TIPS_MAIN");
-	// ensure logged in
-	if(!Pages::logged_in(session())) {
-		response().set_redirect_header("/?err=need_login&next=/tips", 302);
-		return;
-	}
-	Pages::resolve_session(&context, session());
-	render("master", context);
-	return;
-}
-
-// @METHOD - POST
-// @FUNCTION - Process tip form
-void BaseController::tips_process() {
-	response().out() << "processing...";
-	return;
-}
-
-// @METHOD - GET
 // @FUNCTION - Process activation token
 void BaseController::activate_main() {
 	// only allow GET

@@ -25,10 +25,10 @@ body {
 
 
 #confirm-logout-container {
-	position: absolute;
+	position: fixed;
 	z-index: 2000;
 	top: 105px;
-	left: 340px;
+	left: 370px;
 	border-radius: 2px;
 	border: 1px solid rgb(100, 100, 100);
 	background-color: rgb(230, 230, 230);
@@ -519,6 +519,7 @@ body {
 .post-owner {
 	display: inline-block;
 	color: rgb(0, 190, 255);
+	margin-left: 5px;
 	font-size: .9em;
 	font-family: GOOGLE;
 	cursor: pointer;
@@ -535,7 +536,7 @@ body {
 }
 
 .post-timestamp:hover {
-	color: rgba(0, 0, 0, 0);
+	color: rgba(0, 0, 0, 2);
 }
 
 .post-timestamp:hover:after {
@@ -546,7 +547,9 @@ body {
 
 .post-description {
 	display: block;
+	width: 98%;
 	font-size: .9em;
+	margin-left: 5px;
 }
 
 .inner-post-center {
@@ -624,6 +627,10 @@ body {
 	border-left: 1px solid #2b6dad;
 }
 
+.upvotes, .downvotes, .upvote-button, .downvote-button {
+	display: none;
+}
+
 .comment-button {
 	display: inline-block;
 	font-size: .8em;
@@ -638,13 +645,83 @@ body {
 	text-decoration: underline;
 }
 
+
+/*
+"<div id='comment-section-container'>" +
+	"<div id='new-comment-container'>" +
+		"<textarea id='comment-field'></textarea>" +
+		"<button id='comment-button'>Post</button>" +
+	"</div>" +
+"</div>" +
+*/
+
+#comment-section-container {
+}
+
+#comment-section-container-fake{
+	display: block;
+	padding: 6px;
+}
+
+#comment-field-placeholder {
+	width: 566px;
+	height: 22px;
+	color: rgba(0, 0, 0, 0.4);
+	margin: auto;
+	margin-top: 5px;
+	margin-bottom: 10px;
+	padding: 2px 3px;
+	font-size: .9em;
+	font-family: GOOGLE;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	cursor: text;
+	position: text;
+}
+
+#comment-field-placeholder:hover {
+	border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+#new-comment-container {
+	display: block;
+	padding-left: 10px;
+	padding-right: 17px;
+}
+
+#comment-field {
+	margin-top: -7px;
+	width: 100%;
+	padding: 2px 3px;
+	font-size: .9em;
+	font-family: GOOGLE;
+	height: 60px;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+#comment-field:focus {
+	outline: none;
+}
+
+#comment-button {
+	display: block;
+	border: none;
+	background-color: rgb(0, 150, 200);
+	width: 67px;
+	height: 26px;
+	margin-left: 507px;
+	margin-bottom: 10px;
+	font-weight: bold;
+	font-size: .8em;
+	color: rgb(240, 240, 240);
+}
+
 .post-action-menu-container {
 	display: inline-block;
 	float: right;
 }
 
 .post-action-menu-button {
-	margin-top: -2px;
+	margin-top: -20px;
 	font-size: .8em;
 	padding: 7px;
 	cursor: pointer;
@@ -733,29 +810,69 @@ body {
 	background-color: rgb(175, 250, 255);
 }
 
-.post-image-container-background {
-	background-color: rgb(40, 40, 40);
+/*
+	Post images should be split in a way there are small
+	previews of each image under the main box, which is filled with
+	the currently selected image
+*/
+#post-image-selected {
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	background-color: rgba(0, 0, 0, 1);
 }
 
-.post-image-container {
+#post-image-selected img {
 	display: block;
-	border: 1px solid rgba(0, 0, 0 , 0.125);
+	max-width: 100%;
+	max-height: 300px;
+	margin-left: auto;
+	margin-right: auto;
 }
 
-.post-image {
+#post-image-preview-container {
+	margin-top: 5px;
+	border: 1px dotted rgba(0, 0, 0, 0.2);
+	border-radius: 5px;
+	padding: 5px;
+}
+
+#post-image-preview-container .preview {
 	display: inline-block;
-	max-width: 300px;
-	max-height: 325px;
+	margin-top: 5px;
+	width: 75px;
+	margin-right: 5px;
+	border: 5px solid rgba(0, 0, 0, 0.0);
+	border-radius: 3px;
+	vertical-align: top;
+	padding: 1px;
+	cursor: pointer;
+	pointer: hand;
+}
+
+#post-image-preview-container .preview:hover {
+}
+
+#post-image-preview-container .preview img {
+	display: block;
+	max-width: 100%;
+	max-height: 100%;
 	margin: auto;
 }
 
+#post-image-preview-container .preview-selected {
+	border: 5px dotted rgba(0, 150, 200, 1)
+}
 
+.full-description {
+	display: none;
+}
 
-
-
-
-
-
+.description-show-more, .description-show-less {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+	cursor: pointer;
+	pointer: hand;
+}
 
 
 
@@ -1542,14 +1659,20 @@ body {
 
 #tips-container {
 	position: absolute;
+	z-index: 1001;
 	top: 100px;
-	left: 270px;
+	left: 285px;
+	padding-left: 30px;
+	padding-right: 30px;
+	padding-top: 50px;
+	padding-bottom: 30px;
+	background-color: rgb(241, 241, 241);
+	border-radius: 2px;
 }
 
 #tips-header {
 	position: absolute;
-	top: 75px;
-	left: 271px;
+	margin-top: -25px;
 	font-size: .8em;
 	font-weight: bold;
 	font-family: GOOGLE;
@@ -1571,8 +1694,8 @@ body {
 	outline: none;
 }
 
-#tips-container button {
-	display: block;
+#tips-container button.good {
+	display: inline-block;
 	width: 100px;
 	height: 28px;
 	font-size: .8em;
@@ -1582,14 +1705,44 @@ body {
 	background-color: rgb(200, 200, 200);
 }
 
-#left-panel {
-	position: absolute;
+#tips-container button.bad {
+	display: inline-block;
+	float: right;
+	width: 100px;
+	height: 28px;
+	font-size: .8em;
+	font-weight: bold;
+	font-family: GOOGLE;
+	border: 1px solid rgb(190, 0, 0);
+	background-color: rgb(220, 0, 25);
+}
 
-	top: 20px;
+#left-panel {
+	position: fixed;
+
+	top: 70px;
 	margin-left: 10px;
 	
 	width: 240px;
 	height: 83vh;
+
+	font-family: GOOGLE;
+	background-color: white;
+	border: 1px solid rgb(220, 220, 220);
+
+	-webkit-box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.0575);
+	-moz-box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.0575);
+	box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.0575);
+}
+
+#left-panel.unauth {
+	position: fixed;
+
+	top: 70px;
+	margin-left: 10px;
+	
+	width: 240px;
+	height: 150px;
 
 	font-family: GOOGLE;
 	background-color: white;
@@ -1653,6 +1806,11 @@ body {
 #left-panel #search-container #text:focus,
 #left-panel #search-container button:focus {
 	outline: none;
+}
+
+#left-panel #search-container #text:hover {
+	border: 1px solid rgba(0, 0, 0, 0.3);
+	border-right: none;
 }
 
 #left-panel label {
@@ -1766,14 +1924,6 @@ body {
 	background-color: rgba(0, 125, 200, 0.45);
 	box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.35);
 }
-
-
-
-
-
-
-
-
 
 
 

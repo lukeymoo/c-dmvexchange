@@ -20,7 +20,7 @@
 class DatabaseClass {
 	public:
 		// open connection
-		DatabaseClass() : conn("dbname=dmvexchange user=db password=f9a548add9f0007ca4071e06f04e3f81 hostaddr=173.66.5.208 port=5432") {
+		DatabaseClass() : conn("dbname=dmvexchange user=db password=f9a548add9f0007ca4071e06f04e3f81 hostaddr=71.241.254.118 port=5432") {
 			std::cout << "[+] Connection opened" << std::endl;
 		}
 		~DatabaseClass(); // destroy connections

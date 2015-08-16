@@ -26,6 +26,9 @@ class api : public cppcms::application {
 			// Main page -- Get Products
 			dispatcher().assign("/products(/)?", &api::products_main, this);
 
+			// Process product comment
+			dispatcher().assign("/comment/process(/)?", &api::comment_process, this);
+
 			// Tips processing -- Process submitted tip
 			dispatcher().assign("/tips/process(/)?", &api::tips_process, this);
 
@@ -61,6 +64,9 @@ class api : public cppcms::application {
 		Pages::Context *context;
 
 		std::shared_ptr<DatabaseClass> db;
+
+		// process ajax submitted product comment
+		void comment_process();
 
 		// get products
 		void products_main();

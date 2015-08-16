@@ -32,8 +32,8 @@ $(function() {
 			if(res.status == 'DX-OK') {
 				if(res.message.length) {
 					// turn into post
-					for(var product in res.message) {
-						generateProduct(res.message[product]);
+					for(var i = res.message.length - 1; i >= 0; --i) {
+						generateProduct(res.message[i]);
 					}
 				} else { // empty product list
 					$('#center-feed').html('<span style="display:block;text-align:center;font-family:GOOGLE;font-size:1.025em;">No products to load...</span>');
@@ -43,6 +43,56 @@ $(function() {
 			}
 		});
 	}
+
+	/** Open login form on menu item click **/
+	$(document).on('click', '.need-login-menu-item', function() {
+		toggleHeaderLoginForm();
+	});
+
+	/** Close action menus on external click **/
+	$(document).on('click', function(e) {
+		if(!$(e.target).is($('.post-action-menu-button'))) {
+			closeAllPostActionMenus();
+		} else {
+			closeAllPostActionMenusExcept($(e.target));
+			togglePostActionMenu($(e.target));
+		}
+	});
+
+	/** show more of post description on click **/
+	$(document).on('click', '.description-show-more', function() {
+		var post = $(this).parents('.feed-post');
+		var complete = $(post).find('.full-description').html();
+		var incomplete = $(post).find('.post-description').html();
+		// switcheroo
+		$(post).find('.post-description').html(complete);
+		$(post).find('.full-description').html(incomplete);
+	});
+
+	/** show less of post description on click **/
+	$(document).on('click', '.description-show-less', function() {
+		var post = $(this).parents('.feed-post');
+		var complete = $(post).find('.full-description').html();
+		var incomplete = $(post).find('.post-description').html();
+		// switcheroo
+		$(post).find('.post-description').html(complete);
+		$(post).find('.full-description').html(incomplete);
+	});
+
+	/** change selected image on click **/
+	$(document).on('click', '.preview', function() {
+		var post = $(this).parents('.feed-post');
+		var img_src = $(this).find('img').attr('src');
+		// switch image in view
+		$(post).find('#post-image-selected img').attr('src', img_src);
+		// place border around new image
+		$(post).find('.preview').each(function() {
+			if($(this).hasClass('preview-selected')) {
+				$(this).removeClass('preview-selected');
+			}
+		});
+		$(this).addClass('preview-selected');
+	});
 
 	/** First post-action-menu coloring on hover **/
 	$(document).on({
@@ -54,14 +104,6 @@ $(function() {
 		}
 	}, '.post-action-menu-list li:first-child');
 
-	/** Close action menus on external click **/
-	$(document).on('click', function(e) {
-		if(!$(e.target).is($('.post-action-menu-button'))) {
-			closeAllPostActionMenus();
-		} else {
-			closeAllPostActionMenusExcept($(e.target));
-		}
-	});
 
 	/** Post description enter key **/
 	$(document).on('keyup keydown', '#post-form-description', function(e) {
@@ -181,6 +223,55 @@ $(function() {
 
 	});
 
+	// Create comment field on click
+	$(document).on('click', '#comment-field-placeholder', function() {
+		var p = $(this).parent();
+		$(this).parent().html(createCommentField($(this).attr('data-id')));
+		$(p).find('textarea').focus();
+	});
+
+	// Remove comment field on unfocus
+	$(document).on('blur', '#comment-field', function(e) {
+		if(!$(this).val().length) {
+			$(this).parent().parent().html(createCommentPlaceholder($(this).attr('data-id')));
+		}
+	});
+
+	// Submit comment on send
+	$(document).on('click', '#comment-button', function() {
+		// delete old errors
+		$(this).parents('#new-comment-container').find('.form-error').remove();
+		var commentField = $(this).parents('#new-comment-container').find('#comment-field');
+		var comment = $(commentField).val();
+		// make sure the length is ok
+		if(comment.length < 2 || comment.length > 700) {
+			generateFormError('Comment must be 2 - 700 characters in length', $(commentField));
+		}
+	});
+
+	/** Filter view when user clicks on a view type button **/
+	$(document).on('click', '.view', function() {
+		$(document).find('.view').each(function() {
+			$(this).attr('data-selected', 'false');
+		});
+		$(this).attr('data-selected', 'true');
+		// get view type
+		var type = $(this).attr('id');
+		if(type != 'all') {
+			$(document).find('.feed-post').each(function() {
+				if($(this).attr('data-type') != type) {
+					$(this).fadeOut();
+				} else {
+					$(this).fadeIn();
+				}
+			});
+		} else {
+			$(document).find('.feed-post').each(function() {
+				$(this).fadeIn();
+			});
+		}
+	});
+
 });
 
 
@@ -230,42 +321,195 @@ $(function() {
 	</div>
 </div>
 */
+function dateFromTimestamp(timestamp) {
+	var measure = '';
+	var js_date = new Date(timestamp);
+	var ms = new Date() - js_date;
+	var seconds, minutes, hours, days;
+	
+	seconds = Math.floor(ms / 1000);
+	if(seconds > 59) {
+		minutes = Math.floor(seconds / 60);
+		if(minutes > 59) {
+			hours = Math.floor(minutes / 60);
+			if(hours > 23) {
+				days = Math.floor(hours / 24);
+				if(days == 1) {
+					measure = 'Yesterday';
+				} else {
+					measure = 'default';
+				}
+			} else {
+				if(hours == 1) {
+					measure = 'hour';
+				} else {
+					measure = 'hours';
+				}
+			}
+		} else {
+			if(minutes == 1) {
+				measure = 'minute';
+			} else {
+				measure = 'minutes';
+			}
+		}
+	} else {
+		if(seconds == 1) {
+			measure = 'second';
+		} else if(seconds == 0) {
+			measure = 'Just now';
+		} else {
+			measure = 'seconds';
+		}
+	}
+
+	switch(measure) {
+		case 'second':
+		case 'seconds':
+			return seconds + ' ' + measure + ' ago';
+			break;
+		case 'minute':
+		case 'minutes':
+			return minutes + ' ' + measure + ' ago';
+			break;
+		case 'hour':
+		case 'hours':
+			return hours + ' ' + measure + ' ago';
+			break;
+		case 'day':
+		case 'days':
+			return days + ' ' + measure + ' ago';
+			break;
+		case 'Yesterday':
+			var origin = new Date(timestamp);
+			var time = [origin.getHours(), origin.getMinutes()];
+			var suffix = (time[0] < 12) ? 'AM' : 'PM';
+			time[0] = (time[0] < 12) ? time : parseInt(time) - 12;
+			time[0] = time[0] || 12;
+			return 'Yesterday at ' + time.join(":") + ' ' + suffix;
+			break;
+		default:
+			var origin = new Date(timestamp);
+			var date = [origin.getMonth(), origin.getDate()];
+			var months = ['Jan', 'Feb', 'March', 'April', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+			var time = [origin.getHours(), origin.getMinutes()];
+			var suffix = (time[0] < 12) ? 'AM' : 'PM';
+			time[0] = (time[0] < 12) ? time : parseInt(time) - 12;
+			time[0] = time[0] || 12;
+			return months[date[0]] + ' ' + date[1] + ' at ' + time.join(":") + ' ' + suffix;
+			break;
+	}
+}
+
 function generateProduct(productObj) {
+	var photoArray = [];
+	if(productObj["photos"]) {
+		photoArray = productObj["photos"].split(',');
+	}
 	var DOM =
-	"<div class='feed-post'>" +
+	"<div class='feed-post' data-type='" + productObj["post_type"] + "'>" +
 		"<div class='post-hidden-info'>" +
 			"<span class='info-post-id'>" + productObj["id"] + "</span>" +
 			"<span class='info-post-owner-id'>" + productObj["owner_id"] + "</span>" +
 		"</div>" +
 		"<div class='inner-post-top'>" +
 			"<span class='post-owner'>" + productObj["owner_username"] + "</span>" +
-			"<span class='post-description'>" +
-				productObj["description"] +
-			"</span>" +
-			"<div class='post-image-container'>" +
-				"<img class='post-image primary-image' src='/" + productObj["photos"] + "'>" +
-			"</div>" +
-		"</div>" +
+			"<span class='post-timestamp'>" + dateFromTimestamp(productObj["timestamp"]) + "</span>" +
+			"<span class='post-description'>";
+				// if description is too long cut it short
+				if(productObj["description"].length > 450) {
+					DOM += escapeHTML(productObj["description"]).replace(/(?:\r\n|\r|\n)/g, '<br>').substr(0, 450);
+					DOM += " <div class='description-show-more' style='display:inline-block;text-align:center;color:rgb(0, 150, 200);'>...Show more</div>";
+				} else {
+					DOM += escapeHTML(productObj["description"]).replace(/(?:\r\n|\r|\n)/g, '<br>');
+				}
+			DOM += "</span>";
+			DOM += "<div class='full-description'>" + escapeHTML(productObj["description"]).replace(/(?:\r\n|\r|\n)/g, '<br>') + " <div class='description-show-less' style='display:inline-block;text-align:center;color:rgb(0, 150, 200);'>...Show less</div></div>";
+			// If post has at least one image
+			if(productObj["photos"].length) {
+				DOM += "<div id='post-image-selected'>";
+					DOM += "<img src='" + photoArray[0] + "'>"
+				DOM += "</div>";
+				DOM += "<div id='post-image-preview-container'>";
+					if(photoArray[0]) {
+						DOM += "<div class='preview-selected preview'>";
+							DOM += "<img src='" + photoArray[0] + "' alt='another image'>";
+						DOM += "</div>";
+					}
+					if(photoArray[1]) {
+						DOM += "<div class='preview'>";
+							DOM += "<img src='" + photoArray[1] + "' alt='another image'>";
+						DOM += "</div>";
+					}
+					if(photoArray[2]) {
+						DOM += "<div class='preview'>";
+							DOM += "<img src='" + photoArray[2] + "' alt='another image'>";
+						DOM += "</div>";
+					}
+					if(photoArray[3]) {
+						DOM += "<div class='preview'>";
+							DOM += "<img src='" + photoArray[3] + "' alt='another image'>";
+						DOM += "</div>";
+					}
+				DOM += "</div>";
+			}
+		DOM += "</div>" +
 		"<div class='post-action-bar'>" +
 			"<span class='upvotes'>" + productObj["upvotes"] + "</span>" +
 			"<span class='upvote-button'><img src='/img/thumb_up.png' alt='upvote button'></span>" +
 			"<span class='downvote-button'><img src='/img/thumb_down.png' alt='downvote button'></span>" +
-			"<span class='downvotes'>" + productObj["downvotes"] + "</span>" +
-			"<div class='post-action-menu-container'>" +
-				"<img class='post-action-menu-button' src='/img/gear.png'>" +
-				"<ul class='post-action-menu-list'>" +
-					"<li>Subscribe</li>" +
-					"<li>Mark suspect</li>" +
-				"</ul>" +
-			"</div>" +
-		"</div>" +
-	"</div>";
+			"<span class='downvotes'>" + productObj["downvotes"] + "</span>";
+			if(state.LOGGED_IN) {
+				DOM +=
+				"<div class='post-action-menu-container'>" +
+					"<img class='post-action-menu-button' src='/img/gear.png'>" +
+					"<ul class='post-action-menu-list' data-state='closed'>" +
+						"<li>Subscribe</li>" +
+						"<li>Report</li>" +
+					"</ul>" +
+				"</div>";
+			} else {
+				DOM +=
+				"<div class='post-action-menu-container'>" +
+					"<img class='post-action-menu-button' src='/img/gear.png'>" +
+					"<ul class='post-action-menu-list' data-state='closed'>" +
+						"<li class='need-login-menu-item'>Need login</li>" +
+					"</ul>" +
+				"</div>";
+			}
+		DOM += "</div>";
+		if(state.LOGGED_IN) {
+			DOM +=
+			"<div id='comment-section-container'>" +
+				createCommentPlaceholder(productObj["id"]) +
+			"</div>";
+		} else {
+			DOM +=
+			"<div id='comment-section-container-fake'>" +
+			"</div>";
+		}
+	DOM += "</div>";
 	$(DOM).prependTo($('#center-feed'));
 	return;
 }
 
+function createCommentPlaceholder(product_id) {
+	return "<div data-id='" + product_id + "' id='comment-field-placeholder'>Enter a comment...</div>";
+}
+
+function createCommentField(product_id) {
+	return "<div id='new-comment-container'>" +
+				"<textarea data-for='" + product_id + "' placeholder='Enter a comment...' id='comment-field'></textarea><br>" +
+				"<button id='comment-button'>Post</button>" +
+			"</div>";
+}
 
 
+function escapeHTML(str) {
+	var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
 
 
 function changePostType(button) {
@@ -307,6 +551,9 @@ function updatePostFormStatus() {
 		$('#post-form').attr('data-valid', 'false');
 		return;
 	}
+
+	// set hidden field
+	$('#posttype').val($('#post-form').attr('data-type'));
 
 	switch($('#post-form').attr('data-type')) {
 		case 'sale':

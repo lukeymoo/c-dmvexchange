@@ -32,14 +32,6 @@ class BaseController : public cppcms::application {
 			mapper().assign("");
 
 			// @METHOD - GET
-			// @FUNCTION - Displays tip form
-			dispatcher().assign("/tips(/)?", &BaseController::tips_main, this);
-
-			// @METHOD - POST
-			// @FUNCTION - Process tip form
-			dispatcher().assign("/tips/process(/)?", &BaseController::tips_process, this);
-
-			// @METHOD - GET
 			// @FUNCTION - Processes activation token & activates an account
 			dispatcher().assign("/activate(/)?", &BaseController::activate_main, this);
 
